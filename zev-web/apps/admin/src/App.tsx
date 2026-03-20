@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Layout from './pages/Layout'
+import Dashboard from './pages/Dashboard'
+import UserManagement from './pages/UserManagement'
 
 function App() {
   return (
@@ -9,7 +11,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Layout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<div className="p-8">Dashboard 正在开发中...</div>} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="users" element={<UserManagement />} />
         </Route>
       </Routes>
     </BrowserRouter>
