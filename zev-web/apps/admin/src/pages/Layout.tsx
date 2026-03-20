@@ -1,7 +1,7 @@
 import { Outlet, Navigate, useNavigate, useLocation, Link } from 'react-router-dom'
 import { useUserStore } from '@/store'
 import { LayoutDashboard, Home, Users } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@zev/ui/lib/utils'
 
 export default function Layout() {
   const token = useUserStore(state => state.token)

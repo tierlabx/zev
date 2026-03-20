@@ -1,6 +1,6 @@
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Card } from '@zev/ui/components/card'
+import { Button } from '@zev/ui/components/button'
+import { Input } from '@zev/ui/components/input'
 import { Plus } from 'lucide-react'
 
 export default function UserManagement() {

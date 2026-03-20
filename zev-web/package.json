@@ -8,6 +8,8 @@
     "format": "biome format --write ."
   },
   "devDependencies": {
-    "@biomejs/biome": "latest"
+    "@biomejs/biome": "latest",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3"
   }
 }

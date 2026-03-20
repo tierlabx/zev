@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useUserStore } from '@/store'
 import request from '@/api/request'
 import { Shield } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Button } from '@zev/ui/components/button'
+import { Input } from '@zev/ui/components/input'
+import { Card, CardContent, CardHeader } from '@zev/ui/components/card'
 
 export default function Login() {
   const [username, setUsername] = useState('')
@@ -47,7 +47,7 @@ export default function Login() {
               <Input
                 type="text"
                 value={username}
-                onChange={e => setUsername(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
                 placeholder=""
                 required
               />
@@ -57,7 +57,7 @@ export default function Login() {
               <Input
                 type="password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                 placeholder=""
                 required
               />
