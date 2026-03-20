@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: zev
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: zev
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Backend service
+  backend:
+    build:
+      context: ./zev-go
+      target: dev
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=db
+      - DB_USER=zev
+      - DB_PASSWORD=password
+      - DB_NAME=zev
+      - DB_PORT=5432
+    volumes:
+      - ./zev-go:/app
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  # Frontend service
+  frontend:
+    build:
+      context: ./zev-web
+      target: dev
+    ports:
+      - "5173:5173"
+    environment:
+      - API_URL=http://backend:8080
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./zev-web:/app
+      - /app/node_modules
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+volumes:
+  db-data:
