@@ -19,3 +19,4 @@ data/*
 pnpm-lock.yaml
 public/uploads/*
 lock/
+docs/

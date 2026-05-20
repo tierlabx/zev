@@ -6,6 +6,7 @@ import (
 	"zev-go/modules/system/controller"
 	"zev-go/modules/system/entity"
 	"zev-go/modules/system/service"
+	"zev-go/pkg/swagger"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -22,6 +23,9 @@ func InitModule(r *gin.Engine, db *gorm.DB) {
 
 	userService := service.NewUserService(db)
 	userController := controller.NewUserController(userService)
+
+	// 自动注册 Swagger 路由
+	swagger.RegisterCRUD("系统管理-用户", "/api/system/user", entity.User{})
 
 	api := r.Group("/api/system")
 	{

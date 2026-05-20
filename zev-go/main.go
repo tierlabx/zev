@@ -5,9 +5,8 @@ import (
 	"log"
 
 	"zev-go/config"
-	_ "zev-go/docs"
-	"zev-go/pkg/swagger"
 	"zev-go/modules/system"
+	"zev-go/pkg/swagger"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -39,9 +38,6 @@ func main() {
 	cfg := config.LoadConfig()
 	initDB(cfg)
 
-	// 自动更新 Swagger 文档
-	swagger.AutoUpdate()
-
 	r := gin.Default()
 
 	// 跨域处理中间件
@@ -67,6 +63,9 @@ func main() {
 		port = "8080"
 	}
 
+	// 等所有模块和路由注册完毕后再执行自动生成
+	swagger.AutoUpdate()
+
 	log.Printf("Server is running on port %s", port)
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("服务启动失败: %v", err)
@@ -85,4 +84,3 @@ func PingHandler(c *gin.Context) {
 		"message": "pong",
 	})
 }
-
