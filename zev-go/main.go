@@ -52,16 +52,7 @@ func main() {
 		c.Next()
 	})
 
-	// @Summary Ping
-	// @Description 测试服务是否正常运行
-	// @Tags 测试
-	// @Success 200 {object} map[string]string
-	// @Router /api/ping [get]
-	r.GET("/api/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	r.GET("/api/ping", PingHandler)
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -77,3 +68,17 @@ func main() {
 		log.Fatalf("服务启动失败: %v", err)
 	}
 }
+
+// PingHandler
+// @Summary Ping
+// @Description 测试服务是否正常运行
+// @Tags 测试
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Router /api/ping [get]
+func PingHandler(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"message": "pong",
+	})
+}
+

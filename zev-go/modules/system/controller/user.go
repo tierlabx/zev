@@ -22,6 +22,15 @@ func NewUserController(userService *service.UserService) *UserController {
 	}
 }
 
+// Login 用户登录
+// @Summary 用户登录
+// @Description 使用账号密码登录
+// @Tags 系统管理-用户
+// @Accept json
+// @Produce json
+// @Param req body dto.LoginReq true "登录信息"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/login [post]
 func (c *UserController) Login(ctx *gin.Context) {
 	var req dto.LoginReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
