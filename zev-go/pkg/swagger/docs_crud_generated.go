@@ -2,10 +2,12 @@
 package swagger
 
 import (
+	response "zev-go/pkg/response"
 	pkg0 "zev-go/modules/system/entity"
 )
 
 var (
+	_ response.Response
 	_ pkg0.User
 	_ pkg0.Role
 	_ pkg0.Menu
@@ -21,7 +23,7 @@ var (
 // @Accept json
 // @Produce json
 // @Param req body pkg0.User true "请求体"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=pkg0.User} "成功"
 // @Router /api/system/user/create [post]
 func DummyCreate0() {}
 
@@ -32,7 +34,7 @@ func DummyCreate0() {}
 // @Accept json
 // @Produce json
 // @Param req body pkg0.User true "请求体"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response "成功"
 // @Router /api/system/user/update [put]
 func DummyUpdate0() {}
 
@@ -43,7 +45,7 @@ func DummyUpdate0() {}
 // @Accept json
 // @Produce json
 // @Param id path string true "ID"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response "成功"
 // @Router /api/system/user/delete/{id} [delete]
 func DummyDelete0() {}
 
@@ -54,7 +56,7 @@ func DummyDelete0() {}
 // @Accept json
 // @Produce json
 // @Param id path string true "ID"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=pkg0.User} "成功"
 // @Router /api/system/user/get/{id} [get]
 func DummyGet0() {}
 
@@ -64,7 +66,7 @@ func DummyGet0() {}
 // @Tags 系统管理-用户
 // @Accept json
 // @Produce json
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.User}} "成功"
 // @Router /api/system/user/list [get]
 func DummyList0() {}
 
@@ -75,7 +77,7 @@ func DummyList0() {}
 // @Accept json
 // @Produce json
 // @Param req body pkg0.Role true "请求体"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=pkg0.Role} "成功"
 // @Router /api/system/role/create [post]
 func DummyCreate1() {}
 
@@ -86,7 +88,7 @@ func DummyCreate1() {}
 // @Accept json
 // @Produce json
 // @Param req body pkg0.Role true "请求体"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response "成功"
 // @Router /api/system/role/update [put]
 func DummyUpdate1() {}
 
@@ -97,7 +99,7 @@ func DummyUpdate1() {}
 // @Accept json
 // @Produce json
 // @Param id path string true "ID"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response "成功"
 // @Router /api/system/role/delete/{id} [delete]
 func DummyDelete1() {}
 
@@ -108,7 +110,7 @@ func DummyDelete1() {}
 // @Accept json
 // @Produce json
 // @Param id path string true "ID"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=pkg0.Role} "成功"
 // @Router /api/system/role/get/{id} [get]
 func DummyGet1() {}
 
@@ -118,7 +120,7 @@ func DummyGet1() {}
 // @Tags 系统管理-角色
 // @Accept json
 // @Produce json
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.Role}} "成功"
 // @Router /api/system/role/list [get]
 func DummyList1() {}
 
@@ -129,7 +131,7 @@ func DummyList1() {}
 // @Accept json
 // @Produce json
 // @Param req body pkg0.Menu true "请求体"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=pkg0.Menu} "成功"
 // @Router /api/system/menu/create [post]
 func DummyCreate2() {}
 
@@ -140,7 +142,7 @@ func DummyCreate2() {}
 // @Accept json
 // @Produce json
 // @Param req body pkg0.Menu true "请求体"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response "成功"
 // @Router /api/system/menu/update [put]
 func DummyUpdate2() {}
 
@@ -151,7 +153,7 @@ func DummyUpdate2() {}
 // @Accept json
 // @Produce json
 // @Param id path string true "ID"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response "成功"
 // @Router /api/system/menu/delete/{id} [delete]
 func DummyDelete2() {}
 
@@ -162,7 +164,7 @@ func DummyDelete2() {}
 // @Accept json
 // @Produce json
 // @Param id path string true "ID"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=pkg0.Menu} "成功"
 // @Router /api/system/menu/get/{id} [get]
 func DummyGet2() {}
 
@@ -172,7 +174,7 @@ func DummyGet2() {}
 // @Tags 系统管理-菜单
 // @Accept json
 // @Produce json
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.Menu}} "成功"
 // @Router /api/system/menu/list [get]
 func DummyList2() {}
 
@@ -183,7 +185,7 @@ func DummyList2() {}
 // @Accept json
 // @Produce json
 // @Param req body pkg0.DictType true "请求体"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=pkg0.DictType} "成功"
 // @Router /api/system/dict/type/create [post]
 func DummyCreate3() {}
 
@@ -194,7 +196,7 @@ func DummyCreate3() {}
 // @Accept json
 // @Produce json
 // @Param req body pkg0.DictType true "请求体"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response "成功"
 // @Router /api/system/dict/type/update [put]
 func DummyUpdate3() {}
 
@@ -205,7 +207,7 @@ func DummyUpdate3() {}
 // @Accept json
 // @Produce json
 // @Param id path string true "ID"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response "成功"
 // @Router /api/system/dict/type/delete/{id} [delete]
 func DummyDelete3() {}
 
@@ -216,7 +218,7 @@ func DummyDelete3() {}
 // @Accept json
 // @Produce json
 // @Param id path string true "ID"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=pkg0.DictType} "成功"
 // @Router /api/system/dict/type/get/{id} [get]
 func DummyGet3() {}
 
@@ -226,7 +228,7 @@ func DummyGet3() {}
 // @Tags 系统管理-字典类型
 // @Accept json
 // @Produce json
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.DictType}} "成功"
 // @Router /api/system/dict/type/list [get]
 func DummyList3() {}
 
@@ -237,7 +239,7 @@ func DummyList3() {}
 // @Accept json
 // @Produce json
 // @Param req body pkg0.DictData true "请求体"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=pkg0.DictData} "成功"
 // @Router /api/system/dict/data/create [post]
 func DummyCreate4() {}
 
@@ -248,7 +250,7 @@ func DummyCreate4() {}
 // @Accept json
 // @Produce json
 // @Param req body pkg0.DictData true "请求体"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response "成功"
 // @Router /api/system/dict/data/update [put]
 func DummyUpdate4() {}
 
@@ -259,7 +261,7 @@ func DummyUpdate4() {}
 // @Accept json
 // @Produce json
 // @Param id path string true "ID"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response "成功"
 // @Router /api/system/dict/data/delete/{id} [delete]
 func DummyDelete4() {}
 
@@ -270,7 +272,7 @@ func DummyDelete4() {}
 // @Accept json
 // @Produce json
 // @Param id path string true "ID"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=pkg0.DictData} "成功"
 // @Router /api/system/dict/data/get/{id} [get]
 func DummyGet4() {}
 
@@ -280,6 +282,6 @@ func DummyGet4() {}
 // @Tags 系统管理-字典数据
 // @Accept json
 // @Produce json
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.DictData}} "成功"
 // @Router /api/system/dict/data/list [get]
 func DummyList4() {}

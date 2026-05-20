@@ -29,7 +29,7 @@ func NewUserController(userService *service.UserService) *UserController {
 // @Accept json
 // @Produce json
 // @Param req body dto.LoginReq true "登录信息"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} response.Response{data=dto.LoginRes} "成功"
 // @Router /api/system/login [post]
 func (c *UserController) Login(ctx *gin.Context) {
 	var req dto.LoginReq

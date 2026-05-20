@@ -12,6 +12,12 @@ type Response struct {
 	Msg  string      `json:"msg"`
 }
 
+// PageData 分页响应数据结构
+type PageData struct {
+	List  interface{} `json:"list"`
+	Total int64       `json:"total"`
+}
+
 const (
 	CodeSuccess = 200
 	CodeError   = 500
