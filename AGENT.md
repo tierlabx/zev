@@ -44,6 +44,7 @@
   - `pkg/jwtx/`：JWT 身份认证机制。
   - `pkg/event/`：提供基础的 Event Bus（事件总线）机制，支持基于内存或 Redis 的发布订阅。
   - `pkg/crud/`：利用泛型/反射实现的通用 Service 层和 Controller 层快速增删改查基类。
+  - `pkg/swagger/`：自动生成 Swagger API 接口文档。
 
 ## 3. 前端开发约束 (React)
 

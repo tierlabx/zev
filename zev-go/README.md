@@ -35,10 +35,12 @@ func (c *UserController) Login(ctx *gin.Context) {
 
 ### 如何重新生成接口文档
 
-当你添加了新的接口或修改了接口的注释后，请在 `zev-go` 目录下运行以下命令来更新 `docs` 目录：
+**好消息：自动更新机制已启用！**
+每当服务启动（例如 `go run main.go` 或者使用 Air 热重载时），后台都会自动调用 `swag init` 去扫描并生成最新的接口文档。因此通常情况下，你**只需要在代码中加上注释，然后保存并让服务重启即可生效**。
+
+如果由于某些原因你想手动强制生成，在 `zev-go` 目录下运行以下命令即可：
 
 ```bash
 go run github.com/swaggo/swag/cmd/swag@latest init --parseDependency --parseInternal
 ```
 
-重新生成后，重启后端服务即可在页面上看到更新。

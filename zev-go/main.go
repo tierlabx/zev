@@ -6,6 +6,7 @@ import (
 
 	"zev-go/config"
 	_ "zev-go/docs"
+	"zev-go/pkg/swagger"
 	"zev-go/modules/system"
 
 	"github.com/gin-gonic/gin"
@@ -37,6 +38,9 @@ func initDB(cfg config.Config) {
 func main() {
 	cfg := config.LoadConfig()
 	initDB(cfg)
+
+	// 自动更新 Swagger 文档
+	swagger.AutoUpdate()
 
 	r := gin.Default()
 
