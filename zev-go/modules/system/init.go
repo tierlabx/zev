@@ -6,6 +6,7 @@ import (
 	"zev-go/modules/system/controller"
 	"zev-go/modules/system/entity"
 	"zev-go/modules/system/service"
+	"zev-go/pkg/middleware"
 	"zev-go/pkg/seed"
 	"zev-go/pkg/swagger"
 
@@ -27,7 +28,7 @@ func InitModule(r *gin.Engine, db *gorm.DB) {
 	}
 
 	// 2. 使用 seed.json 初始化基础数据
-	seed.Run(db, "seed.json")
+	seed.Run(db, "pkg/seed/seed.json")
 
 	// 3. 初始化 Service 层
 	userService := service.NewUserService(db)
@@ -55,55 +56,59 @@ func InitModule(r *gin.Engine, db *gorm.DB) {
 	{
 		api.POST("/login", userController.Login)
 
-		// 用户路由
-		userGroup := api.Group("/user")
+		protected := api.Group("")
+		protected.Use(middleware.AuthMiddleware())
 		{
-			userGroup.GET("/list", userController.List)
-			userGroup.POST("/create", userController.Create)
-			userGroup.PUT("/update", userController.Update)
-			userGroup.DELETE("/delete/:id", userController.Delete)
-			userGroup.GET("/get/:id", userController.Get)
-		}
+			// 用户路由
+			userGroup := protected.Group("/user")
+			{
+				userGroup.GET("/list", middleware.RequirePermission(db, "system:user:list"), userController.List)
+				userGroup.POST("/create", middleware.RequirePermission(db, "system:user:create"), userController.Create)
+				userGroup.PUT("/update", middleware.RequirePermission(db, "system:user:update"), userController.Update)
+				userGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:user:delete"), userController.Delete)
+				userGroup.GET("/get/:id", middleware.RequirePermission(db, "system:user:list"), userController.Get)
+			}
 
-		// 角色路由
-		roleGroup := api.Group("/role")
-		{
-			roleGroup.GET("/list", roleController.List)
-			roleGroup.POST("/create", roleController.Create)
-			roleGroup.PUT("/update", roleController.Update)
-			roleGroup.DELETE("/delete/:id", roleController.Delete)
-			roleGroup.GET("/get/:id", roleController.Get)
-		}
+			// 角色路由
+			roleGroup := protected.Group("/role")
+			{
+				roleGroup.GET("/list", middleware.RequirePermission(db, "system:role:list"), roleController.List)
+				roleGroup.POST("/create", middleware.RequirePermission(db, "system:role:create"), roleController.Create)
+				roleGroup.PUT("/update", middleware.RequirePermission(db, "system:role:update"), roleController.Update)
+				roleGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:role:delete"), roleController.Delete)
+				roleGroup.GET("/get/:id", middleware.RequirePermission(db, "system:role:list"), roleController.Get)
+			}
 
-		// 菜单路由
-		menuGroup := api.Group("/menu")
-		{
-			menuGroup.GET("/list", menuController.List)
-			menuGroup.POST("/create", menuController.Create)
-			menuGroup.PUT("/update", menuController.Update)
-			menuGroup.DELETE("/delete/:id", menuController.Delete)
-			menuGroup.GET("/get/:id", menuController.Get)
-			menuGroup.GET("/tree", menuController.Tree)
-		}
+			// 菜单路由
+			menuGroup := protected.Group("/menu")
+			{
+				menuGroup.GET("/list", middleware.RequirePermission(db, "system:menu:list"), menuController.List)
+				menuGroup.POST("/create", middleware.RequirePermission(db, "system:menu:create"), menuController.Create)
+				menuGroup.PUT("/update", middleware.RequirePermission(db, "system:menu:update"), menuController.Update)
+				menuGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:menu:delete"), menuController.Delete)
+				menuGroup.GET("/get/:id", middleware.RequirePermission(db, "system:menu:list"), menuController.Get)
+				menuGroup.GET("/tree", middleware.RequirePermission(db, "system:menu:list"), menuController.Tree)
+			}
 
-		// 字典类型路由
-		dictTypeGroup := api.Group("/dict/type")
-		{
-			dictTypeGroup.GET("/list", dictTypeController.List)
-			dictTypeGroup.POST("/create", dictTypeController.Create)
-			dictTypeGroup.PUT("/update", dictTypeController.Update)
-			dictTypeGroup.DELETE("/delete/:id", dictTypeController.Delete)
-			dictTypeGroup.GET("/get/:id", dictTypeController.Get)
-		}
+			// 字典类型路由
+			dictTypeGroup := protected.Group("/dict/type")
+			{
+				dictTypeGroup.GET("/list", middleware.RequirePermission(db, "system:dict:list"), dictTypeController.List)
+				dictTypeGroup.POST("/create", middleware.RequirePermission(db, "system:dict:create"), dictTypeController.Create)
+				dictTypeGroup.PUT("/update", middleware.RequirePermission(db, "system:dict:update"), dictTypeController.Update)
+				dictTypeGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:dict:delete"), dictTypeController.Delete)
+				dictTypeGroup.GET("/get/:id", middleware.RequirePermission(db, "system:dict:list"), dictTypeController.Get)
+			}
 
-		// 字典数据路由
-		dictDataGroup := api.Group("/dict/data")
-		{
-			dictDataGroup.GET("/list", dictDataController.List)
-			dictDataGroup.POST("/create", dictDataController.Create)
-			dictDataGroup.PUT("/update", dictDataController.Update)
-			dictDataGroup.DELETE("/delete/:id", dictDataController.Delete)
-			dictDataGroup.GET("/get/:id", dictDataController.Get)
+			// 字典数据路由
+			dictDataGroup := protected.Group("/dict/data")
+			{
+				dictDataGroup.GET("/list", middleware.RequirePermission(db, "system:dict:list"), dictDataController.List)
+				dictDataGroup.POST("/create", middleware.RequirePermission(db, "system:dict:create"), dictDataController.Create)
+				dictDataGroup.PUT("/update", middleware.RequirePermission(db, "system:dict:update"), dictDataController.Update)
+				dictDataGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:dict:delete"), dictDataController.Delete)
+				dictDataGroup.GET("/get/:id", middleware.RequirePermission(db, "system:dict:list"), dictDataController.Get)
+			}
 		}
 	}
 }

@@ -8,18 +8,28 @@ import (
 
 var secretKey = []byte("zev-admin-secret-key-development")
 
-func GenerateToken(username string) (string, error) {
-	claims := jwt.RegisteredClaims{
-		Subject:   username,
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
+type CustomClaims struct {
+	UserID uint `json:"user_id"`
+	RoleID uint `json:"role_id"`
+	jwt.RegisteredClaims
+}
+
+func GenerateToken(userID uint, username string, roleID uint) (string, error) {
+	claims := CustomClaims{
+		UserID: userID,
+		RoleID: roleID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   username,
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(secretKey)
 }
 
-func ParseToken(tokenString string) (*jwt.RegisteredClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
+func ParseToken(tokenString string) (*CustomClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
 
@@ -27,7 +37,7 @@ func ParseToken(tokenString string) (*jwt.RegisteredClaims, error) {
 		return nil, err
 	}
 
-	if claims, ok := token.Claims.(*jwt.RegisteredClaims); ok && token.Valid {
+	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
 		return claims, nil
 	}
 	return nil, err

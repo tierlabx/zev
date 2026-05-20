@@ -36,7 +36,7 @@ func (s *UserService) Login(req dto.LoginReq) (*dto.LoginRes, error) {
 		return nil, errors.New("用户名或密码错误")
 	}
 
-	token, err := jwtx.GenerateToken(user.Username)
+	token, err := jwtx.GenerateToken(user.ID, user.Username, user.RoleID)
 	if err != nil {
 		return nil, errors.New("Token生成失败")
 	}
