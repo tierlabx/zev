@@ -1,0 +1,158 @@
+{
+  "roles": [
+    {
+      "id": 1,
+      "name": "超级管理员",
+      "code": "admin",
+      "status": 0,
+      "sort": 1,
+      "desc": "拥有系统最高权限",
+      "menu_ids": [1, 2, 3, 4, 5]
+    },
+    {
+      "id": 2,
+      "name": "普通用户",
+      "code": "common",
+      "status": 0,
+      "sort": 2,
+      "desc": "普通系统用户",
+      "menu_ids": [1, 5]
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "admin",
+      "nickname": "系统管理员",
+      "role_id": 1
+    },
+    {
+      "id": 2,
+      "username": "user",
+      "password": "user123",
+      "nickname": "普通用户",
+      "role_id": 2
+    }
+  ],
+  "menus": [
+    {
+      "id": 1,
+      "parent_id": 0,
+      "name": "系统管理",
+      "path": "/system",
+      "component": "Layout",
+      "icon": "setting",
+      "sort": 1,
+      "type": "M",
+      "perms": ""
+    },
+    {
+      "id": 2,
+      "parent_id": 1,
+      "name": "用户管理",
+      "path": "user",
+      "component": "system/user/index",
+      "icon": "user",
+      "sort": 1,
+      "type": "C",
+      "perms": "system:user:list"
+    },
+    {
+      "id": 3,
+      "parent_id": 1,
+      "name": "角色管理",
+      "path": "role",
+      "component": "system/role/index",
+      "icon": "peoples",
+      "sort": 2,
+      "type": "C",
+      "perms": "system:role:list"
+    },
+    {
+      "id": 4,
+      "parent_id": 1,
+      "name": "菜单管理",
+      "path": "menu",
+      "component": "system/menu/index",
+      "icon": "tree-table",
+      "sort": 3,
+      "type": "C",
+      "perms": "system:menu:list"
+    },
+    {
+      "id": 5,
+      "parent_id": 1,
+      "name": "字典管理",
+      "path": "dict",
+      "component": "system/dict/index",
+      "icon": "dict",
+      "sort": 4,
+      "type": "C",
+      "perms": "system:dict:list"
+    }
+  ],
+  "dict_types": [
+    {
+      "id": 1,
+      "name": "用户性别",
+      "type": "sys_user_sex",
+      "status": 0,
+      "remark": "系统用户性别"
+    },
+    {
+      "id": 2,
+      "name": "菜单状态",
+      "type": "sys_menu_status",
+      "status": 0,
+      "remark": "菜单是否显示"
+    }
+  ],
+  "dict_data": [
+    {
+      "id": 1,
+      "dict_type": "sys_user_sex",
+      "label": "男",
+      "value": "1",
+      "sort": 1,
+      "status": 0,
+      "remark": "性别男"
+    },
+    {
+      "id": 2,
+      "dict_type": "sys_user_sex",
+      "label": "女",
+      "value": "2",
+      "sort": 2,
+      "status": 0,
+      "remark": "性别女"
+    },
+    {
+      "id": 3,
+      "dict_type": "sys_user_sex",
+      "label": "未知",
+      "value": "0",
+      "sort": 3,
+      "status": 0,
+      "remark": "性别未知"
+    },
+    {
+      "id": 4,
+      "dict_type": "sys_menu_status",
+      "label": "显示",
+      "value": "0",
+      "sort": 1,
+      "status": 0,
+      "remark": "正常显示"
+    },
+    {
+      "id": 5,
+      "dict_type": "sys_menu_status",
+      "label": "隐藏",
+      "value": "1",
+      "sort": 2,
+      "status": 0,
+      "remark": "隐藏"
+    }
+  ]
+}

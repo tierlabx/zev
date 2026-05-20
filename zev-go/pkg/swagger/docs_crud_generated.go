@@ -7,6 +7,10 @@ import (
 
 var (
 	_ pkg0.User
+	_ pkg0.Role
+	_ pkg0.Menu
+	_ pkg0.DictType
+	_ pkg0.DictData
 )
 
 
@@ -63,3 +67,219 @@ func DummyGet0() {}
 // @Success 200 {object} map[string]interface{}
 // @Router /api/system/user/list [get]
 func DummyList0() {}
+
+// DummyCreate1
+// @Summary 创建系统管理-角色
+// @Description 创建记录
+// @Tags 系统管理-角色
+// @Accept json
+// @Produce json
+// @Param req body pkg0.Role true "请求体"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/role/create [post]
+func DummyCreate1() {}
+
+// DummyUpdate1
+// @Summary 更新系统管理-角色
+// @Description 更新记录
+// @Tags 系统管理-角色
+// @Accept json
+// @Produce json
+// @Param req body pkg0.Role true "请求体"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/role/update [put]
+func DummyUpdate1() {}
+
+// DummyDelete1
+// @Summary 删除系统管理-角色
+// @Description 根据ID删除记录
+// @Tags 系统管理-角色
+// @Accept json
+// @Produce json
+// @Param id path string true "ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/role/delete/{id} [delete]
+func DummyDelete1() {}
+
+// DummyGet1
+// @Summary 获取系统管理-角色详情
+// @Description 获取单条记录详情
+// @Tags 系统管理-角色
+// @Accept json
+// @Produce json
+// @Param id path string true "ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/role/get/{id} [get]
+func DummyGet1() {}
+
+// DummyList1
+// @Summary 获取系统管理-角色列表
+// @Description 获取分页列表
+// @Tags 系统管理-角色
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/role/list [get]
+func DummyList1() {}
+
+// DummyCreate2
+// @Summary 创建系统管理-菜单
+// @Description 创建记录
+// @Tags 系统管理-菜单
+// @Accept json
+// @Produce json
+// @Param req body pkg0.Menu true "请求体"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/menu/create [post]
+func DummyCreate2() {}
+
+// DummyUpdate2
+// @Summary 更新系统管理-菜单
+// @Description 更新记录
+// @Tags 系统管理-菜单
+// @Accept json
+// @Produce json
+// @Param req body pkg0.Menu true "请求体"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/menu/update [put]
+func DummyUpdate2() {}
+
+// DummyDelete2
+// @Summary 删除系统管理-菜单
+// @Description 根据ID删除记录
+// @Tags 系统管理-菜单
+// @Accept json
+// @Produce json
+// @Param id path string true "ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/menu/delete/{id} [delete]
+func DummyDelete2() {}
+
+// DummyGet2
+// @Summary 获取系统管理-菜单详情
+// @Description 获取单条记录详情
+// @Tags 系统管理-菜单
+// @Accept json
+// @Produce json
+// @Param id path string true "ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/menu/get/{id} [get]
+func DummyGet2() {}
+
+// DummyList2
+// @Summary 获取系统管理-菜单列表
+// @Description 获取分页列表
+// @Tags 系统管理-菜单
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/menu/list [get]
+func DummyList2() {}
+
+// DummyCreate3
+// @Summary 创建系统管理-字典类型
+// @Description 创建记录
+// @Tags 系统管理-字典类型
+// @Accept json
+// @Produce json
+// @Param req body pkg0.DictType true "请求体"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/dict/type/create [post]
+func DummyCreate3() {}
+
+// DummyUpdate3
+// @Summary 更新系统管理-字典类型
+// @Description 更新记录
+// @Tags 系统管理-字典类型
+// @Accept json
+// @Produce json
+// @Param req body pkg0.DictType true "请求体"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/dict/type/update [put]
+func DummyUpdate3() {}
+
+// DummyDelete3
+// @Summary 删除系统管理-字典类型
+// @Description 根据ID删除记录
+// @Tags 系统管理-字典类型
+// @Accept json
+// @Produce json
+// @Param id path string true "ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/dict/type/delete/{id} [delete]
+func DummyDelete3() {}
+
+// DummyGet3
+// @Summary 获取系统管理-字典类型详情
+// @Description 获取单条记录详情
+// @Tags 系统管理-字典类型
+// @Accept json
+// @Produce json
+// @Param id path string true "ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/dict/type/get/{id} [get]
+func DummyGet3() {}
+
+// DummyList3
+// @Summary 获取系统管理-字典类型列表
+// @Description 获取分页列表
+// @Tags 系统管理-字典类型
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/dict/type/list [get]
+func DummyList3() {}
+
+// DummyCreate4
+// @Summary 创建系统管理-字典数据
+// @Description 创建记录
+// @Tags 系统管理-字典数据
+// @Accept json
+// @Produce json
+// @Param req body pkg0.DictData true "请求体"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/dict/data/create [post]
+func DummyCreate4() {}
+
+// DummyUpdate4
+// @Summary 更新系统管理-字典数据
+// @Description 更新记录
+// @Tags 系统管理-字典数据
+// @Accept json
+// @Produce json
+// @Param req body pkg0.DictData true "请求体"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/dict/data/update [put]
+func DummyUpdate4() {}
+
+// DummyDelete4
+// @Summary 删除系统管理-字典数据
+// @Description 根据ID删除记录
+// @Tags 系统管理-字典数据
+// @Accept json
+// @Produce json
+// @Param id path string true "ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/dict/data/delete/{id} [delete]
+func DummyDelete4() {}
+
+// DummyGet4
+// @Summary 获取系统管理-字典数据详情
+// @Description 获取单条记录详情
+// @Tags 系统管理-字典数据
+// @Accept json
+// @Produce json
+// @Param id path string true "ID"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/dict/data/get/{id} [get]
+func DummyGet4() {}
+
+// DummyList4
+// @Summary 获取系统管理-字典数据列表
+// @Description 获取分页列表
+// @Tags 系统管理-字典数据
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/system/dict/data/list [get]
+func DummyList4() {}

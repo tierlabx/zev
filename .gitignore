@@ -19,4 +19,5 @@ data/*
 pnpm-lock.yaml
 public/uploads/*
 lock/
-docs/
+zev-go/docs/swagger.json
+zev-go/docs/swagger.yaml

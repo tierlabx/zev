@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"zev-go/config"
+	_ "zev-go/docs"
 	"zev-go/modules/system"
 	"zev-go/pkg/swagger"
 
