@@ -5,9 +5,12 @@ import (
 	"log"
 
 	"zev-go/config"
+	_ "zev-go/docs"
 	"zev-go/modules/system"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -25,6 +28,12 @@ func initDB(cfg config.Config) {
 	log.Println("数据库连接成功")
 }
 
+// @title           Zev API
+// @version         1.0
+// @description     Zev Go Backend API documentation
+
+// @host      localhost:8080
+// @BasePath  /
 func main() {
 	cfg := config.LoadConfig()
 	initDB(cfg)
@@ -43,11 +52,18 @@ func main() {
 		c.Next()
 	})
 
+	// @Summary Ping
+	// @Description 测试服务是否正常运行
+	// @Tags 测试
+	// @Success 200 {object} map[string]string
+	// @Router /api/ping [get]
 	r.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	system.InitModule(r, DB)
 
