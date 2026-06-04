@@ -6,6 +6,7 @@ import { Shield } from 'lucide-react'
 import { Button } from '@zev/ui/components/button'
 import { Input } from '@zev/ui/components/input'
 import { Card, CardContent, CardHeader } from '@zev/ui/components/card'
+import LoginBg from '@/components/LoginBg'
 
 export default function Login() {
   const [username, setUsername] = useState('')
@@ -31,10 +32,10 @@ export default function Login() {
 
   return (
     <div 
-      className="flex min-h-screen items-center justify-center md:justify-end md:px-[10vw] bg-cover bg-center"
-      style={{ backgroundImage: "url('/login-bg.png')" }}
+      className="flex min-h-screen items-center justify-center md:justify-end md:px-[10vw] relative overflow-hidden"
     >
-      <Card className="w-[378px] p-8 shadow-[0_24px_60px_#00000033] border-none bg-white rounded-none">
+      <LoginBg />
+      <Card className="w-[378px] p-8 shadow-[0_24px_60px_#00000033] border-none bg-white rounded-none z-10">
         <CardHeader className="p-0 mb-6 flex flex-col items-center gap-2">
           <div className="flex h-12 w-12 items-center justify-center bg-black text-white">
             <Shield className="h-6 w-6" />
