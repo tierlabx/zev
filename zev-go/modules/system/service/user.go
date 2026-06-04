@@ -47,3 +47,7 @@ func (s *UserService) Login(req dto.LoginReq) (*dto.LoginRes, error) {
 		RoleID:   user.RoleID,
 	}, nil
 }
+
+func (s *UserService) AssignRole(userID uint, roleID uint) error {
+	return s.DB.Model(&entity.User{}).Where("id = ?", userID).Update("role_id", roleID).Error
+}

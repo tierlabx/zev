@@ -67,6 +67,7 @@ func InitModule(r *gin.Engine, db *gorm.DB) {
 				userGroup.PUT("/update", middleware.RequirePermission(db, "system:user:update"), userController.Update)
 				userGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:user:delete"), userController.Delete)
 				userGroup.GET("/get/:id", middleware.RequirePermission(db, "system:user:list"), userController.Get)
+				userGroup.POST("/role/:id", middleware.RequirePermission(db, "system:user:assign"), userController.AssignRole)
 			}
 
 			// 角色路由
@@ -77,6 +78,8 @@ func InitModule(r *gin.Engine, db *gorm.DB) {
 				roleGroup.PUT("/update", middleware.RequirePermission(db, "system:role:update"), roleController.Update)
 				roleGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:role:delete"), roleController.Delete)
 				roleGroup.GET("/get/:id", middleware.RequirePermission(db, "system:role:list"), roleController.Get)
+				roleGroup.POST("/menus/:id", middleware.RequirePermission(db, "system:role:assign"), roleController.AssignMenus)
+				roleGroup.GET("/menus/:id", middleware.RequirePermission(db, "system:role:list"), roleController.GetRoleMenus)
 			}
 
 			// 菜单路由

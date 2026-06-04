@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"strconv"
+
 	"zev-go/modules/system/dto"
 	"zev-go/modules/system/entity"
 	"zev-go/modules/system/service"
@@ -45,4 +47,32 @@ func (c *UserController) Login(ctx *gin.Context) {
 	}
 
 	response.SuccessData(res, ctx)
+}
+
+// AssignRole 分配角色
+// @Summary 分配角色
+// @Description 给用户分配角色
+// @Tags 系统管理-用户
+// @Accept json
+// @Produce json
+// @Param id path int true "用户ID"
+// @Param req body dto.AssignUserRoleReq true "角色ID"
+// @Success 200 {object} response.Response "成功"
+// @Router /api/system/user/role/{id} [post]
+func (c *UserController) AssignRole(ctx *gin.Context) {
+	idStr := ctx.Param("id")
+	id, _ := strconv.Atoi(idStr)
+
+	var req dto.AssignUserRoleReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.FailMessage("请求参数错误", ctx)
+		return
+	}
+
+	if err := c.userService.AssignRole(uint(id), req.RoleID); err != nil {
+		response.FailMessage("分配角色失败", ctx)
+		return
+	}
+
+	response.Success(ctx)
 }
