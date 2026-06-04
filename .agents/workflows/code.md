@@ -1,3 +1,7 @@
+---
+description: 
+---
+
 # ZEV 项目 AI 开发指南 (AI Development Guide)
 
 这份指南旨在为参与 ZEV 项目开发的 AI 助手提供明确的架构约束、代码规范与工作流指导。在执行任何代码编写、重构或调试任务时，请严格遵守以下原则。
@@ -33,7 +37,8 @@
 ## 3. 前端开发规范 (zev-web)
 - **技术栈**：React + Vite + TypeScript + Zustand + React Router。
 - **工程化架构**：使用 pnpm workspace + Turborepo。后台主应用位于 `apps/admin`，复用包位于 `packages/ui`。
-- **代码规范**：**强制统一使用 Biome** 进行格式化和 Lint 校验，不使用 ESLint/Prettier。**禁止使用 `any` 类型**。
+- **代码规范**：**强制统一使用 Biome** 进行格式化和 Lint 校验，不使用 ESLint/Prettier。**禁止使用 `any` 类型**
+要符合eslint规则。
 - **UI 及视觉规范**：
   - **核心风格**：黑白简约风格 (Black & White Minimalist)。减少冗余装饰，大量留白，避免使用高饱和度彩色（仅警示状态下使用）。
   - **组件库**：强制采用 Tailwind CSS 和 **shadcn/ui** 原生组件库及其细粒度的控制方式组合业务界面，禁止使用难以扩展的大型第三方组件库。

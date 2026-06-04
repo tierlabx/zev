@@ -1,0 +1,9 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .piece-1, .piece-2 { transition: transform 0.5s cubic-bezier(0, 0, 0.2, 1); }
+    svg:hover .piece-1 { transform: translate(3px, -3px); }
+    svg:hover .piece-2 { transform: translate(-3px, 3px); }
+  </style>
+  <path class="piece-1" d="M4 0 H100 V20 L62 58 L42 38 L60 20 H24 Z" fill="currentColor" />
+  <path class="piece-2" d="M96 100 H0 V80 L38 42 L58 62 L40 80 H76 Z" fill="currentColor" />
+</svg>
