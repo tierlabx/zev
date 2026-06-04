@@ -4,9 +4,12 @@ import Layout from './pages/Layout'
 import Dashboard from './pages/Dashboard'
 import UserManagement from './pages/UserManagement'
 
+import { Toaster } from 'sonner'
+
 function App() {
   return (
     <BrowserRouter>
+      <Toaster position="top-center" />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Layout />}>

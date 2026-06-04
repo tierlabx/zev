@@ -7,6 +7,7 @@ import { Input } from '@zev/ui/components/input'
 import { Card, CardContent, CardHeader } from '@zev/ui/components/card'
 import LoginBg from '@/components/LoginBg'
 import logoUrl from '@/assets/logo.svg'
+import { toast } from 'sonner'
 
 export default function Login() {
   const [username, setUsername] = useState('')
@@ -24,7 +25,7 @@ export default function Login() {
       navigate('/')
     } catch (err: unknown) {
       const error = err as Error
-      alert(error.message || '登录失败')
+      toast.error(error.message || '登录失败')
     } finally {
       setLoading(false)
     }
