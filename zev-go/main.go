@@ -7,6 +7,7 @@ import (
 	"zev-go/config"
 	_ "zev-go/docs"
 	"zev-go/modules/system"
+	"zev-go/pkg/middleware"
 	"zev-go/pkg/swagger"
 
 	"github.com/gin-gonic/gin"
@@ -42,16 +43,7 @@ func main() {
 	r := gin.Default()
 
 	// 跨域处理中间件
-	r.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	})
+	r.Use(middleware.Cors())
 
 	r.GET("/api/ping", PingHandler)
 
