@@ -1,25 +1,24 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import Login from './pages/Login'
-import Layout from './pages/Layout'
-import Dashboard from './pages/Dashboard'
-import UserManagement from './pages/UserManagement'
-
-import { Toaster } from 'sonner'
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Toaster } from "sonner";
+import Dashboard from "./pages/Dashboard";
+import Layout from "./pages/Layout";
+import Login from "./pages/Login";
+import UserManagement from "./pages/UserManagement";
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Toaster position="top-center" />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="users" element={<UserManagement />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  )
+	return (
+		<BrowserRouter>
+			<Toaster position="top-center" />
+			<Routes>
+				<Route path="/login" element={<Login />} />
+				<Route path="/" element={<Layout />}>
+					<Route index element={<Navigate to="/dashboard" replace />} />
+					<Route path="dashboard" element={<Dashboard />} />
+					<Route path="users" element={<UserManagement />} />
+				</Route>
+			</Routes>
+		</BrowserRouter>
+	);
 }
 
-export default App
+export default App;

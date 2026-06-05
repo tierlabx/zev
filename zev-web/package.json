@@ -1,15 +1,15 @@
 {
-  "name": "zev-web",
-  "private": true,
-  "scripts": {
-    "dev": "pnpm -F admin dev",
-    "build": "pnpm -F admin build",
-    "lint": "biome check .",
-    "format": "biome format --write ."
-  },
-  "devDependencies": {
-    "@biomejs/biome": "latest",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3"
-  }
+	"name": "zev-web",
+	"private": true,
+	"scripts": {
+		"dev": "pnpm -F admin dev",
+		"build": "pnpm -F admin build",
+		"lint": "biome check .",
+		"format": "biome format --write ."
+	},
+	"devDependencies": {
+		"@biomejs/biome": "latest",
+		"@types/react": "^19.2.14",
+		"@types/react-dom": "^19.2.3"
+	}
 }
