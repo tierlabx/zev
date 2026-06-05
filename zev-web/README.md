@@ -14,6 +14,8 @@ Zev 项目的现代前端工程，采用 **pnpm workspace** 搭建的 Monorepo�
   - [Tailwind CSS v4](https://tailwindcss.com/) - 实用优先的 CSS 框架
   - [shadcn/ui](https://ui.shadcn.com/) - 可定制的无头 UI 组件库
   - **animate-ui** - 基于 shadcn/ui 扩展的精美动画组件库
+- **表单与验证**:
+  - [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) - 类型安全的表单状态与数据校验
 - **代码规范**: [Biome](https://biomejs.dev/) - 替代 Prettier + ESLint 的极速格式化与代码检查工具
 
 ## 📂 目录结构

@@ -62,8 +62,10 @@ description: 代码编写规范
   - `store/`：Zustand 状态文件。
   - `utils/`：全局工具类封装。
 - **国际化**：当前系统默认使用全中文（如“登录”、“用户名”），后续会考虑加入 i18n。
-禁止使用原生 alert
-使用 sonner
+- **表单与提示规范**：
+  - 禁止使用原生 `alert`，必须使用组件库提供的 `toast` 或弹窗。
+  - 必须使用 `react-hook-form` 配合 `zod` 进行表单状态管理与数据校验，禁止使用原生 `required` 或手写复杂校验逻辑。
+
 * **创建应用与包：**
   - `zev-web/apps/admin/`：作为后台管理主应用（使用 Vite + React + TS 初始化）。
   - `zev-web/packages/ui/`：预留的自定义业务组件库，未来可进行包复用。
