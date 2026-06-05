@@ -4,8 +4,9 @@
 	"scripts": {
 		"dev": "pnpm -F admin dev",
 		"build": "pnpm -F admin build",
-		"lint": "biome check .",
-		"format": "biome format --write ."
+		"lint": "biome check  --write .",
+		"format": "biome format --write .",
+		"shadcn:add": "pnpm dlx shadcn@latest add -c apps/admin"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "latest",

@@ -1,4 +1,11 @@
 {
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./src/*"],
+			"@zev/ui/*": ["../../packages/ui/src/*"]
+		}
+	},
 	"files": [],
 	"references": [
 		{ "path": "./tsconfig.app.json" },
