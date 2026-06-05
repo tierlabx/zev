@@ -1,9 +1,78 @@
-<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <style>
-    .piece-1, .piece-2 { transition: transform 0.5s cubic-bezier(0, 0, 0.2, 1); }
-    svg:hover .piece-1 { transform: translate(3px, -3px); }
-    svg:hover .piece-2 { transform: translate(-3px, 3px); }
-  </style>
-  <path class="piece-1" d="M4 0 H100 V20 L62 58 L42 38 L60 20 H24 Z" fill="currentColor" />
-  <path class="piece-2" d="M96 100 H0 V80 L38 42 L58 62 L40 80 H76 Z" fill="currentColor" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 40 320 320" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradients -->
+    <radialGradient id="bg-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#94A3B8" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#94A3B8" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Polygon Gradients -->
+    <linearGradient id="wolf-grad-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#1E293B" />
+    </linearGradient>
+    <linearGradient id="wolf-grad-mid" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="wolf-grad-light" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#94A3B8" />
+      <stop offset="100%" stop-color="#CBD5E1" />
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="silver-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <style>
+      .wolf-part {
+        stroke-width: 1.5;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+      }
+      .eye {
+        filter: drop-shadow(0 0 6px #F8FAFC);
+      }
+    </style>
+  </defs>
+
+  <!-- Background Soft Glow -->
+  <circle cx="200" cy="200" r="160" fill="url(#bg-glow)" />
+
+  <!-- Static Background Rings -->
+  <circle cx="200" cy="200" r="100" fill="none" stroke="#64748B" stroke-width="1.5" opacity="0.6" />
+  <circle cx="200" cy="200" r="130" fill="none" stroke="#CBD5E1" stroke-width="1" opacity="0.3" />
+
+  <!-- Geometric Wolf Head -->
+  <g transform="translate(0, 55)">
+    <!-- Left Ear -->
+    <polygon points="130,40 160,90 110,110" class="wolf-part" fill="url(#wolf-grad-dark)" stroke="#334155" />
+    <!-- Right Ear -->
+    <polygon points="270,40 240,90 290,110" class="wolf-part" fill="url(#wolf-grad-dark)" stroke="#334155" />
+
+    <!-- Crown / Forehead -->
+    <polygon points="200,80 160,90 200,140 240,90" class="wolf-part" fill="url(#wolf-grad-mid)" stroke="#64748B" />
+
+    <!-- Left Cheek -->
+    <polygon points="160,90 110,110 140,180 200,140" class="wolf-part" fill="url(#wolf-grad-mid)" stroke="#64748B" />
+    <!-- Right Cheek -->
+    <polygon points="240,90 290,110 260,180 200,140" class="wolf-part" fill="url(#wolf-grad-mid)" stroke="#64748B" />
+
+    <!-- Snout / Muzzle -->
+    <polygon points="200,140 140,180 200,250 260,180" class="wolf-part" fill="url(#wolf-grad-light)" stroke="#E2E8F0" />
+
+    <!-- Nose Tip -->
+    <polygon points="200,250 180,220 200,230 220,220" class="wolf-part" fill="#020617" stroke="#0F172A" />
+    
+    <!-- Left Eye (Glowing) -->
+    <polygon points="155,120 180,135 165,140" class="eye" fill="#F8FAFC" filter="url(#silver-glow)" />
+    <!-- Right Eye (Glowing) -->
+    <polygon points="245,120 220,135 235,140" class="eye" fill="#F8FAFC" filter="url(#silver-glow)" />
+  </g>
 </svg>

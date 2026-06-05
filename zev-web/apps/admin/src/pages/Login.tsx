@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 import request from "@/api/request";
-import logoUrl from "@/assets/logo.svg";
+import logoUrl from "@/assets/logo-animated.svg";
 import { useUserStore } from "@/store";
 import loginBg from "../assets/login-bg.svg";
 
@@ -64,7 +64,6 @@ export default function Login() {
 						</div>
 						<div className="text-center space-y-1.5">
 							<h2 className="text-2xl font-bold tracking-tight text-gray-900">欢迎回来</h2>
-							<p className="text-sm text-gray-600 font-medium">登录以访问您的管理后台</p>
 						</div>
 					</CardHeader>
 					<CardContent className="p-0 relative z-10">
