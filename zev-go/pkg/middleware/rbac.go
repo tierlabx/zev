@@ -7,6 +7,11 @@ import (
 	"gorm.io/gorm"
 )
 
+// @function: RequirePermission
+// @description: 权限控制中间件
+// @param: db *gorm.DB
+// @param: perm string
+// @return: gin.HandlerFunc
 func RequirePermission(db *gorm.DB, perm string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roleIDAny, exists := c.Get("roleID")

@@ -12,6 +12,8 @@ import (
 	"zev-go/pkg/swagger"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 )
 
@@ -53,21 +55,28 @@ func InitModule(r *gin.Engine, db *gorm.DB) {
 	swagger.RegisterCRUD("系统管理-字典类型", "/api/system/dict/type", entity.DictType{})
 	swagger.RegisterCRUD("系统管理-字典数据", "/api/system/dict/data", entity.DictData{})
 
+	openController := controller.NewOpenController(db)
+	r.GET("/api/ping", openController.PingHandler)
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	// 6. 注册 HTTP API 路由
 	api := r.Group("/api/system")
 	{
 		api.POST("/login", userController.Login)
 
 		protected := api.Group("")
+		// 认证中间件
 		protected.Use(middleware.AuthMiddleware())
+		// 跨域处理中间件
+		protected.Use(middleware.Cors())
 		{
 			// 用户路由
 			userGroup := protected.Group("/user")
 			{
 				userGroup.GET("/list", middleware.RequirePermission(db, "system:user:list"), userController.List)
 				userGroup.POST("/create", middleware.RequirePermission(db, "system:user:create"), userController.Create)
-				userGroup.PUT("/update", middleware.RequirePermission(db, "system:user:update"), userController.Update)
 				userGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:user:delete"), userController.Delete)
+				userGroup.PUT("/update", middleware.RequirePermission(db, "system:user:update"), userController.Update)
 				userGroup.GET("/get/:id", middleware.RequirePermission(db, "system:user:list"), userController.Get)
 				userGroup.POST("/role/:id", middleware.RequirePermission(db, "system:user:assign"), userController.AssignRole)
 			}

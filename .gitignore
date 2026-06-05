@@ -22,3 +22,4 @@ lock/
 zev-go/docs/swagger.json
 zev-go/docs/swagger.yaml
 *.exe
+zev-go/tmp/

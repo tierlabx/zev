@@ -1,5 +1,5 @@
 ---
-description: 
+description: 代码编写规范
 ---
 
 # ZEV 项目 AI 开发指南 (AI Development Guide)
@@ -14,6 +14,7 @@ description:
   - 绝不允许出现大段的重复代码，优先抽象和复用。
   - 不允许出现特大文件，文件过大时必须按功能拆分。
   - 必须编写清晰的注释，重点解释“为什么”而不是“是什么”。
+  - 代码模块必须 高内聚，低耦合
 
 ## 2. 后端开发规范 (zev-go)
 - **技术栈**：Go + Gin + Gorm + PostgreSQL + Swagger。本地开发使用 `air` 进行热重载。

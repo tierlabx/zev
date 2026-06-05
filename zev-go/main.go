@@ -8,12 +8,9 @@ import (
 	"zev-go/config"
 	_ "zev-go/docs"
 	"zev-go/modules/system"
-	"zev-go/pkg/middleware"
 	"zev-go/pkg/swagger"
 
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -35,7 +32,6 @@ func initDB(cfg config.Config) {
 // @title           Zev API
 // @version         1.0
 // @description     Zev Go Backend API documentation
-
 // @host      localhost:8080
 // @BasePath  /
 func main() {
@@ -44,12 +40,8 @@ func main() {
 
 	r := gin.Default()
 
-	// 跨域处理中间件
-	r.Use(middleware.Cors())
-
-	r.GET("/api/ping", PingHandler)
-
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// 明确配置信任的代理，解决 [GIN-debug] 警告。支持通过环境变量 TRUSTED_PROXIES 配置（逗号分隔的 IP 列表）
+	_ = r.SetTrustedProxies(cfg.TrustedProxies)
 
 	system.InitModule(r, DB)
 
@@ -64,17 +56,4 @@ func main() {
 		slog.Error("服务启动失败", "err", err)
 		os.Exit(1)
 	}
-}
-
-// PingHandler
-// @Summary Ping
-// @Description 测试服务是否正常运行
-// @Tags 测试
-// @Produce json
-// @Success 200 {object} map[string]string
-// @Router /api/ping [get]
-func PingHandler(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "pong",
-	})
 }
