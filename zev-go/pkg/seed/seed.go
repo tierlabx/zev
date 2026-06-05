@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"strings"
 
@@ -71,21 +71,23 @@ type SeedData struct {
 }
 
 func Run(db *gorm.DB, seedPath string) {
-	log.Println("开始执行数据种子初始化...")
+	slog.Info("开始执行数据种子初始化...")
 
 	// 1. 读取 seed.json
 	data, err := os.ReadFile(seedPath)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			log.Printf("未找到种子文件 %s，跳过初始化", seedPath)
+			slog.Warn("未找到种子文件，跳过初始化", "seedPath", seedPath)
 			return
 		}
-		log.Fatalf("读取种子文件失败: %v", err)
+		slog.Error("读取种子文件失败", "err", err)
+		os.Exit(1)
 	}
 
 	var seed SeedData
 	if err := json.Unmarshal(data, &seed); err != nil {
-		log.Fatalf("解析种子文件失败: %v", err)
+		slog.Error("解析种子文件失败", "err", err)
+		os.Exit(1)
 	}
 
 	// 2. 事务性导入数据
@@ -207,7 +209,7 @@ func Run(db *gorm.DB, seedPath string) {
 		for _, table := range tables {
 			sql := fmt.Sprintf("SELECT setval(pg_get_serial_sequence('%s', 'id'), COALESCE(max(id), 1)) FROM %s;", table, table)
 			if err := tx.Exec(sql).Error; err != nil {
-				log.Printf("重置表 %s 自增序列提示: %v", table, err)
+				slog.Warn("重置表自增序列提示", "table", table, "err", err)
 			}
 		}
 
@@ -215,8 +217,9 @@ func Run(db *gorm.DB, seedPath string) {
 	})
 
 	if err != nil {
-		log.Fatalf("种子数据导入失败: %v", err)
+		slog.Error("种子数据导入失败", "err", err)
+		os.Exit(1)
 	}
 
-	log.Println("数据种子初始化完成。")
+	slog.Info("数据种子初始化完成。")
 }

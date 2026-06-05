@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
+	"os"
 
 	"zev-go/config"
 	_ "zev-go/docs"
@@ -25,9 +26,10 @@ func initDB(cfg config.Config) {
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("无法连接到数据库: %v", err)
+		slog.Error("无法连接到数据库", "err", err)
+		os.Exit(1)
 	}
-	log.Println("数据库连接成功")
+	slog.Info("数据库连接成功")
 }
 
 // @title           Zev API
@@ -59,7 +61,8 @@ func main() {
 	// 等所有模块和路由注册完毕后再执行自动生成
 	swagger.AutoUpdate()
 	if err := r.Run(":" + port); err != nil {
-		log.Fatalf("服务启动失败: %v", err)
+		slog.Error("服务启动失败", "err", err)
+		os.Exit(1)
 	}
 }
 

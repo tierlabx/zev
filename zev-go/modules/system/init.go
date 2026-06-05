@@ -1,7 +1,8 @@
 package system
 
 import (
-	"log"
+	"log/slog"
+	"os"
 
 	"zev-go/modules/system/controller"
 	"zev-go/modules/system/entity"
@@ -24,7 +25,8 @@ func InitModule(r *gin.Engine, db *gorm.DB) {
 		&entity.DictData{},
 	)
 	if err != nil {
-		log.Fatalf("System模块迁移失败: %v", err)
+		slog.Error("System模块迁移失败", "err", err)
+		os.Exit(1)
 	}
 
 	// 2. 使用 seed.json 初始化基础数据

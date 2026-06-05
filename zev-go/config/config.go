@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"log/slog"
 	"os"
 )
 
@@ -23,7 +23,7 @@ func LoadConfig() Config {
 	dbPort := getEnv("DB_PORT", "5432")
 	appPort := getEnv("APP_PORT", "8080")
 
-	log.Printf("Loaded config for DB connection: host=%s port=%s dbname=%s", dbHost, dbPort, dbName)
+	slog.Info("Loaded config for DB connection", "host", dbHost, "port", dbPort, "dbname", dbName)
 
 	return Config{
 		DBHost:     dbHost,

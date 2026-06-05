@@ -2,7 +2,7 @@ package swagger
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"reflect"
@@ -167,7 +167,7 @@ func DummyList%d() {}
 //  2. 启动一个 Goroutine 异步执行 "go run github.com/swaggo/swag/cmd/swag@latest init" 命令，
 //     以便在不阻塞主服务启动的前提下，重新分析并构建项目最新的 Swagger API JSON/YAML 定义资产。
 func AutoUpdate() {
-	log.Println("正在生成 Swagger 文档...")
+	slog.Info("正在生成 Swagger 文档...")
 
 	// 1. 根据注册的 CRUD 动态生成 swagger 扫描文件
 	generateCrudSwagger()
@@ -178,9 +178,9 @@ func AutoUpdate() {
 
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			log.Printf("Swagger 文档自动更新失败: %v\n%s", err, string(output))
+			slog.Error("Swagger 文档自动更新失败", "err", err, "output", string(output))
 		} else {
-			log.Println("Swagger 文档自动更新成功")
+			slog.Info("Swagger 文档自动更新成功")
 			host := os.Getenv("HTTP_HOST")
 			port := os.Getenv("HTTP_PORT")
 			if host == "" {
@@ -189,7 +189,7 @@ func AutoUpdate() {
 			if port == "" {
 				port = "8080"
 			}
-			log.Printf("Swagger 地址: %s:%s/swagger/index.html", host, port)
+			slog.Info("Swagger 地址", "url", fmt.Sprintf("%s:%s/swagger/index.html", host, port))
 		}
 	}()
 }
