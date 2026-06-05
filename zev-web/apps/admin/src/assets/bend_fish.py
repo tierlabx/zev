@@ -16,11 +16,18 @@ def bend_point(x, y, t):
     r = math.hypot(dx, dy)
     phi = math.atan2(dy, dx)
     
-    A = 35 
-    phase = 2 * phi - 2 * math.pi * t
+    # Base angle of the first fish head
+    phi0 = math.atan2(-418.5, 56)
+    
+    # u goes from 0 (head) to 1 (tail) for both fishes
+    u = ((phi - phi0) % math.pi) / math.pi
+    
+    # Max wag amplitude at the tail
+    A_max = 30
     
     # Quadratic curve makes the head rigid and tail very floppy, highly realistic
-    dr = A * (r / 500.0)**2 * math.sin(phase)
+    phase = 2 * math.pi * u - 2 * math.pi * t
+    dr = A_max * (u ** 2) * math.sin(phase)
     
     new_r = r + dr
     return CX + new_r * math.cos(phi), CY + new_r * math.sin(phi)
@@ -51,6 +58,10 @@ def main():
     root = tree.getroot()
     
     # 1. Add <defs> for gradients and filters
+    # Clean up existing defs
+    for existing_defs in root.findall(f'{{{SVG_NS}}}defs'):
+        root.remove(existing_defs)
+        
     defs = ET.Element(f'{{{SVG_NS}}}defs')
     
     # White fish gradient (Silver/White)

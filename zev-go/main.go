@@ -58,8 +58,6 @@ func main() {
 
 	// 等所有模块和路由注册完毕后再执行自动生成
 	swagger.AutoUpdate()
-
-	log.Printf("Server is running on port %s", port)
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("服务启动失败: %v", err)
 	}

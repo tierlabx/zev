@@ -175,12 +175,21 @@ func AutoUpdate() {
 	// 2. 使用协程在后台执行 swag init，避免阻塞主程序启动
 	go func() {
 		cmd := exec.Command("go", "run", "github.com/swaggo/swag/cmd/swag@latest", "init", "--parseDependency", "--parseInternal")
-		
+
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			log.Printf("Swagger 文档自动更新失败: %v\n%s", err, string(output))
 		} else {
 			log.Println("Swagger 文档自动更新成功")
+			host := os.Getenv("HTTP_HOST")
+			port := os.Getenv("HTTP_PORT")
+			if host == "" {
+				host = "localhost"
+			}
+			if port == "" {
+				port = "8080"
+			}
+			log.Printf("Swagger 地址: %s:%s/swagger/index.html", host, port)
 		}
 	}()
 }
