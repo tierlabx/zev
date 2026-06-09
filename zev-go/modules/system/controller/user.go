@@ -49,6 +49,20 @@ func (c *UserController) Login(ctx *gin.Context) {
 	response.SuccessData(res, ctx)
 }
 
+// Logout 用户退出登录
+// @Summary 用户退出登录
+// @Description 退出登录
+// @Tags 系统管理-用户
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.Response "成功"
+// @Router /api/system/logout [post]
+func (c *UserController) Logout(ctx *gin.Context) {
+	// 简单的 JWT 无状态退出，后端直接返回成功，前端清理本地 Token 即可
+	// 若需要强制失效，可在此处结合 Redis 实现 Token 黑名单
+	response.Success(ctx)
+}
+
 // AssignRole 分配角色
 // @Summary 分配角色
 // @Description 给用户分配角色

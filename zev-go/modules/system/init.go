@@ -63,6 +63,7 @@ func InitModule(r *gin.Engine, db *gorm.DB) {
 	api := r.Group("/api/system")
 	{
 		api.POST("/login", userController.Login)
+		api.POST("/logout", userController.Logout)
 
 		protected := api.Group("")
 		// 认证中间件

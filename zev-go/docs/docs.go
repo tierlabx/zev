@@ -496,6 +496,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/logout": {
+            "post": {
+                "description": "退出登录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理-用户"
+                ],
+                "summary": "用户退出登录",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/menu/create": {
             "post": {
                 "description": "创建记录",

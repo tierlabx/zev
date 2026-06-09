@@ -19,3 +19,13 @@ export const useLoginMutation = () => {
 		mutationFn: loginApi,
 	});
 };
+
+export const logoutApi = async (): Promise<void> => {
+	return request.post("/system/logout");
+};
+
+export const useLogoutMutation = () => {
+	return useMutation({
+		mutationFn: logoutApi,
+	});
+};

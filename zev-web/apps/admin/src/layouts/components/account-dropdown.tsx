@@ -9,15 +9,23 @@ import {
 } from "@zev/ui/components/dropdown-menu";
 import { LogOut, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLogoutMutation } from "@/api/system/auth";
 import { useUserStore } from "@/store";
 
 export function AccountDropdown() {
 	const logout = useUserStore((state) => state.logout);
 	const navigate = useNavigate();
+	const logoutMutation = useLogoutMutation();
 
-	const handleLogout = () => {
-		logout();
-		navigate("/login");
+	const handleLogout = async () => {
+		try {
+			await logoutMutation.mutateAsync();
+		} catch (error) {
+			console.error("Failed to logout:", error);
+		} finally {
+			logout();
+			navigate("/login");
+		}
 	};
 
 	return (
