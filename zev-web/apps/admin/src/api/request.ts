@@ -17,7 +17,7 @@ request.interceptors.request.use((config) => {
 request.interceptors.response.use(
 	(response) => {
 		const res = response.data;
-		// 假设后端格式为 { code, data, msg }
+		// 后端有统一返回格式： E:\code\Go\zev\zev-go\pkg\response 在这里
 		if (res.code !== 200) {
 			return Promise.reject(new Error(res.msg || "Error"));
 		}

@@ -5,12 +5,11 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@zev/ui/com
 import { Input } from "@zev/ui/components/input";
 import { ShinyButton } from "@zev/ui/components/shiny-button";
 import { ArrowRight, Lock, User } from "lucide-react";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
-import request from "@/api/request";
+import { useLoginMutation } from "@/api/system/auth";
 import logoUrl from "@/assets/logo-animated.svg";
 import { useUserStore } from "@/store";
 import loginBg from "../assets/login-bg.svg";
@@ -23,30 +22,28 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
-	const [loading, setLoading] = useState(false);
 	const setToken = useUserStore((state) => state.setToken);
 	const navigate = useNavigate();
+	const loginMutation = useLoginMutation();
 
 	const form = useForm<LoginFormValues>({
-		resolver: zodResolver(loginSchema),
+		resolver: zodResolver(loginSchema as any),
 		defaultValues: {
 			username: "",
 			password: "",
 		},
 	});
 
-	const onSubmit = async (values: LoginFormValues) => {
-		setLoading(true);
-		try {
-			const data = (await request.post("/system/login", values)) as { token: string };
-			setToken(data.token);
-			navigate("/");
-		} catch (err: unknown) {
-			const error = err as Error;
-			toast.error(error.message || "登录失败");
-		} finally {
-			setLoading(false);
-		}
+	const onSubmit = (values: LoginFormValues) => {
+		loginMutation.mutate(values, {
+			onSuccess: (data) => {
+				setToken(data.token);
+				navigate("/");
+			},
+			onError: (err) => {
+				toast.error(err.message || "登录失败");
+			},
+		});
 	};
 
 	return (
@@ -115,10 +112,10 @@ export default function Login() {
 								/>
 								<ShinyButton
 									type="submit"
-									disabled={loading}
+									disabled={loginMutation.isPending}
 									className="mt-8 w-full h-12 text-[15px] font-medium bg-primary text-primary-foreground rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
 								>
-									{loading ? (
+									{loginMutation.isPending ? (
 										"登录中..."
 									) : (
 										<>
