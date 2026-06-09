@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Outlet, useLocation } from "react-router-dom";
+import { useLocation, useOutlet } from "react-router-dom";
 
 export function Main() {
 	const location = useLocation();
+	const outlet = useOutlet();
 
 	return (
 		<main className="flex-1 flex flex-col relative overflow-hidden bg-[#FAFAFA]">
@@ -16,7 +17,7 @@ export function Main() {
 						transition={{ duration: 0.2 }}
 						className="h-full"
 					>
-						<Outlet />
+						{outlet}
 					</motion.div>
 				</AnimatePresence>
 			</div>

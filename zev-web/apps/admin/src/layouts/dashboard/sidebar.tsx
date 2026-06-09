@@ -1,20 +1,31 @@
 import { cn } from "@zev/ui/lib/utils";
-import { Command, Home, Users } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-
-const navItems = [
-	{ name: "Dashboard", path: "/dashboard", icon: Home },
-	{ name: "User Management", path: "/users", icon: Users },
-];
+import logoUrl from "@/assets/logo-animated.svg";
+import { routes } from "@/router/routes";
 
 export function Sidebar() {
 	const location = useLocation();
 
+	const dashboardRoute = routes.find((r) => r.path === "/");
+	const navItems = (dashboardRoute?.children || [])
+		.filter((route) => {
+			const handle = route.handle as { title?: string; icon?: React.ElementType } | undefined;
+			return handle?.title && handle?.icon;
+		})
+		.map((route) => {
+			const handle = route.handle as { title: string; icon: React.ElementType };
+			return {
+				name: handle.title,
+				path: route.path?.startsWith("/") ? route.path : `/${route.path}`,
+				icon: handle.icon,
+			};
+		});
+
 	return (
 		<aside className="w-[240px] bg-white border-r border-[#E5E5E5] flex flex-col z-20">
 			<div className="h-16 px-6 flex items-center space-x-3 border-b border-[#E5E5E5]">
-				<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-black text-white">
-					<Command className="size-5" />
+				<div className="flex aspect-square size-8 items-center justify-center">
+					<img src={logoUrl} alt="Logo" className="size-8" />
 				</div>
 				<span className="text-base font-semibold">Zev Admin</span>
 			</div>
