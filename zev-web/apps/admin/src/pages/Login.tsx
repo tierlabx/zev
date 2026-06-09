@@ -27,7 +27,8 @@ export default function Login() {
 	const loginMutation = useLoginMutation();
 
 	const form = useForm<LoginFormValues>({
-		resolver: zodResolver(loginSchema as any),
+		// @ts-expect-error: version mismatch between zod and hookform/resolvers
+		resolver: zodResolver(loginSchema),
 		defaultValues: {
 			username: "",
 			password: "",
