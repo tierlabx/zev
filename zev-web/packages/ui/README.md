@@ -40,3 +40,6 @@ export default function MyPage() {
 ## 🛠️ 添加新组件
 
 如果需要添加新的 shadcn/ui 组件，建议直接将组件代码提取并放置在 `src/components/` 目录下，并确保其相关的依赖已经添加到 `packages/ui/package.json` 中。
+
+
+https://animata.design/docs/overlay/modal
