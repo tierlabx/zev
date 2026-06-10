@@ -8,7 +8,7 @@ export function Header() {
 	const toggleSidebar = useLayoutStore((state) => state.toggleSidebar);
 
 	return (
-		<header className="h-[56px] px-4 bg-white border-b border-[#E5E5E5] flex items-center justify-between z-10 relative">
+		<header className="h-16 px-4 bg-white border-b border-[#E5E5E5] flex items-center justify-between z-10 relative">
 			<div className="flex items-center space-x-2">
 				<button
 					type="button"

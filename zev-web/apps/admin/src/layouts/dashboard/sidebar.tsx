@@ -155,7 +155,7 @@ export function Sidebar() {
 					<img src={logoUrl} alt="Logo" className="size-8" />
 				</div>
 				{!sidebarCollapsed && (
-					<span className="text-base font-semibold truncate transition-opacity duration-300">GoWind Admin</span>
+					<span className="text-base font-semibold truncate transition-opacity duration-300">Zev Admin</span>
 				)}
 			</div>
 			<nav className="flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden mb-12">
