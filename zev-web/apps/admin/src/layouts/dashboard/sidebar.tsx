@@ -1,10 +1,8 @@
+import { Link, useLocation } from "@tanstack/react-router";
 import { cn } from "@zev/ui/lib/utils";
-import { ChevronDown, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronDown, ChevronsLeft, ChevronsRight, Home, Menu as MenuIcon, Settings, Users } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { RouteObject } from "react-router-dom";
-import { Link, useLocation } from "react-router-dom";
 import logoUrl from "@/assets/logo-animated.svg";
-import { routes } from "@/router/routes";
 import { useLayoutStore } from "@/store/layout";
 
 type NavItemType = {
@@ -14,28 +12,18 @@ type NavItemType = {
 	children?: NavItemType[];
 };
 
-function parseRoutes(routeList: RouteObject[], basePath = ""): NavItemType[] {
-	return routeList
-		.map((route) => {
-			const handle = route.handle as { title?: string; icon?: React.ElementType } | undefined;
-			if (!handle?.title || !handle?.icon) return null;
-
-			let fullPath = route.path || "";
-			if (!fullPath.startsWith("/")) {
-				fullPath = `${basePath}/${route.path}`.replace(/\/+/g, "/");
-			}
-
-			const children = route.children ? parseRoutes(route.children, fullPath) : undefined;
-
-			return {
-				name: handle.title,
-				path: fullPath,
-				icon: handle.icon,
-				children: children && children.length > 0 ? children : undefined,
-			};
-		})
-		.filter(Boolean) as NavItemType[];
-}
+const navItems: NavItemType[] = [
+	{ name: "仪表盘", path: "/dashboard", icon: Home },
+	{
+		name: "系统管理",
+		path: "/system",
+		icon: Settings,
+		children: [
+			{ name: "用户管理", path: "/system/users", icon: Users },
+			{ name: "菜单管理", path: "/system/menus", icon: MenuIcon },
+		],
+	},
+];
 
 function NavItem({
 	item,
@@ -142,9 +130,6 @@ export function Sidebar() {
 	const location = useLocation();
 	const sidebarCollapsed = useLayoutStore((state) => state.sidebarCollapsed);
 	const toggleSidebar = useLayoutStore((state) => state.toggleSidebar);
-
-	const dashboardRoute = routes.find((r) => r.path === "/");
-	const navItems = parseRoutes(dashboardRoute?.children || [], "");
 
 	return (
 		<aside

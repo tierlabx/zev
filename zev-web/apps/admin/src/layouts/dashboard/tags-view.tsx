@@ -1,3 +1,4 @@
+import { Link, useLocation, useMatches, useNavigate } from "@tanstack/react-router";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -7,7 +8,6 @@ import {
 import { cn } from "@zev/ui/lib/utils";
 import { ChevronDown, ChevronLeft, ChevronRight, RotateCw, X } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { Link, useLocation, useMatches, useNavigate } from "react-router-dom";
 import { useTagsStore } from "@/store/tags";
 
 export function TagsView() {
@@ -18,9 +18,9 @@ export function TagsView() {
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		// find the deepest match that has a title in handle
-		const match = [...matches].reverse().find((m) => (m.handle as { title?: string })?.title);
-		const title = (match?.handle as { title?: string })?.title || "新标签";
+		// find the deepest match that has a title in staticData
+		const match = [...matches].reverse().find((m) => m.staticData?.title);
+		const title = (match?.staticData?.title as string) || "新标签";
 
 		addView({
 			path: location.pathname,
@@ -40,9 +40,9 @@ export function TagsView() {
 		if (path === location.pathname) {
 			const prevView = visitedViews[index - 1] || visitedViews[0];
 			if (prevView) {
-				navigate(prevView.path);
+				navigate({ to: prevView.path });
 			} else {
-				navigate("/dashboard");
+				navigate({ to: "/dashboard" });
 			}
 		}
 	};
@@ -129,7 +129,7 @@ export function TagsView() {
 					<DropdownMenuItem
 						onClick={() => {
 							closeAll();
-							navigate("/dashboard");
+							navigate({ to: "/dashboard" });
 						}}
 					>
 						关闭全部

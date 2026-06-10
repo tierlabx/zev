@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate } from "@tanstack/react-router";
 import { useUserStore } from "@/store";
 import { Header } from "./header";
 import { Main } from "./main";

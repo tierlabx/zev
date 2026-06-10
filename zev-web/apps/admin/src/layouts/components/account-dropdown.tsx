@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "@zev/ui/components/avatar";
 import {
 	DropdownMenu,
@@ -8,7 +9,6 @@ import {
 	DropdownMenuTrigger,
 } from "@zev/ui/components/dropdown-menu";
 import { LogOut, User } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useLogoutMutation } from "@/api/system/auth";
 import { useUserStore } from "@/store";
 
@@ -24,7 +24,7 @@ export function AccountDropdown() {
 			console.error("Failed to logout:", error);
 		} finally {
 			logout();
-			navigate("/login");
+			navigate({ to: "/login" });
 		}
 	};
 

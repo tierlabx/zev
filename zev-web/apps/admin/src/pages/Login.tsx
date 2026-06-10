@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "@tanstack/react-router";
 import { BlurFade } from "@zev/ui/components/blur-fade";
 import { Card, CardContent, CardHeader } from "@zev/ui/components/card";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@zev/ui/components/form";
@@ -6,12 +7,10 @@ import { Input } from "@zev/ui/components/input";
 import { ShinyButton } from "@zev/ui/components/shiny-button";
 import { ArrowRight, Lock, User } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useLoginMutation } from "@/api/system/auth";
 import logoUrl from "@/assets/logo-animated.svg";
-import { useUserStore } from "@/store";
 import loginBg from "../assets/login-bg.svg";
 
 const loginSchema = z.object({
@@ -22,7 +21,6 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
-	const setToken = useUserStore((state) => state.setToken);
 	const navigate = useNavigate();
 	const loginMutation = useLoginMutation();
 
@@ -37,9 +35,8 @@ export default function Login() {
 
 	const onSubmit = (values: LoginFormValues) => {
 		loginMutation.mutate(values, {
-			onSuccess: (data) => {
-				setToken(data.token);
-				navigate("/");
+			onSuccess: () => {
+				navigate({ to: "/" });
 			},
 			onError: (err) => {
 				toast.error(err.message || "登录失败");

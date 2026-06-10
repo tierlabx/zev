@@ -1,40 +1,56 @@
+import { Link, useMatches } from "@tanstack/react-router";
 import {
 	BreadcrumbItem,
-	BreadcrumbLink,
 	BreadcrumbList,
 	BreadcrumbPage,
 	Breadcrumb as BreadcrumbRoot,
 	BreadcrumbSeparator,
 } from "@zev/ui/components/breadcrumb";
 import { Fragment } from "react";
-import { useLocation } from "react-router-dom";
-
-// 这里应该使用route数据
-const routeMap: Record<string, string> = {
-	"/dashboard": "Dashboard",
-	"/users": "User Management",
-};
 
 export function Breadcrumb() {
-	const location = useLocation();
-	const pathnames = location.pathname.split("/").filter((x) => x);
+	const matches = useMatches();
+
+	// 过滤出所有包含 title 的有效路由节点
+	const breadcrumbs = matches
+		.filter((match) => match.staticData?.title)
+		.map((match) => ({
+			title: match.staticData.title as string,
+			path: match.pathname,
+		}));
+
+	// 过滤掉可能存在的路径重复（在某些 layout 和 index 路由结构中可能出现）
+	const uniqueBreadcrumbs = Array.from(new Map(breadcrumbs.map((item) => [item.path, item])).values());
+
+	// 如果没有任何匹配的面包屑，提供一个默认占位
+	if (uniqueBreadcrumbs.length === 0) {
+		return (
+			<BreadcrumbRoot>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbPage>页面</BreadcrumbPage>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</BreadcrumbRoot>
+		);
+	}
 
 	return (
 		<BreadcrumbRoot>
 			<BreadcrumbList>
-				<BreadcrumbItem>
-					<BreadcrumbLink href="/dashboard">Home</BreadcrumbLink>
-				</BreadcrumbItem>
-				{pathnames.length > 0 && <BreadcrumbSeparator />}
-				{pathnames.map((value, index) => {
-					const to = `/${pathnames.slice(0, index + 1).join("/")}`;
-					const isLast = index === pathnames.length - 1;
-					const title = routeMap[to] || value;
+				{uniqueBreadcrumbs.map((crumb, index) => {
+					const isLast = index === uniqueBreadcrumbs.length - 1;
 
 					return (
-						<Fragment key={to}>
+						<Fragment key={crumb.path}>
 							<BreadcrumbItem>
-								{isLast ? <BreadcrumbPage>{title}</BreadcrumbPage> : <BreadcrumbLink href={to}>{title}</BreadcrumbLink>}
+								{isLast ? (
+									<BreadcrumbPage>{crumb.title}</BreadcrumbPage>
+								) : (
+									<Link to={crumb.path} className="transition-colors hover:text-foreground">
+										{crumb.title}
+									</Link>
+								)}
 							</BreadcrumbItem>
 							{!isLast && <BreadcrumbSeparator />}
 						</Fragment>
