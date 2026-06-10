@@ -18,12 +18,12 @@ export const routes: RouteObject[] = [
 			{
 				path: "dashboard",
 				element: <Dashboard />,
-				handle: { title: "Dashboard", icon: Home },
+				handle: { title: "仪表盘", icon: Home },
 			},
 			{
 				path: "users",
 				element: <UserManagement />,
-				handle: { title: "User Management", icon: Users },
+				handle: { title: "用户管理", icon: Users },
 			},
 		],
 	},

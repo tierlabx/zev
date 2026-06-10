@@ -6,6 +6,7 @@ const request = axios.create({
 	timeout: 10000,
 });
 
+// 请求拦截
 request.interceptors.request.use((config) => {
 	const token = useUserStore.getState().token;
 	if (token) {
@@ -14,6 +15,7 @@ request.interceptors.request.use((config) => {
 	return config;
 });
 
+// 响应拦截
 request.interceptors.response.use(
 	(response) => {
 		const res = response.data;
