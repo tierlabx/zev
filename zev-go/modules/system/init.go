@@ -8,31 +8,32 @@ import (
 	"zev-go/modules/system/entity"
 	"zev-go/modules/system/service"
 	"zev-go/pkg/middleware"
-	"zev-go/pkg/seed"
-	"zev-go/pkg/swagger"
+	"zev-go/modules"
+	"zev-go/modules/system/seed"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 )
+type SystemModule struct{}
 
-func InitModule(r *gin.Engine, db *gorm.DB) {
+func init() {
+	modules.Register(&SystemModule{})
+}
+
+func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
+	models := entity.AllModels()
+
 	// 1. 自动迁移所有系统模块实体
-	err := db.AutoMigrate(
-		&entity.User{},
-		&entity.Role{},
-		&entity.Menu{},
-		&entity.DictType{},
-		&entity.DictData{},
-	)
+	err := db.AutoMigrate(models...)
 	if err != nil {
 		slog.Error("System模块迁移失败", "err", err)
 		os.Exit(1)
 	}
 
 	// 2. 使用 seed.json 初始化基础数据
-	seed.Run(db, "pkg/seed/seed.json")
+	seed.Run(db, "modules/system/seed/seed.json")
 
 	// 3. 初始化 Service 层
 	userService := service.NewUserService(db)
@@ -49,12 +50,7 @@ func InitModule(r *gin.Engine, db *gorm.DB) {
 	dictTypeController := controller.NewDictTypeController(dictTypeService)
 	dictDataController := controller.NewDictDataController(dictDataService)
 
-	// 5. 自动注册 Swagger 路由
-	swagger.RegisterCRUD("系统管理-用户", "/api/system/user", entity.User{})
-	swagger.RegisterCRUD("系统管理-角色", "/api/system/role", entity.Role{})
-	swagger.RegisterCRUD("系统管理-菜单", "/api/system/menu", entity.Menu{})
-	swagger.RegisterCRUD("系统管理-字典类型", "/api/system/dict/type", entity.DictType{})
-	swagger.RegisterCRUD("系统管理-字典数据", "/api/system/dict/data", entity.DictData{})
+
 
 	{
 		r.GET("/api/ping", openController.PingHandler)

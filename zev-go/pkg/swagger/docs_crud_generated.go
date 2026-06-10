@@ -8,130 +8,130 @@ import (
 
 var (
 	_ response.Response
-	_ pkg0.User
-	_ pkg0.Role
-	_ pkg0.Menu
-	_ pkg0.DictType
 	_ pkg0.DictData
+	_ pkg0.DictType
+	_ pkg0.Menu
+	_ pkg0.Role
+	_ pkg0.User
 )
 
 
 // DummyCreate0
-// @Summary 创建系统管理-用户
+// @Summary 创建系统管理-字典数据
 // @Description 创建记录
-// @Tags 系统管理-用户
+// @Tags 系统管理-字典数据
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param req body pkg0.User true "请求体"
-// @Success 200 {object} response.Response{data=pkg0.User} "成功"
-// @Router /api/system/user/create [post]
+// @Param req body pkg0.DictData true "请求体"
+// @Success 200 {object} response.Response{data=pkg0.DictData} "成功"
+// @Router /api/system/dict/data/create [post]
 func DummyCreate0() {}
 
 // DummyUpdate0
-// @Summary 更新系统管理-用户
+// @Summary 更新系统管理-字典数据
 // @Description 更新记录
-// @Tags 系统管理-用户
+// @Tags 系统管理-字典数据
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param req body pkg0.User true "请求体"
+// @Param req body pkg0.DictData true "请求体"
 // @Success 200 {object} response.Response "成功"
-// @Router /api/system/user/update [put]
+// @Router /api/system/dict/data/update [put]
 func DummyUpdate0() {}
 
 // DummyDelete0
-// @Summary 删除系统管理-用户
+// @Summary 删除系统管理-字典数据
 // @Description 根据ID删除记录
-// @Tags 系统管理-用户
+// @Tags 系统管理-字典数据
 // @Accept json
 // @Produce json
 // @Security Bearer
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response "成功"
-// @Router /api/system/user/delete/{id} [delete]
+// @Router /api/system/dict/data/delete/{id} [delete]
 func DummyDelete0() {}
 
 // DummyGet0
-// @Summary 获取系统管理-用户详情
+// @Summary 获取系统管理-字典数据详情
 // @Description 获取单条记录详情
-// @Tags 系统管理-用户
+// @Tags 系统管理-字典数据
 // @Accept json
 // @Produce json
 // @Security Bearer
 // @Param id path string true "ID"
-// @Success 200 {object} response.Response{data=pkg0.User} "成功"
-// @Router /api/system/user/get/{id} [get]
+// @Success 200 {object} response.Response{data=pkg0.DictData} "成功"
+// @Router /api/system/dict/data/get/{id} [get]
 func DummyGet0() {}
 
 // DummyList0
-// @Summary 获取系统管理-用户列表
+// @Summary 获取系统管理-字典数据列表
 // @Description 获取分页列表
-// @Tags 系统管理-用户
+// @Tags 系统管理-字典数据
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.User}} "成功"
-// @Router /api/system/user/list [get]
+// @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.DictData}} "成功"
+// @Router /api/system/dict/data/list [get]
 func DummyList0() {}
 
 // DummyCreate1
-// @Summary 创建系统管理-角色
+// @Summary 创建系统管理-字典类型
 // @Description 创建记录
-// @Tags 系统管理-角色
+// @Tags 系统管理-字典类型
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param req body pkg0.Role true "请求体"
-// @Success 200 {object} response.Response{data=pkg0.Role} "成功"
-// @Router /api/system/role/create [post]
+// @Param req body pkg0.DictType true "请求体"
+// @Success 200 {object} response.Response{data=pkg0.DictType} "成功"
+// @Router /api/system/dict/type/create [post]
 func DummyCreate1() {}
 
 // DummyUpdate1
-// @Summary 更新系统管理-角色
+// @Summary 更新系统管理-字典类型
 // @Description 更新记录
-// @Tags 系统管理-角色
+// @Tags 系统管理-字典类型
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param req body pkg0.Role true "请求体"
+// @Param req body pkg0.DictType true "请求体"
 // @Success 200 {object} response.Response "成功"
-// @Router /api/system/role/update [put]
+// @Router /api/system/dict/type/update [put]
 func DummyUpdate1() {}
 
 // DummyDelete1
-// @Summary 删除系统管理-角色
+// @Summary 删除系统管理-字典类型
 // @Description 根据ID删除记录
-// @Tags 系统管理-角色
+// @Tags 系统管理-字典类型
 // @Accept json
 // @Produce json
 // @Security Bearer
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response "成功"
-// @Router /api/system/role/delete/{id} [delete]
+// @Router /api/system/dict/type/delete/{id} [delete]
 func DummyDelete1() {}
 
 // DummyGet1
-// @Summary 获取系统管理-角色详情
+// @Summary 获取系统管理-字典类型详情
 // @Description 获取单条记录详情
-// @Tags 系统管理-角色
+// @Tags 系统管理-字典类型
 // @Accept json
 // @Produce json
 // @Security Bearer
 // @Param id path string true "ID"
-// @Success 200 {object} response.Response{data=pkg0.Role} "成功"
-// @Router /api/system/role/get/{id} [get]
+// @Success 200 {object} response.Response{data=pkg0.DictType} "成功"
+// @Router /api/system/dict/type/get/{id} [get]
 func DummyGet1() {}
 
 // DummyList1
-// @Summary 获取系统管理-角色列表
+// @Summary 获取系统管理-字典类型列表
 // @Description 获取分页列表
-// @Tags 系统管理-角色
+// @Tags 系统管理-字典类型
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.Role}} "成功"
-// @Router /api/system/role/list [get]
+// @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.DictType}} "成功"
+// @Router /api/system/dict/type/list [get]
 func DummyList1() {}
 
 // DummyCreate2
@@ -194,119 +194,119 @@ func DummyGet2() {}
 func DummyList2() {}
 
 // DummyCreate3
-// @Summary 创建系统管理-字典类型
+// @Summary 创建系统管理-角色
 // @Description 创建记录
-// @Tags 系统管理-字典类型
+// @Tags 系统管理-角色
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param req body pkg0.DictType true "请求体"
-// @Success 200 {object} response.Response{data=pkg0.DictType} "成功"
-// @Router /api/system/dict/type/create [post]
+// @Param req body pkg0.Role true "请求体"
+// @Success 200 {object} response.Response{data=pkg0.Role} "成功"
+// @Router /api/system/role/create [post]
 func DummyCreate3() {}
 
 // DummyUpdate3
-// @Summary 更新系统管理-字典类型
+// @Summary 更新系统管理-角色
 // @Description 更新记录
-// @Tags 系统管理-字典类型
+// @Tags 系统管理-角色
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param req body pkg0.DictType true "请求体"
+// @Param req body pkg0.Role true "请求体"
 // @Success 200 {object} response.Response "成功"
-// @Router /api/system/dict/type/update [put]
+// @Router /api/system/role/update [put]
 func DummyUpdate3() {}
 
 // DummyDelete3
-// @Summary 删除系统管理-字典类型
+// @Summary 删除系统管理-角色
 // @Description 根据ID删除记录
-// @Tags 系统管理-字典类型
+// @Tags 系统管理-角色
 // @Accept json
 // @Produce json
 // @Security Bearer
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response "成功"
-// @Router /api/system/dict/type/delete/{id} [delete]
+// @Router /api/system/role/delete/{id} [delete]
 func DummyDelete3() {}
 
 // DummyGet3
-// @Summary 获取系统管理-字典类型详情
+// @Summary 获取系统管理-角色详情
 // @Description 获取单条记录详情
-// @Tags 系统管理-字典类型
+// @Tags 系统管理-角色
 // @Accept json
 // @Produce json
 // @Security Bearer
 // @Param id path string true "ID"
-// @Success 200 {object} response.Response{data=pkg0.DictType} "成功"
-// @Router /api/system/dict/type/get/{id} [get]
+// @Success 200 {object} response.Response{data=pkg0.Role} "成功"
+// @Router /api/system/role/get/{id} [get]
 func DummyGet3() {}
 
 // DummyList3
-// @Summary 获取系统管理-字典类型列表
+// @Summary 获取系统管理-角色列表
 // @Description 获取分页列表
-// @Tags 系统管理-字典类型
+// @Tags 系统管理-角色
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.DictType}} "成功"
-// @Router /api/system/dict/type/list [get]
+// @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.Role}} "成功"
+// @Router /api/system/role/list [get]
 func DummyList3() {}
 
 // DummyCreate4
-// @Summary 创建系统管理-字典数据
+// @Summary 创建系统管理-用户
 // @Description 创建记录
-// @Tags 系统管理-字典数据
+// @Tags 系统管理-用户
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param req body pkg0.DictData true "请求体"
-// @Success 200 {object} response.Response{data=pkg0.DictData} "成功"
-// @Router /api/system/dict/data/create [post]
+// @Param req body pkg0.User true "请求体"
+// @Success 200 {object} response.Response{data=pkg0.User} "成功"
+// @Router /api/system/user/create [post]
 func DummyCreate4() {}
 
 // DummyUpdate4
-// @Summary 更新系统管理-字典数据
+// @Summary 更新系统管理-用户
 // @Description 更新记录
-// @Tags 系统管理-字典数据
+// @Tags 系统管理-用户
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Param req body pkg0.DictData true "请求体"
+// @Param req body pkg0.User true "请求体"
 // @Success 200 {object} response.Response "成功"
-// @Router /api/system/dict/data/update [put]
+// @Router /api/system/user/update [put]
 func DummyUpdate4() {}
 
 // DummyDelete4
-// @Summary 删除系统管理-字典数据
+// @Summary 删除系统管理-用户
 // @Description 根据ID删除记录
-// @Tags 系统管理-字典数据
+// @Tags 系统管理-用户
 // @Accept json
 // @Produce json
 // @Security Bearer
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response "成功"
-// @Router /api/system/dict/data/delete/{id} [delete]
+// @Router /api/system/user/delete/{id} [delete]
 func DummyDelete4() {}
 
 // DummyGet4
-// @Summary 获取系统管理-字典数据详情
+// @Summary 获取系统管理-用户详情
 // @Description 获取单条记录详情
-// @Tags 系统管理-字典数据
+// @Tags 系统管理-用户
 // @Accept json
 // @Produce json
 // @Security Bearer
 // @Param id path string true "ID"
-// @Success 200 {object} response.Response{data=pkg0.DictData} "成功"
-// @Router /api/system/dict/data/get/{id} [get]
+// @Success 200 {object} response.Response{data=pkg0.User} "成功"
+// @Router /api/system/user/get/{id} [get]
 func DummyGet4() {}
 
 // DummyList4
-// @Summary 获取系统管理-字典数据列表
+// @Summary 获取系统管理-用户列表
 // @Description 获取分页列表
-// @Tags 系统管理-字典数据
+// @Tags 系统管理-用户
 // @Accept json
 // @Produce json
 // @Security Bearer
-// @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.DictData}} "成功"
-// @Router /api/system/dict/data/list [get]
+// @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.User}} "成功"
+// @Router /api/system/user/list [get]
 func DummyList4() {}

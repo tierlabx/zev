@@ -7,7 +7,8 @@ import (
 
 	"zev-go/config"
 	_ "zev-go/docs"
-	"zev-go/modules/system"
+	"zev-go/modules"
+	_ "zev-go/modules/system"
 	"zev-go/pkg/swagger"
 
 	"github.com/gin-gonic/gin"
@@ -45,15 +46,15 @@ func main() {
 	// 明确配置信任的代理，解决 [GIN-debug] 警告。支持通过环境变量 TRUSTED_PROXIES 配置（逗号分隔的 IP 列表）
 	_ = r.SetTrustedProxies(cfg.TrustedProxies)
 
-	system.InitModule(r, DB)
+	modules.InitAll(r, DB)
 
 	port := cfg.AppPort
 	if port == "" {
 		port = "8080"
 	}
 
-	// 等所有模块和路由注册完毕后再执行自动生成
-	swagger.AutoUpdate()
+	// 初始化并全自动构建 Swagger 文档
+	swagger.Init()
 	if err := r.Run(":" + port); err != nil {
 		slog.Error("服务启动失败", "err", err)
 		os.Exit(1)

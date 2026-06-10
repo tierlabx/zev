@@ -5,7 +5,7 @@ import (
 )
 
 type Role struct {
-	gorm.Model
+	gorm.Model `swagger_tag:"系统管理-角色" swagger_path:"/api/system/role"`
 	Name   string `gorm:"type:varchar(50);not null" json:"name"`
 	Code   string `gorm:"uniqueIndex;type:varchar(50);not null" json:"code"`
 	Status int    `gorm:"default:0" json:"status"`

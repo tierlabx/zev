@@ -2,9 +2,13 @@ package swagger
 
 import (
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"log/slog"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"reflect"
 	"strings"
 )
@@ -20,26 +24,109 @@ type crudInfo struct {
 // crudRegistry 存储所有已注册的 CRUD 实体配置，作为代码生成的数据源。
 var crudRegistry []crudInfo
 
-// RegisterCRUD 将一个业务实体及其 API 路径注册到 Swagger 自动生成器中。
-// 参数说明：
-//   - tag: 对应 Swagger 文档中的 @Tags，对接口进行分组归类
-//   - basePath: 对应 API 接口的基础前缀，例如 "/api/system/user"，该函数会自动拼接出 /create, /update, /delete/:id 等子路由
-//   - model: 具体的实体结构体对象或其指针 (例如 entity.User{})，本函数将利用反射解析其类型名称和包导入路径
-//
-// 示例:
-//
-//	swagger.RegisterCRUD("系统管理-用户", "/api/system/user", entity.User{})
-func RegisterCRUD(tag, basePath string, model any) {
-	t := reflect.TypeOf(model)
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-	crudRegistry = append(crudRegistry, crudInfo{
-		Tag:       tag,
-		BasePath:  basePath,
-		PkgPath:   t.PkgPath(),
-		ModelName: t.Name(),
+
+// Init 自动通过 AST 静态扫描项目源码找出所有带有 swagger_tag 标签的模型，并构建 Swagger 文档
+func Init() {
+	slog.Info("正在扫描模块模型以生成 Swagger 文档...")
+	crudRegistry = nil
+
+	fset := token.NewFileSet()
+	// 扫描项目中的 modules 目录
+	err := filepath.Walk("modules", func(path string, info os.FileInfo, err error) error {
+		if err != nil || info.IsDir() || !strings.HasSuffix(path, ".go") {
+			return nil
+		}
+
+		// 解析文件
+		fileAst, err := parser.ParseFile(fset, path, nil, 0)
+		if err != nil {
+			return nil
+		}
+
+		ast.Inspect(fileAst, func(n ast.Node) bool {
+			// 找 type 声明
+			typeSpec, ok := n.(*ast.TypeSpec)
+			if !ok {
+				return true
+			}
+			structType, ok := typeSpec.Type.(*ast.StructType)
+			if !ok {
+				return true
+			}
+
+			modelName := typeSpec.Name.Name
+			var tag, basePath string
+
+			// 检查 struct 内部字段的 tag
+			for _, field := range structType.Fields.List {
+				if field.Tag != nil {
+					tagVal := field.Tag.Value
+					if strings.Contains(tagVal, "swagger_tag") {
+						tag = extractTagValue(tagVal, "swagger_tag")
+					}
+					if strings.Contains(tagVal, "swagger_path") {
+						basePath = extractTagValue(tagVal, "swagger_path")
+					}
+				}
+			}
+
+			// 只有找到了我们约定的 swagger 标签才注册
+			if tag != "" || basePath != "" {
+				if tag == "" {
+					tag = modelName
+				}
+				if basePath == "" {
+					basePath = "/api/auto/" + strings.ToLower(modelName)
+				}
+
+				// 计算出包路径，如: zev-go/modules/system/entity
+				modPath := "zev-go/" + filepath.ToSlash(filepath.Dir(path))
+
+				crudRegistry = append(crudRegistry, crudInfo{
+					Tag:       tag,
+					BasePath:  basePath,
+					PkgPath:   modPath,
+					ModelName: modelName,
+				})
+			}
+			return true
+		})
+		return nil
 	})
+
+	if err != nil {
+		slog.Error("扫描源码出错", "err", err)
+	}
+
+	// 1. 根据注册的 CRUD 动态生成 swagger 扫描文件
+	generateCrudSwagger()
+
+	// 2. 使用协程在后台执行 swag init，避免阻塞主程序启动
+	go func() {
+		cmd := exec.Command("go", "run", "github.com/swaggo/swag/cmd/swag@latest", "init", "--parseDependency", "--parseInternal")
+
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			slog.Error("Swagger 文档自动更新失败", "err", err, "output", string(output))
+		} else {
+			slog.Info("Swagger 文档自动更新成功")
+			host := os.Getenv("HTTP_HOST")
+			port := os.Getenv("HTTP_PORT")
+			if host == "" {
+				host = "localhost"
+			}
+			if port == "" {
+				port = "8080"
+			}
+			slog.Info("Swagger 地址", "url", fmt.Sprintf("%s:%s/swagger/index.html", host, port))
+		}
+	}()
+}
+
+// extractTagValue 提取 struct tag 中的特定 key 值
+func extractTagValue(structTag, key string) string {
+	structTag = strings.Trim(structTag, "`")
+	return reflect.StructTag(structTag).Get(key)
 }
 
 // generateCrudSwagger 根据 crudRegistry 注册的信息，动态生成包含标准 swaggo 注释的 Go 伪代码文件。
@@ -166,35 +253,4 @@ func DummyList%d() {}
 	os.WriteFile("pkg/swagger/docs_crud_generated.go", []byte(sb.String()), 0644)
 }
 
-// AutoUpdate 触发自动生成 Swagger 辅助文件并在后台运行 swag 编译工具。
-// 流程如下：
-//  1. 调用 generateCrudSwagger() 生成包含所有 dummy 函数注释的 docs_crud_generated.go 文件。
-//  2. 启动一个 Goroutine 异步执行 "go run github.com/swaggo/swag/cmd/swag@latest init" 命令，
-//     以便在不阻塞主服务启动的前提下，重新分析并构建项目最新的 Swagger API JSON/YAML 定义资产。
-func AutoUpdate() {
-	slog.Info("正在生成 Swagger 文档...")
 
-	// 1. 根据注册的 CRUD 动态生成 swagger 扫描文件
-	generateCrudSwagger()
-
-	// 2. 使用协程在后台执行 swag init，避免阻塞主程序启动
-	go func() {
-		cmd := exec.Command("go", "run", "github.com/swaggo/swag/cmd/swag@latest", "init", "--parseDependency", "--parseInternal")
-
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			slog.Error("Swagger 文档自动更新失败", "err", err, "output", string(output))
-		} else {
-			slog.Info("Swagger 文档自动更新成功")
-			host := os.Getenv("HTTP_HOST")
-			port := os.Getenv("HTTP_PORT")
-			if host == "" {
-				host = "localhost"
-			}
-			if port == "" {
-				port = "8080"
-			}
-			slog.Info("Swagger 地址", "url", fmt.Sprintf("%s:%s/swagger/index.html", host, port))
-		}
-	}()
-}

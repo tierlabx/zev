@@ -7,19 +7,19 @@ Package swagger 提供了为泛型 CRUD 控制器自动生成 Swagger API 文档
 
 为了解决这个限制，本包采用了一种“动态伪造代码 + 异步生成”的策略：
 
-1. 路由注册:
-在启动或初始化路由时，调用 `RegisterCRUD` 注册需要生成 CRUD 接口的实体：
+1. 自动扫描 (AST 解析):
+在项目启动时，只需要在 main.go 中调用一次 `swagger.Init()`：
+  ```go
+  swagger.Init()
   ```
-  swagger.RegisterCRUD("系统管理-用户", "/api/system/user", entity.User{})
-  ```
+它会通过 go/ast 静态解析 `modules` 目录下的所有源码，自动提取带有 `swagger_tag` 和 `swagger_path` 标签的结构体元数据。
 
 2. 自动生成 Dummy 函数 (generateCrudSwagger):
-在运行 `AutoUpdate` 时，包会遍历注册的实体列表，通过反射获取每个实体的包路径和类型名称。
-接着，在 `pkg/swagger/docs_crud_generated.go` 文件中自动生成对应的虚拟 Dummy 函数（如 `DummyCreate0`, `DummyUpdate0` 等）。
+根据扫描到的实体列表，在 `pkg/swagger/docs_crud_generated.go` 文件中自动生成对应的虚拟 Dummy 函数（如 `DummyCreate0`, `DummyUpdate0` 等）。
 每个 Dummy 函数均附带了标准的 swaggo 注释，并指定了具体的请求体（如 `@Param req body entity.User true`）和对应的真实 API 路由（如 `@Router /api/system/user/create [post]`）。
 
-3. 异步构建文档 (AutoUpdate):
-自动生成 Dummy 代码后，包会在独立的 Goroutine 中异步运行 `go run github.com/swaggo/swag/cmd/swag@latest init` 命令。
+3. 异步构建文档:
+自动生成 Dummy 代码后，`swagger.Init()` 会在独立的 Goroutine 中异步运行 `go run github.com/swaggo/swag/cmd/swag@latest init` 命令。
 `swag` 工具扫描当前项目的代码时，会读取到这些由我们自动生成的 Dummy 函数中的 swagger 注释，从而在最终的 `docs/swagger.json` 中为泛型 CRUD 接口生成各实体专有的、信息完整的接口文档。
 
 这种方式完美规避了 `swaggo` 目前对泛型支持较弱的问题，极大地提升了泛型 CRUD 框架在实际工程中的实用性。
