@@ -30,6 +30,7 @@
 	--radius-lg: 0;
 	--radius-xl: 0;
 	--font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+	--shadow-sm: none;
 }
 
 @layer base {
