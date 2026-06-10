@@ -1,3 +1,4 @@
+import { SidebarTrigger } from "@zev/ui/components/sidebar";
 import { motion } from "framer-motion";
 import { Bell, Github } from "lucide-react";
 import { AccountDropdown } from "../components/account-dropdown";
@@ -7,6 +8,7 @@ export function Header() {
 	return (
 		<header className="h-16 px-6 bg-white/60 backdrop-blur-xl border-b border-[#E5E5E5] flex items-center justify-between z-10 relative">
 			<div className="flex items-center space-x-4">
+				<SidebarTrigger className="-ml-2" />
 				<Breadcrumb />
 			</div>
 			<div className="flex items-center space-x-2">
