@@ -181,9 +181,7 @@ export default function UserManagement() {
 				<SheetContent>
 					<SheetHeader>
 						<SheetTitle>{editingUser ? "编辑用户" : "添加用户"}</SheetTitle>
-						<SheetDescription>
-							{editingUser ? "更新用户的详细信息。" : "填写详细信息以创建新用户。"}
-						</SheetDescription>
+						<SheetDescription>{editingUser ? "更新用户的详细信息。" : "填写详细信息以创建新用户。"}</SheetDescription>
 					</SheetHeader>
 
 					<form onSubmit={handleSubmit} className="space-y-4 mt-6">
@@ -198,8 +196,7 @@ export default function UserManagement() {
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="password">
-								密码{" "}
-								{editingUser && <span className="text-muted-foreground text-xs">(留空则不修改)</span>}
+								密码 {editingUser && <span className="text-muted-foreground text-xs">(留空则不修改)</span>}
 							</Label>
 							<Input
 								id="password"

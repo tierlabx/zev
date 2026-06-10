@@ -6,7 +6,7 @@ import { Label } from "@zev/ui/components/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@zev/ui/components/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@zev/ui/components/table";
 import { Edit, Plus, Trash2 } from "lucide-react";
-import { useState, Fragment } from "react";
+import { Fragment, useState } from "react";
 import { toast } from "sonner";
 import { createMenu, deleteMenu, getMenuTree, type Menu, updateMenu } from "@/api/system/menu";
 
@@ -189,9 +189,7 @@ export default function MenuManagement() {
 				<SheetContent className="overflow-y-auto">
 					<SheetHeader>
 						<SheetTitle>{editingMenu ? "编辑菜单" : "添加菜单"}</SheetTitle>
-						<SheetDescription>
-							{editingMenu ? "更新菜单配置信息。" : "填写详细信息以创建新菜单。"}
-						</SheetDescription>
+						<SheetDescription>{editingMenu ? "更新菜单配置信息。" : "填写详细信息以创建新菜单。"}</SheetDescription>
 					</SheetHeader>
 
 					<form onSubmit={handleSubmit} className="space-y-4 mt-6">
