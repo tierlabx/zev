@@ -34,6 +34,8 @@ func initDB(cfg config.Config) {
 // @description     Zev Go Backend API documentation
 // @host      localhost:8080
 // @BasePath  /
+// @securityDefinitions.apikey Bearer
+// @description 输入“Bearer”，后跟一个空格和 JWT 令牌。
 func main() {
 	cfg := config.LoadConfig()
 	initDB(cfg)

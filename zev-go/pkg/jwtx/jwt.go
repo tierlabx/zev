@@ -14,6 +14,7 @@ type CustomClaims struct {
 	jwt.RegisteredClaims
 }
 
+// GenerateToken 生成 Token
 func GenerateToken(userID uint, username string, roleID uint) (string, error) {
 	claims := CustomClaims{
 		UserID: userID,
@@ -28,6 +29,7 @@ func GenerateToken(userID uint, username string, roleID uint) (string, error) {
 	return token.SignedString(secretKey)
 }
 
+// 解析token
 func ParseToken(tokenString string) (*CustomClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil

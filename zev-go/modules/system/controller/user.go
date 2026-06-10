@@ -55,6 +55,7 @@ func (c *UserController) Login(ctx *gin.Context) {
 // @Tags 系统管理-用户
 // @Accept json
 // @Produce json
+// @Security Bearer
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/logout [post]
 func (c *UserController) Logout(ctx *gin.Context) {
@@ -71,6 +72,7 @@ func (c *UserController) Logout(ctx *gin.Context) {
 // @Produce json
 // @Param id path int true "用户ID"
 // @Param req body dto.AssignUserRoleReq true "角色ID"
+// @Security Bearer
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/user/role/{id} [post]
 func (c *UserController) AssignRole(ctx *gin.Context) {

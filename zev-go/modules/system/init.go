@@ -42,6 +42,7 @@ func InitModule(r *gin.Engine, db *gorm.DB) {
 	dictDataService := service.NewDictDataService(db)
 
 	// 4. 初始化 Controller 层
+	openController := controller.NewOpenController(db)
 	userController := controller.NewUserController(userService)
 	roleController := controller.NewRoleController(roleService)
 	menuController := controller.NewMenuController(menuService)
@@ -55,15 +56,14 @@ func InitModule(r *gin.Engine, db *gorm.DB) {
 	swagger.RegisterCRUD("系统管理-字典类型", "/api/system/dict/type", entity.DictType{})
 	swagger.RegisterCRUD("系统管理-字典数据", "/api/system/dict/data", entity.DictData{})
 
-	openController := controller.NewOpenController(db)
-	r.GET("/api/ping", openController.PingHandler)
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
+	{
+		r.GET("/api/ping", openController.PingHandler)
+		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
 	// 6. 注册 HTTP API 路由
 	api := r.Group("/api/system")
 	{
 		api.POST("/login", userController.Login)
-		api.POST("/logout", userController.Logout)
 
 		protected := api.Group("")
 		// 认证中间件
@@ -80,6 +80,7 @@ func InitModule(r *gin.Engine, db *gorm.DB) {
 				userGroup.PUT("/update", middleware.RequirePermission(db, "system:user:update"), userController.Update)
 				userGroup.GET("/get/:id", middleware.RequirePermission(db, "system:user:list"), userController.Get)
 				userGroup.POST("/role/:id", middleware.RequirePermission(db, "system:user:assign"), userController.AssignRole)
+				userGroup.POST("/logout", userController.Logout)
 			}
 
 			// 角色路由

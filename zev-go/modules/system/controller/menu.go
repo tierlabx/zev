@@ -26,6 +26,7 @@ func NewMenuController(menuService *service.MenuService) *MenuController {
 // @Description 获取包含层级关系的菜单树
 // @Tags 系统管理-菜单
 // @Produce json
+// @Security Bearer
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/menu/tree [get]
 func (c *MenuController) Tree(ctx *gin.Context) {

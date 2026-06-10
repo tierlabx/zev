@@ -40,6 +40,11 @@ const docTemplate = `{
         },
         "/api/system/dict/data/create": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "创建记录",
                 "consumes": [
                     "application/json"
@@ -86,6 +91,11 @@ const docTemplate = `{
         },
         "/api/system/dict/data/delete/{id}": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "根据ID删除记录",
                 "consumes": [
                     "application/json"
@@ -118,6 +128,11 @@ const docTemplate = `{
         },
         "/api/system/dict/data/get/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "获取单条记录详情",
                 "consumes": [
                     "application/json"
@@ -162,6 +177,11 @@ const docTemplate = `{
         },
         "/api/system/dict/data/list": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "获取分页列表",
                 "consumes": [
                     "application/json"
@@ -212,6 +232,11 @@ const docTemplate = `{
         },
         "/api/system/dict/data/update": {
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "更新记录",
                 "consumes": [
                     "application/json"
@@ -246,6 +271,11 @@ const docTemplate = `{
         },
         "/api/system/dict/type/create": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "创建记录",
                 "consumes": [
                     "application/json"
@@ -292,6 +322,11 @@ const docTemplate = `{
         },
         "/api/system/dict/type/delete/{id}": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "根据ID删除记录",
                 "consumes": [
                     "application/json"
@@ -324,6 +359,11 @@ const docTemplate = `{
         },
         "/api/system/dict/type/get/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "获取单条记录详情",
                 "consumes": [
                     "application/json"
@@ -368,6 +408,11 @@ const docTemplate = `{
         },
         "/api/system/dict/type/list": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "获取分页列表",
                 "consumes": [
                     "application/json"
@@ -418,6 +463,11 @@ const docTemplate = `{
         },
         "/api/system/dict/type/update": {
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "更新记录",
                 "consumes": [
                     "application/json"
@@ -498,6 +548,11 @@ const docTemplate = `{
         },
         "/api/system/logout": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "退出登录",
                 "consumes": [
                     "application/json"
@@ -521,6 +576,11 @@ const docTemplate = `{
         },
         "/api/system/menu/create": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "创建记录",
                 "consumes": [
                     "application/json"
@@ -567,6 +627,11 @@ const docTemplate = `{
         },
         "/api/system/menu/delete/{id}": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "根据ID删除记录",
                 "consumes": [
                     "application/json"
@@ -599,6 +664,11 @@ const docTemplate = `{
         },
         "/api/system/menu/get/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "获取单条记录详情",
                 "consumes": [
                     "application/json"
@@ -643,6 +713,11 @@ const docTemplate = `{
         },
         "/api/system/menu/list": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "获取分页列表",
                 "consumes": [
                     "application/json"
@@ -693,6 +768,11 @@ const docTemplate = `{
         },
         "/api/system/menu/tree": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "获取包含层级关系的菜单树",
                 "produces": [
                     "application/json"
@@ -713,6 +793,11 @@ const docTemplate = `{
         },
         "/api/system/menu/update": {
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "更新记录",
                 "consumes": [
                     "application/json"
@@ -747,6 +832,11 @@ const docTemplate = `{
         },
         "/api/system/role/create": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "创建记录",
                 "consumes": [
                     "application/json"
@@ -793,6 +883,11 @@ const docTemplate = `{
         },
         "/api/system/role/delete/{id}": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "根据ID删除记录",
                 "consumes": [
                     "application/json"
@@ -825,6 +920,11 @@ const docTemplate = `{
         },
         "/api/system/role/get/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "获取单条记录详情",
                 "consumes": [
                     "application/json"
@@ -869,6 +969,11 @@ const docTemplate = `{
         },
         "/api/system/role/list": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "获取分页列表",
                 "consumes": [
                     "application/json"
@@ -919,6 +1024,11 @@ const docTemplate = `{
         },
         "/api/system/role/menus/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "获取角色已分配的菜单ID列表",
                 "consumes": [
                     "application/json"
@@ -964,6 +1074,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "给角色分配菜单",
                 "consumes": [
                     "application/json"
@@ -1005,6 +1120,11 @@ const docTemplate = `{
         },
         "/api/system/role/update": {
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "更新记录",
                 "consumes": [
                     "application/json"
@@ -1039,6 +1159,11 @@ const docTemplate = `{
         },
         "/api/system/user/create": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "创建记录",
                 "consumes": [
                     "application/json"
@@ -1085,6 +1210,11 @@ const docTemplate = `{
         },
         "/api/system/user/delete/{id}": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "根据ID删除记录",
                 "consumes": [
                     "application/json"
@@ -1117,6 +1247,11 @@ const docTemplate = `{
         },
         "/api/system/user/get/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "获取单条记录详情",
                 "consumes": [
                     "application/json"
@@ -1161,6 +1296,11 @@ const docTemplate = `{
         },
         "/api/system/user/list": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "获取分页列表",
                 "consumes": [
                     "application/json"
@@ -1211,6 +1351,11 @@ const docTemplate = `{
         },
         "/api/system/user/role/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "给用户分配角色",
                 "consumes": [
                     "application/json"
@@ -1252,6 +1397,11 @@ const docTemplate = `{
         },
         "/api/system/user/update": {
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "更新记录",
                 "consumes": [
                     "application/json"
@@ -1541,6 +1691,14 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "description": "输入“Bearer”，后跟一个空格和 JWT 令牌。",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

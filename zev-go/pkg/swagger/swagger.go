@@ -96,6 +96,7 @@ func generateCrudSwagger() {
 // @Tags %s
 // @Accept json
 // @Produce json
+// @Security Bearer
 // @Param req body %s true "请求体"
 // @Success 200 {object} response.Response{data=%s} "成功"
 // @Router %s/create [post]
@@ -110,6 +111,7 @@ func DummyCreate%d() {}
 // @Tags %s
 // @Accept json
 // @Produce json
+// @Security Bearer
 // @Param req body %s true "请求体"
 // @Success 200 {object} response.Response "成功"
 // @Router %s/update [put]
@@ -124,6 +126,7 @@ func DummyUpdate%d() {}
 // @Tags %s
 // @Accept json
 // @Produce json
+// @Security Bearer
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response "成功"
 // @Router %s/delete/{id} [delete]
@@ -138,6 +141,7 @@ func DummyDelete%d() {}
 // @Tags %s
 // @Accept json
 // @Produce json
+// @Security Bearer
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response{data=%s} "成功"
 // @Router %s/get/{id} [get]
@@ -152,6 +156,7 @@ func DummyGet%d() {}
 // @Tags %s
 // @Accept json
 // @Produce json
+// @Security Bearer
 // @Success 200 {object} response.Response{data=response.PageData{list=[]%s}} "成功"
 // @Router %s/list [get]
 func DummyList%d() {}

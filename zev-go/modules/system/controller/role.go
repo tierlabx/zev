@@ -32,6 +32,7 @@ func NewRoleController(roleService *service.RoleService) *RoleController {
 // @Produce json
 // @Param id path int true "角色ID"
 // @Param req body dto.AssignRoleMenusReq true "菜单ID列表"
+// @Security Bearer
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/role/menus/{id} [post]
 func (c *RoleController) AssignMenus(ctx *gin.Context) {
@@ -59,6 +60,7 @@ func (c *RoleController) AssignMenus(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "角色ID"
+// @Security Bearer
 // @Success 200 {object} response.Response{data=[]uint} "成功"
 // @Router /api/system/role/menus/{id} [get]
 func (c *RoleController) GetRoleMenus(ctx *gin.Context) {
