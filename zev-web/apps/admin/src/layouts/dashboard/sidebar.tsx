@@ -1,6 +1,16 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { cn } from "@zev/ui/lib/utils";
-import { ChevronDown, ChevronsLeft, ChevronsRight, Home, Menu as MenuIcon, Settings, Users } from "lucide-react";
+import {
+	Book,
+	ChevronDown,
+	ChevronsLeft,
+	ChevronsRight,
+	Home,
+	Menu as MenuIcon,
+	Settings,
+	Shield,
+	Users,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import logoUrl from "@/assets/logo-animated.svg";
 import { useLayoutStore } from "@/store/layout";
@@ -20,7 +30,9 @@ const navItems: NavItemType[] = [
 		icon: Settings,
 		children: [
 			{ name: "用户管理", path: "/system/users", icon: Users },
+			{ name: "角色管理", path: "/system/roles", icon: Shield },
 			{ name: "菜单管理", path: "/system/menus", icon: MenuIcon },
+			{ name: "字典管理", path: "/system/dicts", icon: Book },
 		],
 	},
 ];

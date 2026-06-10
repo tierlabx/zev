@@ -3,7 +3,9 @@ import App from "@/App";
 import DashboardLayout from "@/layouts/dashboard";
 import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
+import DictManagement from "@/pages/system/dict";
 import MenuManagement from "@/pages/system/menu";
+import RoleManagement from "@/pages/system/role";
 import UserManagement from "@/pages/system/user";
 
 export const rootRoute = createRootRoute({
@@ -69,6 +71,20 @@ const menusRoute = createRoute({
 	staticData: { title: "菜单管理" },
 });
 
+const rolesRoute = createRoute({
+	getParentRoute: () => systemRoute,
+	path: "/roles",
+	component: RoleManagement,
+	staticData: { title: "角色管理" },
+});
+
+const dictsRoute = createRoute({
+	getParentRoute: () => systemRoute,
+	path: "/dicts",
+	component: DictManagement,
+	staticData: { title: "字典管理" },
+});
+
 const splatRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "$",
@@ -82,7 +98,7 @@ export const routeTree = rootRoute.addChildren([
 	layoutRoute.addChildren([
 		indexRoute,
 		dashboardRoute,
-		systemRoute.addChildren([systemIndexRoute, usersRoute, menusRoute]),
+		systemRoute.addChildren([systemIndexRoute, usersRoute, menusRoute, rolesRoute, dictsRoute]),
 	]),
 	splatRoute,
 ]);
