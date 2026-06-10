@@ -1,62 +1,78 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log/slog"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"zev-go/config"
 	_ "zev-go/docs"
 	"zev-go/modules"
 	_ "zev-go/modules/system"
+	"zev-go/pkg/database"
 	"zev-go/pkg/swagger"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
-
-var DB *gorm.DB
-
-func initDB(cfg config.Config) {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai",
-		cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBPort)
-	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		slog.Error("无法连接到数据库", "err", err)
-		os.Exit(1)
-	}
-	slog.Info("数据库连接成功")
-}
 
 // @title           Zev API
 // @version         1.0
-// @description     Zev Go Backend API documentation
+// @description     Zev Go Admin 端接口
 // @host      localhost:8080
 // @BasePath  /
 // @securityDefinitions.apikey Bearer
 // @description 输入“Bearer”，后跟一个空格和 JWT 令牌。
 func main() {
+	// 1. 加载配置
 	cfg := config.LoadConfig()
-	initDB(cfg)
 
+	// 2. 初始化数据库
+	db := database.Init(cfg)
+
+	// 3. 初始化 Web 引擎
 	r := gin.Default()
-
-	// 明确配置信任的代理，解决 [GIN-debug] 警告。支持通过环境变量 TRUSTED_PROXIES 配置（逗号分隔的 IP 列表）
 	_ = r.SetTrustedProxies(cfg.TrustedProxies)
 
-	modules.InitAll(r, DB)
+	// 4. 注册并初始化所有业务模块
+	modules.InitAll(r, db)
 
+	// 5. 初始化并全自动构建 Swagger 文档
+	swagger.Init()
+
+	// 6. 启动 HTTP 服务（配置优雅停机）
 	port := cfg.AppPort
 	if port == "" {
 		port = "8080"
 	}
 
-	// 初始化并全自动构建 Swagger 文档
-	swagger.Init()
-	if err := r.Run(":" + port); err != nil {
-		slog.Error("服务启动失败", "err", err)
-		os.Exit(1)
+	srv := &http.Server{
+		Addr:    ":" + port,
+		Handler: r,
 	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("服务启动失败", "err", err)
+			os.Exit(1)
+		}
+	}()
+	slog.Info("服务启动成功", "port", port)
+
+	// 监听系统中断信号（如 Ctrl+C, Docker stop 等）
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	slog.Info("正在关闭服务...")
+
+	// 设定 5 秒超时时间，给正在处理的请求一个收尾的机会
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		slog.Error("服务强制关闭", "err", err)
+	}
+	slog.Info("服务已退出")
 }
