@@ -8,12 +8,15 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { deleteUser, getUserList, type User } from "@/api/system/user";
 import { ZevTable } from "@/components/zev-table";
+import { useConfirm } from "@/hooks/use-confirm";
 import { UserFormDialog } from "./components/UserFormDialog";
 
 export default function UserManagement() {
 	const queryClient = useQueryClient();
 	const [page] = useState(1);
 	const [pageSize] = useState(10);
+
+	const { confirm, ConfirmDialog } = useConfirm();
 	const [search, setSearch] = useState("");
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -47,11 +50,11 @@ export default function UserManagement() {
 
 	const handleDelete = useCallback(
 		(id: number) => {
-			if (window.confirm("确定要删除此用户吗？")) {
+			confirm("确定要删除此用户吗？", () => {
 				deleteMutation.mutate(id);
-			}
+			});
 		},
-		[deleteMutation],
+		[deleteMutation, confirm],
 	);
 
 	const users = data?.list || [];
@@ -126,6 +129,7 @@ export default function UserManagement() {
 				editingUser={editingUser}
 				onSuccess={() => queryClient.invalidateQueries({ queryKey: ["users"] })}
 			/>
+			<ConfirmDialog />
 		</div>
 	);
 }

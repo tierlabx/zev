@@ -7,6 +7,7 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { deleteMenu, getMenuTree, type Menu } from "@/api/system/menu";
 import { ZevTable } from "@/components/zev-table";
+import { useConfirm } from "@/hooks/use-confirm";
 import { MenuFormDialog } from "./components/MenuFormDialog";
 
 interface FlattenedMenu extends Menu {
@@ -26,6 +27,7 @@ const flattenTree = (menus: Menu[], level: number = 0): FlattenedMenu[] => {
 
 export default function MenuManagement() {
 	const queryClient = useQueryClient();
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
@@ -61,11 +63,11 @@ export default function MenuManagement() {
 
 	const handleDelete = useCallback(
 		(id: number) => {
-			if (window.confirm("确定要删除此菜单吗？")) {
+			confirm("确定要删除此菜单吗？", () => {
 				deleteMutation.mutate(id);
-			}
+			});
 		},
-		[deleteMutation],
+		[deleteMutation, confirm],
 	);
 
 	const flattenedMenus = useMemo(() => {
@@ -135,6 +137,7 @@ export default function MenuManagement() {
 				parentId={currentParentId}
 				onSuccess={() => queryClient.invalidateQueries({ queryKey: ["menus"] })}
 			/>
+			<ConfirmDialog />
 		</div>
 	);
 }

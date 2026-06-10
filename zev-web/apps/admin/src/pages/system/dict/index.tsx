@@ -14,11 +14,13 @@ import {
 	getDictTypeList,
 } from "@/api/system/dict";
 import { ZevTable } from "@/components/zev-table";
+import { useConfirm } from "@/hooks/use-confirm";
 import { DictDataFormDialog } from "./components/DictDataFormDialog";
 import { DictTypeFormDialog } from "./components/DictTypeFormDialog";
 
 export default function DictManagement() {
 	const queryClient = useQueryClient();
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	// Selection state
 	const [selectedDictType, setSelectedDictType] = useState<DictType | null>(null);
@@ -82,11 +84,11 @@ export default function DictManagement() {
 	const handleDeleteType = useCallback(
 		(e: React.MouseEvent, id: number) => {
 			e.stopPropagation();
-			if (window.confirm("确定要删除此字典类型吗？同时也会删除关联的字典数据")) {
+			confirm("确定要删除此字典类型吗？同时也会删除关联的字典数据", () => {
 				deleteTypeMutation.mutate(id);
-			}
+			});
 		},
-		[deleteTypeMutation],
+		[deleteTypeMutation, confirm],
 	);
 
 	// Handlers for Data
@@ -106,11 +108,11 @@ export default function DictManagement() {
 
 	const handleDeleteData = useCallback(
 		(id: number) => {
-			if (window.confirm("确定要删除此字典数据吗？")) {
+			confirm("确定要删除此字典数据吗？", () => {
 				deleteDataMutation.mutate(id);
-			}
+			});
 		},
-		[deleteDataMutation],
+		[deleteDataMutation, confirm],
 	);
 
 	const dictTypes = typeData?.list || [];
@@ -265,6 +267,7 @@ export default function DictManagement() {
 					onSuccess={() => queryClient.invalidateQueries({ queryKey: ["dictData"] })}
 				/>
 			)}
+			<ConfirmDialog />
 		</div>
 	);
 }

@@ -7,6 +7,7 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { deleteRole, getRoleList, type Role } from "@/api/system/role";
 import { ZevTable } from "@/components/zev-table";
+import { useConfirm } from "@/hooks/use-confirm";
 import { AssignMenuDialog } from "./components/AssignMenuDialog";
 import { RoleFormDialog } from "./components/RoleFormDialog";
 
@@ -14,6 +15,8 @@ export default function RoleManagement() {
 	const queryClient = useQueryClient();
 	const [page] = useState(1);
 	const [pageSize] = useState(10);
+
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
 	const [editingRole, setEditingRole] = useState<Role | null>(null);
@@ -49,11 +52,11 @@ export default function RoleManagement() {
 
 	const handleDelete = useCallback(
 		(id: number) => {
-			if (window.confirm("确定要删除此角色吗？")) {
+			confirm("确定要删除此角色吗？", () => {
 				deleteMutation.mutate(id);
-			}
+			});
 		},
-		[deleteMutation],
+		[deleteMutation, confirm],
 	);
 
 	const handleAssignMenu = useCallback((id: number) => {
@@ -143,6 +146,7 @@ export default function RoleManagement() {
 				roleId={assigningRoleId}
 				onSuccess={() => queryClient.invalidateQueries({ queryKey: ["roleMenus"] })}
 			/>
+			<ConfirmDialog />
 		</div>
 	);
 }
