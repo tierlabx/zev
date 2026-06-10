@@ -29,6 +29,7 @@ func (s *MenuService) GetMenuTree() ([]dto.MenuTreeRes, error) {
 	return buildMenuTree(menus, 0), nil
 }
 
+// 辅助函数，递归构建树形结构
 func buildMenuTree(menus []entity.Menu, parentID uint) []dto.MenuTreeRes {
 	var tree []dto.MenuTreeRes
 	for _, m := range menus {

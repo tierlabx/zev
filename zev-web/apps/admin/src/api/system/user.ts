@@ -6,7 +6,7 @@ import request from "../request";
 export type { User };
 
 export const getUserList = (params: UserListParams) => {
-	return request.get<unknown, UserListResponse>("/system/user/list", { params });
+	return request.get<UserListResponse>("/system/user/list", { params });
 };
 
 export const createUser = (data: Partial<User>) => {

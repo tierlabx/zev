@@ -1,8 +1,9 @@
-import { Home, Users } from "lucide-react";
+import { Home, Menu as MenuIcon, Users } from "lucide-react";
 import { Navigate, type RouteObject } from "react-router-dom";
 import DashboardLayout from "@/layouts/dashboard";
 import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
+import MenuManagement from "@/pages/MenuManagement";
 import UserManagement from "@/pages/UserManagement";
 
 export const routes: RouteObject[] = [
@@ -24,6 +25,11 @@ export const routes: RouteObject[] = [
 				path: "users",
 				element: <UserManagement />,
 				handle: { title: "用户管理", icon: Users },
+			},
+			{
+				path: "menus",
+				element: <MenuManagement />,
+				handle: { title: "菜单管理", icon: MenuIcon },
 			},
 		],
 	},

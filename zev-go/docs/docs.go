@@ -1710,7 +1710,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Zev API",
-	Description:      "Zev Go Backend API documentation",
+	Description:      "Zev Go Admin 端接口",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

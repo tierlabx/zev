@@ -25,6 +25,8 @@ import (
 // @host      localhost:8080
 // @BasePath  /
 // @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
 // @description 输入“Bearer”，后跟一个空格和 JWT 令牌。
 func main() {
 	// 1. 加载配置
