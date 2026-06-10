@@ -46,6 +46,7 @@ trigger: glob
   - 必须使用 `react-hook-form` 配合 `zod` 进行表单状态管理与数据校验。
   - 界面提示必须使用 `sonner` 提供的 `toast`，禁止使用原生 `alert`。
 - **多语言约束**：页面默认全中文（如“登录”、“用户名”）。
+ ** 页面内不需要标题
 
 ## 3. 后端开发规范 (zev-go)
 - **技术栈锁定**：Go 1.25 + Gin v1.12 + Gorm v1.31 + PostgreSQL + Swagger。本地开发使用 `air`。
