@@ -28,6 +28,7 @@ export const routes: RouteObject[] = [
 					icon: Settings,
 				},
 				children: [
+					{ index: true, element: <Navigate to="/system/users" replace /> },
 					{
 						path: "users",
 						element: <UserManagement />,

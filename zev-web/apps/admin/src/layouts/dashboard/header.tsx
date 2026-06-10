@@ -1,14 +1,22 @@
-import { SidebarTrigger } from "@zev/ui/components/sidebar";
 import { motion } from "framer-motion";
-import { Bell, Github } from "lucide-react";
+import { Bell, Github, Menu } from "lucide-react";
+import { useLayoutStore } from "@/store/layout";
 import { AccountDropdown } from "../components/account-dropdown";
 import { Breadcrumb } from "../components/breadcrumb";
 
 export function Header() {
+	const toggleSidebar = useLayoutStore((state) => state.toggleSidebar);
+
 	return (
 		<header className="h-16 px-6 bg-white/60 backdrop-blur-xl border-b border-[#E5E5E5] flex items-center justify-between z-10 relative">
 			<div className="flex items-center space-x-4">
-				<SidebarTrigger className="-ml-2" />
+				<button
+					type="button"
+					onClick={toggleSidebar}
+					className="p-2 -ml-2 text-muted-foreground hover:text-foreground hover:bg-black/5 rounded-md transition-colors"
+				>
+					<Menu className="size-5" />
+				</button>
 				<Breadcrumb />
 			</div>
 			<div className="flex items-center space-x-2">

@@ -1,4 +1,3 @@
-import { SidebarInset, SidebarProvider } from "@zev/ui/components/sidebar";
 import { Navigate } from "react-router-dom";
 import { useUserStore } from "@/store";
 import { Header } from "./header";
@@ -13,12 +12,12 @@ export default function DashboardLayout() {
 	}
 
 	return (
-		<SidebarProvider>
+		<div className="flex h-screen w-full overflow-hidden bg-white">
 			<Sidebar />
-			<SidebarInset className="flex-1 flex flex-col min-h-screen bg-white">
+			<div className="flex-1 flex flex-col min-w-0 bg-white">
 				<Header />
 				<Main />
-			</SidebarInset>
-		</SidebarProvider>
+			</div>
+		</div>
 	);
 }
