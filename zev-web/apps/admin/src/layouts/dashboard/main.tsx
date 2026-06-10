@@ -6,8 +6,8 @@ export function Main() {
 	const outlet = useOutlet();
 
 	return (
-		<main className="flex-1 flex flex-col relative overflow-hidden bg-[#FAFAFA]">
-			<div className="flex-1 p-[48px] overflow-auto">
+		<main className="flex-1 flex flex-col relative overflow-hidden bg-transparent">
+			<div className="flex-1 p-4 overflow-auto">
 				<AnimatePresence mode="wait">
 					<motion.div
 						key={location.pathname}
