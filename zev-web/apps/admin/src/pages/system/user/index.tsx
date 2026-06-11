@@ -6,6 +6,7 @@ import { Input } from "@zev/ui/components/input";
 import { Edit, Plus, Trash2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { getRoleList } from "@/api/system/role";
 import { deleteUser, getUserList, type User } from "@/api/system/user";
 import { ZevTable } from "@/components/zev-table";
 import { useConfirm } from "@/hooks/use-confirm";
@@ -26,6 +27,12 @@ export default function UserManagement() {
 		queryKey: ["users", page, pageSize, search],
 		queryFn: () => getUserList({ page, pageSize }),
 	});
+
+	const { data: roleData } = useQuery({
+		queryKey: ["roles"],
+		queryFn: () => getRoleList({ page: 1, pageSize: 1000 }),
+	});
+	const roles = roleData?.list || [];
 
 	const deleteMutation = useMutation({
 		mutationFn: deleteUser,
@@ -76,7 +83,11 @@ export default function UserManagement() {
 			},
 			{
 				accessorKey: "role_id",
-				header: "角色 ID",
+				header: "角色",
+				cell: ({ row }) => {
+					const role = roles.find((r) => r.ID === row.original.role_id);
+					return role ? role.name : `#${row.original.role_id}`;
+				},
 			},
 			{
 				accessorKey: "CreatedAt",
@@ -98,7 +109,7 @@ export default function UserManagement() {
 				),
 			},
 		],
-		[handleEdit, handleDelete],
+		[handleEdit, handleDelete, roles],
 	);
 
 	return (

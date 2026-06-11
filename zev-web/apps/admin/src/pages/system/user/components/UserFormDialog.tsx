@@ -1,10 +1,12 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import Modal from "@zev/ui/components/animate/overlay/modal";
 import { Button } from "@zev/ui/components/button";
 import { Input } from "@zev/ui/components/input";
 import { Label } from "@zev/ui/components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zev/ui/components/select";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { getRoleList } from "@/api/system/role";
 import { createUser, type User, updateUser } from "@/api/system/user";
 
 interface UserFormDialogProps {
@@ -21,6 +23,12 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 		nickname: "",
 		role_id: 1,
 	});
+
+	const { data: roleData } = useQuery({
+		queryKey: ["roles"],
+		queryFn: () => getRoleList({ page: 1, pageSize: 1000 }),
+	});
+	const roles = roleData?.list || [];
 
 	useEffect(() => {
 		if (open) {
@@ -119,14 +127,23 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 					/>
 				</div>
 				<div className="space-y-2">
-					<Label htmlFor="role_id">角色 ID</Label>
-					<Input
-						id="role_id"
-						type="number"
-						value={formData.role_id}
-						onChange={(e) => setFormData({ ...formData, role_id: Number(e.target.value) })}
-						required
-					/>
+					<Label htmlFor="role_id">角色</Label>
+					<Select
+						key={(editingUser ? editingUser.ID : "new") + "-" + roles.length}
+						value={String(formData.role_id)}
+						onValueChange={(val) => setFormData({ ...formData, role_id: Number(val) })}
+					>
+						<SelectTrigger>
+							<SelectValue placeholder="选择角色" />
+						</SelectTrigger>
+						<SelectContent>
+							{roles.map((role) => (
+								<SelectItem key={role.ID} value={String(role.ID)}>
+									{role.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 
 				<div className="pt-4 flex justify-end">
