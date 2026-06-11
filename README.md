@@ -1,8 +1,16 @@
+
+
 # Zev
+
+<p align="center">
+    <img src="./images/logo-animated.svg" alt="Zev Logo" width="100" height="100" />
+</p>
 
 发音 `/zev/` 顺口。
 
 希伯来本源：**狼**，寓意果敢沉稳、靠谱有担当。
+
+
 
 Zev 是一个现代化的前后端分离项目，采用 Go 语言作为强大的后端支撑，React 19 作为灵活的前端展现。
 
