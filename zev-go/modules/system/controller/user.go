@@ -10,6 +10,7 @@ import (
 	"zev-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserController struct {
@@ -22,6 +23,84 @@ func NewUserController(userService *service.UserService) *UserController {
 		BaseController: crud.NewBaseController[entity.User](userService.BaseService),
 		userService:    userService,
 	}
+}
+
+type UserCreateUpdateReq struct {
+	ID       uint   `json:"ID"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Nickname string `json:"nickname"`
+	RoleID   uint   `json:"role_id"`
+}
+
+// Create 重写创建用户，支持密码加密
+// @Summary 创建用户
+// @Tags 系统管理-用户
+// @Accept json
+// @Produce json
+// @Param req body UserCreateUpdateReq true "用户信息"
+// @Success 200 {object} response.Response "成功"
+// @Router /api/system/user/create [post]
+func (c *UserController) Create(ctx *gin.Context) {
+	var req UserCreateUpdateReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.FailMessage("参数错误", ctx)
+		return
+	}
+
+	user := entity.User{
+		Username: req.Username,
+		Nickname: req.Nickname,
+		RoleID:   req.RoleID,
+	}
+
+	if req.Password != "" {
+		hashed, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		user.Password = string(hashed)
+	}
+
+	if err := c.userService.Create(&user); err != nil {
+		response.FailMessage("创建失败", ctx)
+		return
+	}
+	response.SuccessData(user, ctx)
+}
+
+// Update 重写更新用户，支持密码不修改
+// @Summary 更新用户
+// @Tags 系统管理-用户
+// @Accept json
+// @Produce json
+// @Param req body UserCreateUpdateReq true "用户信息"
+// @Success 200 {object} response.Response "成功"
+// @Router /api/system/user/update [put]
+func (c *UserController) Update(ctx *gin.Context) {
+	var req UserCreateUpdateReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.FailMessage("参数错误", ctx)
+		return
+	}
+
+	existingUser, err := c.userService.GetByID(req.ID)
+	if err != nil {
+		response.FailMessage("用户不存在", ctx)
+		return
+	}
+
+	existingUser.Username = req.Username
+	existingUser.Nickname = req.Nickname
+	existingUser.RoleID = req.RoleID
+
+	if req.Password != "" {
+		hashed, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		existingUser.Password = string(hashed)
+	}
+
+	if err := c.userService.Update(existingUser); err != nil {
+		response.FailMessage("更新失败", ctx)
+		return
+	}
+	response.Success(ctx)
 }
 
 // Login 用户登录

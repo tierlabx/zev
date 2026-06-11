@@ -1436,6 +1436,26 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "controller.UserCreateUpdateReq": {
+            "type": "object",
+            "properties": {
+                "ID": {
+                    "type": "integer"
+                },
+                "nickname": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.AssignRoleMenusReq": {
             "type": "object",
             "properties": {
