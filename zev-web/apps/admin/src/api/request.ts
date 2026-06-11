@@ -1,4 +1,5 @@
 import axios, { type AxiosRequestConfig } from "axios";
+import { router } from "@/router";
 import { useUserStore } from "@/store";
 
 const service = axios.create({
@@ -21,11 +22,19 @@ service.interceptors.response.use(
 		const res = response.data;
 		// 后端有统一返回格式： E:\code\Go\zev\zev-go\pkg\response 在这里
 		if (res.code !== 200) {
+			if (res.code === 401) {
+				useUserStore.getState().logout();
+				router.navigate({ to: "/login" }).catch(() => {});
+			}
 			return Promise.reject(new Error(res.msg || "Error"));
 		}
 		return res.data;
 	},
 	(error) => {
+		if (error.response?.status === 401) {
+			useUserStore.getState().logout();
+			router.navigate({ to: "/login" }).catch(() => {});
+		}
 		return Promise.reject(error);
 	},
 );

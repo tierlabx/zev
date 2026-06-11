@@ -54,3 +54,11 @@ func FailMessage(msg string, c *gin.Context) {
 func FailDetailed(data interface{}, msg string, c *gin.Context) {
 	Result(CodeError, data, msg, c)
 }
+
+func FailUnauthorized(msg string, c *gin.Context) {
+	c.JSON(http.StatusUnauthorized, Response{
+		Code: 401,
+		Data: map[string]interface{}{},
+		Msg:  msg,
+	})
+}

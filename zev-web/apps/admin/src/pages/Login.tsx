@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { useLoginMutation } from "@/api/system/auth";
 import logoUrl from "@/assets/logo-animated.svg";
+import { useUserStore } from "@/store";
 import loginBg from "../assets/login-bg.svg";
 
 const loginSchema = z.object({
@@ -23,9 +24,9 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function Login() {
 	const navigate = useNavigate();
 	const loginMutation = useLoginMutation();
+	const setToken = useUserStore((state) => state.setToken);
 
 	const form = useForm<LoginFormValues>({
-		// @ts-expect-error: version mismatch between zod and hookform/resolvers
 		resolver: zodResolver(loginSchema),
 		defaultValues: {
 			username: "",
@@ -35,7 +36,10 @@ export default function Login() {
 
 	const onSubmit = (values: LoginFormValues) => {
 		loginMutation.mutate(values, {
-			onSuccess: () => {
+			onSuccess: (data) => {
+				if (data?.token) {
+					setToken(data.token);
+				}
 				navigate({ to: "/" });
 			},
 			onError: (err) => {
