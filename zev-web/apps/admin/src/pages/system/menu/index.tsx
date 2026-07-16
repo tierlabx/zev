@@ -127,7 +127,7 @@ export default function MenuManagement() {
 			</div>
 
 			<Card className="rounded-md shadow-sm border p-4">
-				<ZevTable columns={columns} data={flattenedMenus} isLoading={isLoading} containerHeight="calc(100vh - 200px)" />
+				<ZevTable columns={columns} data={flattenedMenus} isLoading={isLoading} containerHeight="calc(100vh - 200px)" pagination={false} />
 			</Card>
 
 			<MenuFormDialog

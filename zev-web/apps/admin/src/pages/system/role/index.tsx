@@ -7,14 +7,15 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { deleteRole, getRoleList, type Role } from "@/api/system/role";
 import { ZevTable } from "@/components/zev-table";
+import { Checkbox } from "@/components/zev-table/checkbox";
 import { useConfirm } from "@/hooks/use-confirm";
 import { AssignMenuDialog } from "./components/AssignMenuDialog";
 import { RoleFormDialog } from "./components/RoleFormDialog";
 
 export default function RoleManagement() {
 	const queryClient = useQueryClient();
-	const [page] = useState(1);
-	const [pageSize] = useState(10);
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(10);
 
 	const { confirm, ConfirmDialog } = useConfirm();
 
@@ -65,9 +66,30 @@ export default function RoleManagement() {
 	}, []);
 
 	const roles = data?.list || [];
+	const total = data?.total || 0;
 
 	const columns = useMemo<ColumnDef<Role>[]>(
 		() => [
+			{
+				id: "select",
+				size: 40,
+				header: ({ table }) => (
+					<Checkbox
+						checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+						onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+						aria-label="Select all"
+					/>
+				),
+				cell: ({ row }) => (
+					<Checkbox
+						checked={row.getIsSelected()}
+						onCheckedChange={(value) => row.toggleSelected(!!value)}
+						aria-label="Select row"
+					/>
+				),
+				enableSorting: false,
+				enableHiding: false,
+			},
 			{
 				accessorKey: "ID",
 				header: "角色 ID",
@@ -130,7 +152,19 @@ export default function RoleManagement() {
 			</div>
 
 			<Card className="rounded-md shadow-sm border p-4">
-				<ZevTable columns={columns} data={roles} isLoading={isLoading} containerHeight="calc(100vh - 200px)" />
+				<ZevTable
+					columns={columns}
+					data={roles}
+					isLoading={isLoading}
+					containerHeight="calc(100vh - 250px)"
+					pagination={true}
+					page={page}
+					pageSize={pageSize}
+					total={total}
+					onPageChange={setPage}
+					onPageSizeChange={setPageSize}
+					enableRowSelection={true}
+				/>
 			</Card>
 
 			<RoleFormDialog

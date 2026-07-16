@@ -210,14 +210,16 @@ export default function DictManagement() {
 						</Button>
 					</div>
 					<div className="flex-1 min-h-0">
-						<ZevTable
-							columns={typeColumns}
-							data={dictTypes}
-							isLoading={isTypeLoading}
-							containerHeight="calc(100vh - 200px)"
-							onRowClick={(row) => setSelectedDictType(row)}
-							className="border-gray-200"
-						/>
+							<ZevTable
+								columns={typeColumns}
+								data={dictTypes}
+								isLoading={isTypeLoading}
+								containerHeight="calc(100vh - 200px)"
+								onRowClick={(row) => setSelectedDictType(row)}
+								className="border-gray-200"
+								pagination={false}
+								showToolbar={false}
+							/>
 					</div>
 				</Card>
 
@@ -235,13 +237,15 @@ export default function DictManagement() {
 					</div>
 					<div className="flex-1 min-h-0">
 						{selectedDictType ? (
-							<ZevTable
-								columns={dataColumns}
-								data={dictDataList}
-								isLoading={isDataLoading}
-								containerHeight="calc(100vh - 200px)"
-								className="border-gray-200"
-							/>
+								<ZevTable
+									columns={dataColumns}
+									data={dictDataList}
+									isLoading={isDataLoading}
+									containerHeight="calc(100vh - 200px)"
+									className="border-gray-200"
+									pagination={false}
+									showToolbar={false}
+								/>
 						) : (
 							<div className="h-[calc(100vh-200px)] flex items-center justify-center border border-dashed rounded-md text-gray-400">
 								请在左侧选择一个字典类型

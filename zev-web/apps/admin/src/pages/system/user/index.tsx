@@ -9,13 +9,14 @@ import { toast } from "sonner";
 import { getRoleList } from "@/api/system/role";
 import { deleteUser, getUserList, type User } from "@/api/system/user";
 import { ZevTable } from "@/components/zev-table";
+import { Checkbox } from "@/components/zev-table/checkbox";
 import { useConfirm } from "@/hooks/use-confirm";
 import { UserFormDialog } from "./components/UserFormDialog";
 
 export default function UserManagement() {
 	const queryClient = useQueryClient();
-	const [page] = useState(1);
-	const [pageSize] = useState(10);
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(10);
 
 	const { confirm, ConfirmDialog } = useConfirm();
 	const [search, setSearch] = useState("");
@@ -65,9 +66,30 @@ export default function UserManagement() {
 	);
 
 	const users = data?.list || [];
+	const total = data?.total || 0;
 
 	const columns = useMemo<ColumnDef<User>[]>(
 		() => [
+			{
+				id: "select",
+				size: 40,
+				header: ({ table }) => (
+					<Checkbox
+						checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+						onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+						aria-label="Select all"
+					/>
+				),
+				cell: ({ row }) => (
+					<Checkbox
+						checked={row.getIsSelected()}
+						onCheckedChange={(value) => row.toggleSelected(!!value)}
+						aria-label="Select row"
+					/>
+				),
+				enableSorting: false,
+				enableHiding: false,
+			},
 			{
 				accessorKey: "ID",
 				header: "用户 ID",
@@ -131,7 +153,20 @@ export default function UserManagement() {
 					/>
 				</div>
 
-				<ZevTable columns={columns} data={users} isLoading={isLoading} containerHeight="calc(100vh - 280px)" />
+				<ZevTable
+					columns={columns}
+					data={users}
+					isLoading={isLoading}
+					containerHeight="calc(100vh - 330px)"
+					pagination={true}
+					page={page}
+					pageSize={pageSize}
+					total={total}
+					onPageChange={setPage}
+					onPageSizeChange={setPageSize}
+					enableRowSelection={true}
+					onSelectionChange={(selected) => console.log("Selected users:", selected)}
+				/>
 			</Card>
 
 			<UserFormDialog
