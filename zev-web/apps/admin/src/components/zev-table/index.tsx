@@ -12,10 +12,26 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@zev/ui/components/table";
 import { cn } from "@zev/ui/lib/utils";
+import { motion, type Variants } from "framer-motion";
 import { Loader2 } from "lucide-react";
 
 import { Pagination } from "./pagination";
 import { TableToolbar } from "./table-toolbar";
+
+const MotionTableRow = motion.create(TableRow);
+
+const rowVariants: Variants = {
+	hidden: { opacity: 0, y: 15 },
+	visible: (idx: number) => ({
+		opacity: 1,
+		y: 0,
+		transition: {
+			delay: idx * 0.04,
+			duration: 0.3,
+			ease: "easeOut",
+		},
+	}),
+};
 
 export interface ZevTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
@@ -157,11 +173,18 @@ export function ZevTable<TData, TValue>({
 							</tr>
 						)}
 
-						{virtualItems.map((virtualRow) => {
+						{virtualItems.map((virtualRow, idx) => {
 							const row = rows[virtualRow.index];
+							// 尝试获取唯一标识作为 key，如果没有则回退到 row.id
+							const rowKey = (row.original as any).ID || (row.original as any).id || row.id;
+							
 							return (
-								<TableRow
-									key={row.id}
+								<MotionTableRow
+									key={rowKey}
+									custom={idx}
+									initial="hidden"
+									animate="visible"
+									variants={rowVariants}
 									data-index={virtualRow.index}
 									ref={rowVirtualizer.measureElement}
 									onClick={() => onRowClick?.(row.original)}
@@ -177,7 +200,7 @@ export function ZevTable<TData, TValue>({
 											{flexRender(cell.column.columnDef.cell, cell.getContext())}
 										</TableCell>
 									))}
-								</TableRow>
+								</MotionTableRow>
 							);
 						})}
 
