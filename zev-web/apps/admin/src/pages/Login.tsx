@@ -13,7 +13,7 @@ import { z } from "zod";
 import { useLoginMutation } from "@/api/system/auth";
 import logoUrl from "@/assets/logo-animated.svg";
 import { useUserStore } from "@/store";
-import ThreeKoiBackground from "../components/ThreeKoiBackground";
+import ThreeKoiBackground from "@/components/ThreeKoiBackground/index";
 
 const loginSchema = z.object({
 	username: z.string().min(1, { message: "请输入用户名或邮箱" }),
