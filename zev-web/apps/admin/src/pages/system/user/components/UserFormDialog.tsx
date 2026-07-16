@@ -129,7 +129,7 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 				<div className="space-y-2">
 					<Label htmlFor="role_id">角色</Label>
 					<Select
-						key={(editingUser ? editingUser.ID : "new") + "-" + roles.length}
+						key={`${editingUser ? editingUser.ID : "new"}-${roles.length}`}
 						value={String(formData.role_id)}
 						onValueChange={(val) => setFormData({ ...formData, role_id: Number(val) })}
 					>

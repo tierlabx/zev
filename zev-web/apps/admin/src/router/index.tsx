@@ -1,9 +1,9 @@
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routes";
 
-export const router = createRouter({ 
+export const router = createRouter({
 	routeTree,
-	defaultViewTransition: true
+	defaultViewTransition: true,
 });
 
 declare module "@tanstack/react-router" {
