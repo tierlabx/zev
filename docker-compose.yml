@@ -2,16 +2,9 @@ version: "3.8"
 
 services:
   db:
-    image: postgres:18-alpine
-    environment:
-      POSTGRES_USER: zev
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: zev
-    ports:
-      - "5432:5432"
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    restart: unless-stopped
+    extends:
+      file: ./zev-go/docker-compose-db.yml
+      service: db
 
   # Backend service
   backend:
