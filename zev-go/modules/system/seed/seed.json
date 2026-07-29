@@ -7,7 +7,7 @@
       "status": 0,
       "sort": 1,
       "desc": "拥有系统最高权限",
-      "menu_ids": [1, 2, 3, 4, 5]
+      "menu_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
     },
     {
       "id": 2,
@@ -15,7 +15,7 @@
       "code": "common",
       "status": 0,
       "sort": 2,
-      "desc": "普通系统用户",
+      "desc": "普通系统用户，仅查看权限",
       "menu_ids": [1, 5]
     }
   ],
@@ -25,14 +25,20 @@
       "username": "admin",
       "password": "admin",
       "nickname": "系统管理员",
-      "role_id": 1
+      "email": "admin@zev.dev",
+      "avatar": "",
+      "role_id": 1,
+      "status": 0
     },
     {
       "id": 2,
       "username": "user",
       "password": "user123",
       "nickname": "普通用户",
-      "role_id": 2
+      "email": "user@zev.dev",
+      "avatar": "",
+      "role_id": 2,
+      "status": 0
     }
   ],
   "menus": [
@@ -90,6 +96,182 @@
       "sort": 4,
       "type": "C",
       "perms": "system:dict:list"
+    },
+    {
+      "id": 6,
+      "parent_id": 2,
+      "name": "用户新增",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 1,
+      "type": "F",
+      "perms": "system:user:create"
+    },
+    {
+      "id": 7,
+      "parent_id": 2,
+      "name": "用户编辑",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 2,
+      "type": "F",
+      "perms": "system:user:update"
+    },
+    {
+      "id": 8,
+      "parent_id": 2,
+      "name": "用户删除",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 3,
+      "type": "F",
+      "perms": "system:user:delete"
+    },
+    {
+      "id": 9,
+      "parent_id": 2,
+      "name": "分配角色",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 4,
+      "type": "F",
+      "perms": "system:user:assign"
+    },
+    {
+      "id": 10,
+      "parent_id": 3,
+      "name": "角色新增",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 1,
+      "type": "F",
+      "perms": "system:role:create"
+    },
+    {
+      "id": 11,
+      "parent_id": 3,
+      "name": "角色编辑",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 2,
+      "type": "F",
+      "perms": "system:role:update"
+    },
+    {
+      "id": 12,
+      "parent_id": 3,
+      "name": "角色删除",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 3,
+      "type": "F",
+      "perms": "system:role:delete"
+    },
+    {
+      "id": 13,
+      "parent_id": 3,
+      "name": "分配菜单",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 4,
+      "type": "F",
+      "perms": "system:role:assign"
+    },
+    {
+      "id": 14,
+      "parent_id": 4,
+      "name": "菜单新增",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 1,
+      "type": "F",
+      "perms": "system:menu:create"
+    },
+    {
+      "id": 15,
+      "parent_id": 4,
+      "name": "菜单编辑",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 2,
+      "type": "F",
+      "perms": "system:menu:update"
+    },
+    {
+      "id": 16,
+      "parent_id": 4,
+      "name": "菜单删除",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 3,
+      "type": "F",
+      "perms": "system:menu:delete"
+    },
+    {
+      "id": 17,
+      "parent_id": 5,
+      "name": "字典新增",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 1,
+      "type": "F",
+      "perms": "system:dict:create"
+    },
+    {
+      "id": 18,
+      "parent_id": 5,
+      "name": "字典编辑",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 2,
+      "type": "F",
+      "perms": "system:dict:update"
+    },
+    {
+      "id": 19,
+      "parent_id": 5,
+      "name": "字典删除",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 3,
+      "type": "F",
+      "perms": "system:dict:delete"
+    },
+    {
+      "id": 20,
+      "parent_id": 0,
+      "name": "仪表盘",
+      "path": "/dashboard",
+      "component": "dashboard/index",
+      "icon": "dashboard",
+      "sort": 0,
+      "type": "C",
+      "perms": "dashboard:view"
+    },
+    {
+      "id": 21,
+      "parent_id": 0,
+      "name": "个人中心",
+      "path": "/profile",
+      "component": "profile/index",
+      "icon": "user",
+      "sort": 99,
+      "type": "C",
+      "perms": "profile:view"
     }
   ],
   "dict_types": [
@@ -106,6 +288,13 @@
       "type": "sys_menu_status",
       "status": 0,
       "remark": "菜单是否显示"
+    },
+    {
+      "id": 3,
+      "name": "用户状态",
+      "type": "sys_user_status",
+      "status": 0,
+      "remark": "用户账号状态"
     }
   ],
   "dict_data": [
@@ -153,6 +342,24 @@
       "sort": 2,
       "status": 0,
       "remark": "隐藏"
+    },
+    {
+      "id": 6,
+      "dict_type": "sys_user_status",
+      "label": "正常",
+      "value": "0",
+      "sort": 1,
+      "status": 0,
+      "remark": "账号正常使用"
+    },
+    {
+      "id": 7,
+      "dict_type": "sys_user_status",
+      "label": "禁用",
+      "value": "1",
+      "sort": 2,
+      "status": 0,
+      "remark": "账号已被禁用"
     }
   ]
 }

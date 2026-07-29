@@ -8,5 +8,7 @@ type LoginReq struct {
 type LoginRes struct {
 	Token    string `json:"token"`
 	Nickname string `json:"nickname"`
+	Avatar   string `json:"avatar"`
 	RoleID   uint   `json:"role_id"`
+	RoleName string `json:"role_name"`
 }

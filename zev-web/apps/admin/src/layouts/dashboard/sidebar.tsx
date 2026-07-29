@@ -1,41 +1,46 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { cn } from "@zev/ui/lib/utils";
-import {
-	Book,
-	ChevronDown,
-	ChevronsLeft,
-	ChevronsRight,
-	Home,
-	Menu as MenuIcon,
-	Settings,
-	Shield,
-	Users,
-} from "lucide-react";
+import { ChevronDown, ChevronsLeft, ChevronsRight, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import logoUrl from "@/assets/logo-animated.svg";
+import { getMenuIcon } from "@/lib/menu-icons";
+import { useUserStore } from "@/store";
+import type { MenuItem } from "@/api/interface/system/user";
 import { useLayoutStore } from "@/store/layout";
 
 type NavItemType = {
 	name: string;
 	path: string;
-	icon: React.ElementType;
+	icon: LucideIcon;
 	children?: NavItemType[];
 };
 
-const navItems: NavItemType[] = [
-	{ name: "仪表盘", path: "/dashboard", icon: Home },
-	{
-		name: "系统管理",
-		path: "/system",
-		icon: Settings,
-		children: [
-			{ name: "用户管理", path: "/system/users", icon: Users },
-			{ name: "角色管理", path: "/system/roles", icon: Shield },
-			{ name: "菜单管理", path: "/system/menus", icon: MenuIcon },
-			{ name: "字典管理", path: "/system/dicts", icon: Book },
-		],
-	},
-];
+/**
+ * 将后端菜单树转换为侧边栏导航项
+ * 仅保留目录(M)和菜单(C)类型，过滤掉按钮(F)
+ * 拼接父子路径生成完整路由
+ */
+function buildNavItems(menus: MenuItem[], parentPath = ""): NavItemType[] {
+	return menus
+		.filter((m) => m.type === "M" || m.type === "C")
+		.map((m) => {
+			const fullPath = m.path.startsWith("/")
+				? m.path
+				: `${parentPath}/${m.path}`.replace(/\/+/g, "/");
+
+			const item: NavItemType = {
+				name: m.name,
+				path: fullPath,
+				icon: getMenuIcon(m.icon),
+			};
+
+			if (m.children && m.children.length > 0) {
+				item.children = buildNavItems(m.children, fullPath);
+			}
+
+			return item;
+		});
+}
 
 function NavItem({
 	item,
@@ -77,14 +82,14 @@ function NavItem({
 					className={cn(
 						"w-full flex items-center justify-between px-3 py-2.5 rounded-md cursor-pointer transition-colors font-medium relative group",
 						sidebarCollapsed ? "justify-center" : "",
-						isChildActive ? "text-[#1677FF]" : "text-[#666666] hover:bg-[#F5F5F5] hover:text-black",
+						isChildActive ? "text-[#2563EB]" : "text-[#666666] hover:bg-[#F5F5F5] hover:text-black",
 					)}
 				>
 					<div className={cn("flex items-center", sidebarCollapsed ? "justify-center" : "space-x-3")}>
 						<item.icon
 							className={cn(
 								"h-[18px] w-[18px] shrink-0",
-								isChildActive ? "text-[#1677FF]" : "text-[#666666] group-hover:text-black",
+								isChildActive ? "text-[#2563EB]" : "text-[#666666] group-hover:text-black",
 							)}
 						/>
 						{!sidebarCollapsed && <span className="text-sm truncate">{item.name}</span>}
@@ -93,7 +98,7 @@ function NavItem({
 						<ChevronDown
 							className={cn(
 								"h-4 w-4 transition-transform",
-								isChildActive ? "text-[#1677FF]" : "text-[#666666]",
+								isChildActive ? "text-[#2563EB]" : "text-[#666666]",
 								expanded ? "rotate-180" : "",
 							)}
 						/>
@@ -119,18 +124,18 @@ function NavItem({
 	const active = activePath === item.path;
 	return (
 		<Link
-			to={item.path}
+			to={item.path as never}
 			title={sidebarCollapsed ? item.name : undefined}
 			className={cn(
 				"flex items-center px-3 py-2.5 rounded-md cursor-pointer transition-colors font-medium relative group",
 				sidebarCollapsed ? "justify-center" : "space-x-3",
-				active ? "bg-[#E6F4FF] text-[#1677FF]" : "text-[#666666] hover:bg-[#F5F5F5] hover:text-black",
+				active ? "bg-[#EFF6FF] text-[#2563EB]" : "text-[#666666] hover:bg-[#F5F5F5] hover:text-black",
 			)}
 		>
 			<item.icon
 				className={cn(
 					"h-[18px] w-[18px] shrink-0",
-					active ? "text-[#1677FF]" : "text-[#666666] group-hover:text-black",
+					active ? "text-[#2563EB]" : "text-[#666666] group-hover:text-black",
 				)}
 			/>
 			{!sidebarCollapsed && <span className="text-sm truncate">{item.name}</span>}
@@ -142,6 +147,9 @@ export function Sidebar() {
 	const location = useLocation();
 	const sidebarCollapsed = useLayoutStore((state) => state.sidebarCollapsed);
 	const toggleSidebar = useLayoutStore((state) => state.toggleSidebar);
+	const menus = useUserStore((state) => state.menus);
+
+	const navItems = buildNavItems(menus);
 
 	return (
 		<aside

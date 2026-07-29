@@ -36,6 +36,17 @@ func (s *UserService) Login(req dto.LoginReq) (*dto.LoginRes, error) {
 		return nil, errors.New("用户名或密码错误")
 	}
 
+	if user.Status == 1 {
+		return nil, errors.New("账号已被禁用，请联系管理员")
+	}
+
+	// 查询角色名称
+	var role entity.Role
+	roleName := ""
+	if err := s.DB.Select("name").First(&role, user.RoleID).Error; err == nil {
+		roleName = role.Name
+	}
+
 	token, err := jwtx.GenerateToken(user.ID, user.Username, user.RoleID)
 	if err != nil {
 		return nil, errors.New("Token生成失败")
@@ -45,6 +56,8 @@ func (s *UserService) Login(req dto.LoginReq) (*dto.LoginRes, error) {
 		Token:    token,
 		Nickname: user.Nickname,
 		RoleID:   user.RoleID,
+		RoleName: roleName,
+		Avatar:   user.Avatar,
 	}, nil
 }
 

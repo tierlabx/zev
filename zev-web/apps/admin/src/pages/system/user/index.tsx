@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@zev/ui/components/badge";
 import { Button } from "@zev/ui/components/button";
 import { Card } from "@zev/ui/components/card";
 import { Input } from "@zev/ui/components/input";
@@ -11,12 +12,14 @@ import { deleteUser, getUserList, type User } from "@/api/system/user";
 import { ZevTable } from "@/components/zev-table";
 import { Checkbox } from "@/components/zev-table/checkbox";
 import { useConfirm } from "@/hooks/use-confirm";
+import { usePermission } from "@/hooks/use-permission";
 import { UserFormDialog } from "./components/UserFormDialog";
 
 export default function UserManagement() {
 	const queryClient = useQueryClient();
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
+	const { hasPermission } = usePermission();
 
 	const { confirm, ConfirmDialog } = useConfirm();
 	const [search, setSearch] = useState("");
@@ -104,12 +107,27 @@ export default function UserManagement() {
 				header: "昵称",
 			},
 			{
+				accessorKey: "email",
+				header: "邮箱",
+				cell: ({ row }) => row.original.email || "-",
+			},
+			{
 				accessorKey: "role_id",
 				header: "角色",
 				cell: ({ row }) => {
 					const role = roles.find((r) => r.ID === row.original.role_id);
 					return role ? role.name : `#${row.original.role_id}`;
 				},
+			},
+			{
+				accessorKey: "status",
+				header: "状态",
+				cell: ({ row }) =>
+					row.original.status === 1 ? (
+						<Badge variant="destructive">禁用</Badge>
+					) : (
+						<Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">正常</Badge>
+					),
 			},
 			{
 				accessorKey: "CreatedAt",
@@ -121,26 +139,32 @@ export default function UserManagement() {
 				header: () => <div className="text-right">操作</div>,
 				cell: ({ row }) => (
 					<div className="flex justify-end space-x-2">
-						<Button variant="outline" size="icon" onClick={() => handleEdit(row.original)}>
-							<Edit className="h-4 w-4" />
-						</Button>
-						<Button variant="destructive" size="icon" onClick={() => handleDelete(row.original.ID)}>
-							<Trash2 className="h-4 w-4" />
-						</Button>
+						{hasPermission("system:user:update") && (
+							<Button variant="outline" size="icon" onClick={() => handleEdit(row.original)}>
+								<Edit className="h-4 w-4" />
+							</Button>
+						)}
+						{hasPermission("system:user:delete") && (
+							<Button variant="destructive" size="icon" onClick={() => handleDelete(row.original.ID)}>
+								<Trash2 className="h-4 w-4" />
+							</Button>
+						)}
 					</div>
 				),
 			},
 		],
-		[handleEdit, handleDelete, roles],
+		[handleEdit, handleDelete, roles, hasPermission],
 	);
 
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center justify-end">
-				<Button onClick={handleAdd}>
-					<Plus className="mr-2 h-4 w-4" />
-					添加用户
-				</Button>
+				{hasPermission("system:user:create") && (
+					<Button onClick={handleAdd}>
+						<Plus className="mr-2 h-4 w-4" />
+						添加用户
+					</Button>
+				)}
 			</div>
 
 			<Card className="rounded-md shadow-sm border p-4">

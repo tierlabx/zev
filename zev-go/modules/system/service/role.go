@@ -44,3 +44,29 @@ func (s *RoleService) GetRoleMenuIDs(roleID uint) ([]uint, error) {
 	}
 	return menuIDs, nil
 }
+
+// GetRolePerms 获取角色的所有权限标识列表（包括按钮级权限）
+// admin (roleID=1) 直接返回 "*" 表示拥有所有权限
+func (s *RoleService) GetRolePerms(roleID uint) ([]string, error) {
+	if roleID == 1 {
+		return []string{"*"}, nil
+	}
+
+	var role entity.Role
+	if err := s.DB.Preload("Menus").First(&role, roleID).Error; err != nil {
+		return nil, err
+	}
+
+	permsSet := make(map[string]bool)
+	for _, m := range role.Menus {
+		if m.Perms != "" {
+			permsSet[m.Perms] = true
+		}
+	}
+
+	perms := make([]string, 0, len(permsSet))
+	for p := range permsSet {
+		perms = append(perms, p)
+	}
+	return perms, nil
+}

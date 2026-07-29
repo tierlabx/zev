@@ -10,7 +10,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useLoginMutation } from "@/api/system/auth";
+import { useLoginMutation, getUserInfoApi } from "@/api/system/auth";
 import logoUrl from "@/assets/logo-animated.svg";
 import { useUserStore } from "@/store";
 import ThreeKoiBackground from "@/components/ThreeKoiBackground/index";
@@ -26,6 +26,7 @@ export default function Login() {
 	const navigate = useNavigate();
 	const loginMutation = useLoginMutation();
 	const setToken = useUserStore((state) => state.setToken);
+	const setUserInfo = useUserStore((state) => state.setUserInfo);
 
 	const x = useMotionValue(0);
 	const y = useMotionValue(0);
@@ -53,11 +54,17 @@ export default function Login() {
 
 	const onSubmit = (values: LoginFormValues) => {
 		loginMutation.mutate(values, {
-			onSuccess: (data) => {
+			onSuccess: async (data) => {
 				if (data?.token) {
 					setToken(data.token);
+					try {
+						const userInfo = await getUserInfoApi();
+						setUserInfo(userInfo);
+					} catch {
+						toast.error("获取用户信息失败");
+					}
 				}
-				navigate({ to: "/" });
+				navigate({ to: "/dashboard" });
 			},
 			onError: (err) => {
 				toast.error(err.message || "登录失败");

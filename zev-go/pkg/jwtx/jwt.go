@@ -6,22 +6,37 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var secretKey = []byte("zev-admin-secret-key-development")
+var (
+	secretKey   = []byte("zev-admin-secret-key-development")
+	expireHours = 24
+)
+
+// Init 使用配置初始化 JWT 密钥和过期时间，应在应用启动时调用。
+func Init(secret string, hours int) {
+	if secret != "" {
+		secretKey = []byte(secret)
+	}
+	if hours > 0 {
+		expireHours = hours
+	}
+}
 
 type CustomClaims struct {
-	UserID uint `json:"user_id"`
-	RoleID uint `json:"role_id"`
+	UserID   uint   `json:"user_id"`
+	RoleID   uint   `json:"role_id"`
+	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
 
 // GenerateToken 生成 Token
 func GenerateToken(userID uint, username string, roleID uint) (string, error) {
 	claims := CustomClaims{
-		UserID: userID,
-		RoleID: roleID,
+		UserID:   userID,
+		RoleID:   roleID,
+		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   username,
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(expireHours) * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
@@ -29,7 +44,7 @@ func GenerateToken(userID uint, username string, roleID uint) (string, error) {
 	return token.SignedString(secretKey)
 }
 
-// 解析token
+// ParseToken 解析 token
 func ParseToken(tokenString string) (*CustomClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil

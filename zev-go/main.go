@@ -14,6 +14,7 @@ import (
 	"zev-go/modules"
 	_ "zev-go/modules/system"
 	"zev-go/pkg/database"
+	"zev-go/pkg/jwtx"
 	"zev-go/pkg/swagger"
 
 	"github.com/gin-gonic/gin"
@@ -32,17 +33,20 @@ func main() {
 	// 1. 加载配置
 	cfg := config.LoadConfig()
 
-	// 2. 初始化数据库
+	// 2. 初始化 JWT
+	jwtx.Init(cfg.JWTSecret, cfg.JWTExpireHours)
+
+	// 3. 初始化数据库
 	db := database.Init(cfg)
 
-	// 3. 初始化 Web 引擎
+	// 4. 初始化 Web 引擎
 	r := gin.Default()
 	_ = r.SetTrustedProxies(cfg.TrustedProxies)
 
-	// 4. 注册并初始化所有业务模块
+	// 5. 注册并初始化所有业务模块
 	modules.InitAll(r, db)
 
-	// 5. 初始化并全自动构建 Swagger 文档
+	// 6. 初始化并全自动构建 Swagger 文档
 	swagger.Init()
 
 	// 6. 启动 HTTP 服务（配置优雅停机）

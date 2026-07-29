@@ -3,6 +3,7 @@ package config
 import (
 	"log/slog"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -16,6 +17,8 @@ type Config struct {
 	DBPort         string
 	AppPort        string
 	TrustedProxies []string
+	JWTSecret      string
+	JWTExpireHours int
 }
 
 // LoadConfig 从环境变量中加载应用与数据库配置
@@ -30,6 +33,8 @@ func LoadConfig() Config {
 	dbPort := getEnv("DB_PORT", "5432")
 	appPort := getEnv("APP_PORT", "8080")
 	trustedProxiesStr := getEnv("TRUSTED_PROXIES", "127.0.0.1")
+	jwtSecret := getEnv("JWT_SECRET", "zev-admin-secret-key-development")
+	jwtExpireHours := getEnvInt("JWT_EXPIRE_HOURS", 24)
 
 	var trustedProxies []string
 	if trustedProxiesStr != "" && trustedProxiesStr != "none" && trustedProxiesStr != "nil" {
@@ -48,12 +53,23 @@ func LoadConfig() Config {
 		DBPort:         dbPort,
 		AppPort:        appPort,
 		TrustedProxies: trustedProxies,
+		JWTSecret:      jwtSecret,
+		JWTExpireHours: jwtExpireHours,
 	}
 }
 
 func getEnv(key, fallback string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
+	}
+	return fallback
+}
+
+func getEnvInt(key string, fallback int) int {
+	if value, exists := os.LookupEnv(key); exists {
+		if n, err := strconv.Atoi(value); err == nil {
+			return n
+		}
 	}
 	return fallback
 }

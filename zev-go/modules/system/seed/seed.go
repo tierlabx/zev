@@ -29,7 +29,10 @@ type UserSeed struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Nickname string `json:"nickname"`
+	Email    string `json:"email"`
+	Avatar   string `json:"avatar"`
 	RoleID   uint   `json:"role_id"`
+	Status   int    `json:"status"`
 }
 
 type MenuSeed struct {
@@ -131,12 +134,15 @@ func Run(db *gorm.DB, seedPath string) {
 					}
 					password = string(hash)
 				}
-				user := entity.User{
-					Username: s.Username,
-					Password: password,
-					Nickname: s.Nickname,
-					RoleID:   s.RoleID,
-				}
+			user := entity.User{
+				Username: s.Username,
+				Password: password,
+				Nickname: s.Nickname,
+				Email:    s.Email,
+				Avatar:   s.Avatar,
+				RoleID:   s.RoleID,
+				Status:   s.Status,
+			}
 				user.ID = s.ID
 				if err := tx.Create(&user).Error; err != nil {
 					return fmt.Errorf("创建用户失败: %w", err)

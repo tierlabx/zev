@@ -42,5 +42,5 @@ export const getRoleMenus = (id: number) => {
 };
 
 export const assignRoleMenus = (id: number, menuIDs: number[]) => {
-	return request.post(`/system/role/menus/${id}`, { MenuIDs: menuIDs });
+	return request.post(`/system/role/menus/${id}`, { menu_ids: menuIDs });
 };

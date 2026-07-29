@@ -44,7 +44,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 
 	// 4. 初始化 Controller 层
 	openController := controller.NewOpenController(db)
-	userController := controller.NewUserController(userService)
+	userController := controller.NewUserController(userService, roleService, menuService)
 	roleController := controller.NewRoleController(roleService)
 	menuController := controller.NewMenuController(menuService)
 	dictTypeController := controller.NewDictTypeController(dictTypeService)
@@ -70,6 +70,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 			// 用户路由
 			userGroup := protected.Group("/user")
 			{
+				userGroup.GET("/info", userController.UserInfo)
 				userGroup.GET("/list", middleware.RequirePermission(db, "system:user:list"), userController.List)
 				userGroup.POST("/create", middleware.RequirePermission(db, "system:user:create"), userController.Create)
 				userGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:user:delete"), userController.Delete)

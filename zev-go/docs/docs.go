@@ -1294,6 +1294,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/user/info": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "获取当前登录用户的个人信息、角色、权限标识和菜单树",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理-用户"
+                ],
+                "summary": "获取当前用户信息",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.UserInfoRes"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/user/list": {
             "get": {
                 "security": [
@@ -1442,6 +1479,12 @@ const docTemplate = `{
                 "ID": {
                     "type": "integer"
                 },
+                "avatar": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
                 "nickname": {
                     "type": "string"
                 },
@@ -1449,6 +1492,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role_id": {
+                    "type": "integer"
+                },
+                "status": {
                     "type": "integer"
                 },
                 "username": {
@@ -1496,13 +1542,58 @@ const docTemplate = `{
         "dto.LoginRes": {
             "type": "object",
             "properties": {
+                "avatar": {
+                    "type": "string"
+                },
                 "nickname": {
                     "type": "string"
                 },
                 "role_id": {
                     "type": "integer"
                 },
+                "role_name": {
+                    "type": "string"
+                },
                 "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UserInfoRes": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "menus": {
+                    "type": "array",
+                    "items": {}
+                },
+                "nickname": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "role_code": {
+                    "type": "string"
+                },
+                "role_id": {
+                    "type": "integer"
+                },
+                "role_name": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -1656,11 +1747,17 @@ const docTemplate = `{
         "entity.User": {
             "type": "object",
             "properties": {
+                "avatar": {
+                    "type": "string"
+                },
                 "createdAt": {
                     "type": "string"
                 },
                 "deletedAt": {
                     "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "email": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
@@ -1669,6 +1766,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "0-正常 1-禁用",
                     "type": "integer"
                 },
                 "updatedAt": {

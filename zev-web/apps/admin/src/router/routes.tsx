@@ -1,5 +1,6 @@
 import { createRootRoute, createRoute, Outlet, redirect } from "@tanstack/react-router";
 import App from "@/App";
+import { useUserStore } from "@/store";
 import DashboardLayout from "@/layouts/dashboard";
 import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
@@ -19,6 +20,12 @@ export const rootRoute = createRootRoute({
 const loginRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/login",
+	beforeLoad: () => {
+		const token = useUserStore.getState().token;
+		if (token) {
+			throw redirect({ to: "/dashboard" });
+		}
+	},
 	component: Login,
 });
 
@@ -26,6 +33,12 @@ const layoutRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	id: "_layout",
 	component: DashboardLayout,
+	beforeLoad: () => {
+		const token = useUserStore.getState().token;
+		if (!token) {
+			throw redirect({ to: "/login" });
+		}
+	},
 });
 
 const indexRoute = createRoute({

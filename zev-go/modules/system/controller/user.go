@@ -16,12 +16,16 @@ import (
 type UserController struct {
 	*crud.BaseController[entity.User]
 	userService *service.UserService
+	roleService *service.RoleService
+	menuService *service.MenuService
 }
 
-func NewUserController(userService *service.UserService) *UserController {
+func NewUserController(userService *service.UserService, roleService *service.RoleService, menuService *service.MenuService) *UserController {
 	return &UserController{
 		BaseController: crud.NewBaseController[entity.User](userService.BaseService),
 		userService:    userService,
+		roleService:    roleService,
+		menuService:    menuService,
 	}
 }
 
@@ -30,7 +34,10 @@ type UserCreateUpdateReq struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Nickname string `json:"nickname"`
+	Email    string `json:"email"`
+	Avatar   string `json:"avatar"`
 	RoleID   uint   `json:"role_id"`
+	Status   int    `json:"status"`
 }
 
 // Create 重写创建用户，支持密码加密
@@ -51,7 +58,10 @@ func (c *UserController) Create(ctx *gin.Context) {
 	user := entity.User{
 		Username: req.Username,
 		Nickname: req.Nickname,
+		Email:    req.Email,
+		Avatar:   req.Avatar,
 		RoleID:   req.RoleID,
+		Status:   req.Status,
 	}
 
 	if req.Password != "" {
@@ -89,7 +99,10 @@ func (c *UserController) Update(ctx *gin.Context) {
 
 	existingUser.Username = req.Username
 	existingUser.Nickname = req.Nickname
+	existingUser.Email = req.Email
+	existingUser.Avatar = req.Avatar
 	existingUser.RoleID = req.RoleID
+	existingUser.Status = req.Status
 
 	if req.Password != "" {
 		hashed, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -170,4 +183,71 @@ func (c *UserController) AssignRole(ctx *gin.Context) {
 	}
 
 	response.Success(ctx)
+}
+
+// UserInfo 获取当前登录用户信息（含角色、权限、菜单树）
+// @Summary 获取当前用户信息
+// @Description 获取当前登录用户的个人信息、角色、权限标识和菜单树
+// @Tags 系统管理-用户
+// @Produce json
+// @Security Bearer
+// @Success 200 {object} response.Response{data=dto.UserInfoRes} "成功"
+// @Router /api/system/user/info [get]
+func (c *UserController) UserInfo(ctx *gin.Context) {
+	userIDAny, exists := ctx.Get("userID")
+	if !exists {
+		response.FailUnauthorized("无法获取用户信息", ctx)
+		return
+	}
+
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.FailMessage("用户ID格式错误", ctx)
+		return
+	}
+
+	user, err := c.userService.GetByID(userID)
+	if err != nil {
+		response.FailMessage("用户不存在", ctx)
+		return
+	}
+
+	// 查询角色信息
+	var role entity.Role
+	roleName := ""
+	roleCode := ""
+	if err := c.roleService.DB.First(&role, user.RoleID).Error; err == nil {
+		roleName = role.Name
+		roleCode = role.Code
+	}
+
+	// 获取权限标识列表
+	perms, _ := c.roleService.GetRolePerms(user.RoleID)
+
+	// 获取菜单树
+	menuTree, _ := c.menuService.GetMenuTreeByRole(user.RoleID)
+
+	res := dto.UserInfoRes{
+		ID:          user.ID,
+		Username:    user.Username,
+		Nickname:    user.Nickname,
+		Avatar:      user.Avatar,
+		Email:       user.Email,
+		RoleID:      user.RoleID,
+		RoleName:    roleName,
+		RoleCode:    roleCode,
+		Permissions: perms,
+		Menus: func() []any {
+			if menuTree == nil {
+				return []any{}
+			}
+			result := make([]any, len(menuTree))
+			for i, m := range menuTree {
+				result[i] = m
+			}
+			return result
+		}(),
+	}
+
+	response.SuccessData(res, ctx)
 }
