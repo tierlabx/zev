@@ -1,7 +1,10 @@
-import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { cn } from "@zev/ui/lib/utils"
-import { X } from "lucide-react"
+"use client"
+
 import * as React from "react"
+import * as DialogPrimitive from "@radix-ui/react-dialog"
+import { X } from "lucide-react"
+
+import { cn } from "@zev/ui/lib/utils"
 
 const Dialog = DialogPrimitive.Root
 
@@ -107,13 +110,13 @@ DialogDescription.displayName = DialogPrimitive.Description.displayName
 
 export {
   Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogTrigger,
   DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
-  DialogOverlay,
-  DialogPortal,
+  DialogFooter,
   DialogTitle,
-  DialogTrigger,
+  DialogDescription,
 }

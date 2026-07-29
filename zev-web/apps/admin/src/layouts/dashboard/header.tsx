@@ -1,65 +1,149 @@
 import { motion } from "framer-motion";
-import { Bell, Globe, Menu, Moon, Search, Settings } from "lucide-react";
+import { Bell, Globe, Menu, Moon, Search, Sun, Maximize, Minimize } from "lucide-react";
 import { useLayoutStore } from "@/store/layout";
 import { AccountDropdown } from "../components/account-dropdown";
 import { Breadcrumb } from "../components/breadcrumb";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "@zev/ui/components/popover";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@zev/ui/components/dropdown-menu";
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@zev/ui/components/command";
+import { useNavigate } from "@tanstack/react-router";
 
 export function Header() {
 	const toggleSidebar = useLayoutStore((state) => state.toggleSidebar);
+	const { theme, setTheme } = useTheme();
+	const [isFullscreen, setIsFullscreen] = useState(false);
+	const [openCommand, setOpenCommand] = useState(false);
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		const down = (e: KeyboardEvent) => {
+			if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+				e.preventDefault();
+				setOpenCommand((open) => !open);
+			}
+		};
+		document.addEventListener("keydown", down);
+		return () => document.removeEventListener("keydown", down);
+	}, []);
+
+	useEffect(() => {
+		const handleFullscreenChange = () => {
+			setIsFullscreen(!!document.fullscreenElement);
+		};
+		document.addEventListener("fullscreenchange", handleFullscreenChange);
+		return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+	}, []);
+
+	const toggleFullscreen = () => {
+		if (!document.fullscreenElement) {
+			document.documentElement.requestFullscreen().catch(() => {});
+		} else {
+			document.exitFullscreen().catch(() => {});
+		}
+	};
+
+	const runCommand = (command: () => void) => {
+		setOpenCommand(false);
+		command();
+	};
 
 	return (
-		<header className="h-16 px-4 bg-white border-b border-[#E5E5E5] flex items-center justify-between z-10 relative">
+		<header className="h-16 px-4 bg-white border-b border-[#E5E5E5] flex items-center justify-between z-10 relative dark:bg-zinc-950 dark:border-zinc-800">
 			<div className="flex items-center space-x-2">
 				<button
 					type="button"
 					onClick={toggleSidebar}
-					className="p-1.5 -ml-1.5 text-muted-foreground hover:text-foreground hover:bg-black/5 rounded-md transition-colors"
+					className="p-1.5 -ml-1.5 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 rounded-md transition-colors"
 				>
 					<Menu className="size-4" />
 				</button>
 				<Breadcrumb />
 			</div>
 			<div className="flex items-center space-x-1">
-				<div className="hidden md:flex items-center space-x-2 mr-2 px-2.5 py-1.5 bg-[#F5F5F5] rounded-full text-muted-foreground hover:bg-[#EBEBEB] cursor-pointer transition-colors">
+				<div
+					onClick={() => setOpenCommand(true)}
+					className="hidden md:flex items-center space-x-2 mr-2 px-2.5 py-1.5 bg-[#F5F5F5] dark:bg-zinc-900 rounded-full text-muted-foreground hover:bg-[#EBEBEB] dark:hover:bg-zinc-800 cursor-pointer transition-colors"
+				>
 					<Search className="size-4" />
 					<span className="text-xs">搜索</span>
-					<div className="flex items-center space-x-1 ml-4 text-[10px] bg-white px-1.5 py-0.5 rounded shadow-sm">
+					<div className="flex items-center space-x-1 ml-4 text-[10px] bg-white dark:bg-zinc-800 px-1.5 py-0.5 rounded shadow-sm border dark:border-zinc-700">
 						<span>Ctrl</span>
 						<span>K</span>
 					</div>
 				</div>
+
+				<CommandDialog open={openCommand} onOpenChange={setOpenCommand}>
+					<CommandInput placeholder="输入关键词搜索页面..." />
+					<CommandList>
+						<CommandEmpty>未找到结果</CommandEmpty>
+						<CommandGroup heading="页面路由">
+							<CommandItem onSelect={() => runCommand(() => navigate({ to: "/" }))}>仪表盘</CommandItem>
+							<CommandItem onSelect={() => runCommand(() => navigate({ to: "/system/user" }))}>用户管理</CommandItem>
+							<CommandItem onSelect={() => runCommand(() => navigate({ to: "/system/role" }))}>角色管理</CommandItem>
+							<CommandItem onSelect={() => runCommand(() => navigate({ to: "/system/menu" }))}>菜单管理</CommandItem>
+							<CommandItem onSelect={() => runCommand(() => navigate({ to: "/system/dict" }))}>字典管理</CommandItem>
+						</CommandGroup>
+					</CommandList>
+				</CommandDialog>
+
 				<button
 					type="button"
-					className="p-2 text-muted-foreground hover:text-foreground hover:bg-black/5 rounded-full transition-colors group"
+					onClick={toggleFullscreen}
+					className="p-2 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors group"
 				>
-					<Settings className="size-4" />
+					{isFullscreen ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
 				</button>
+
 				<button
 					type="button"
-					className="p-2 text-muted-foreground hover:text-foreground hover:bg-black/5 rounded-full transition-colors group"
+					onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+					className="p-2 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors group"
 				>
-					<Moon className="size-4" />
+					{theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
 				</button>
-				<button
-					type="button"
-					className="p-2 text-muted-foreground hover:text-foreground hover:bg-black/5 rounded-full transition-colors group"
-				>
-					<Globe className="size-4" />
-				</button>
-				<button
-					type="button"
-					className="p-2 text-muted-foreground hover:text-foreground hover:bg-black/5 rounded-full transition-colors relative group"
-				>
-					<motion.div
-						style={{ originY: 0 }}
-						whileHover={{ rotate: [0, -15, 15, -15, 15, 0] }}
-						transition={{ duration: 0.5, ease: "easeInOut" }}
-					>
-						<Bell className="size-4" />
-					</motion.div>
-					<span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full border border-white"></span>
-				</button>
-				<div className="w-[1px] h-4 bg-[#E5E5E5] mx-2" />
+
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<button
+							type="button"
+							className="p-2 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors group outline-none"
+						>
+							<Globe className="size-4" />
+						</button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end">
+						<DropdownMenuItem>简体中文</DropdownMenuItem>
+						<DropdownMenuItem>English</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+
+				<Popover>
+					<PopoverTrigger asChild>
+						<button
+							type="button"
+							className="p-2 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors relative group outline-none"
+						>
+							<motion.div
+								style={{ originY: 0 }}
+								whileHover={{ rotate: [0, -15, 15, -15, 15, 0] }}
+								transition={{ duration: 0.5, ease: "easeInOut" }}
+							>
+								<Bell className="size-4" />
+							</motion.div>
+							<span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full border border-white dark:border-zinc-950"></span>
+						</button>
+					</PopoverTrigger>
+					<PopoverContent align="end" className="w-80">
+						<div className="flex flex-col space-y-2">
+							<h4 className="font-semibold text-sm">通知</h4>
+							<div className="text-sm text-muted-foreground">暂无新通知。</div>
+						</div>
+					</PopoverContent>
+				</Popover>
+
+				<div className="w-[1px] h-4 bg-[#E5E5E5] dark:bg-zinc-800 mx-2" />
 				<AccountDropdown />
 			</div>
 		</header>
