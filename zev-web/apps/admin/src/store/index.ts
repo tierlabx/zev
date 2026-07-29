@@ -32,8 +32,7 @@ export const useUserStore = create<UserState>()(
 				if (perms.includes("*")) return true;
 				return perms.includes(perm);
 			},
-			logout: () =>
-				set({ token: null, userInfo: null, permissions: [], menus: [] }),
+			logout: () => set({ token: null, userInfo: null, permissions: [], menus: [] }),
 		}),
 		{
 			name: "user-store",

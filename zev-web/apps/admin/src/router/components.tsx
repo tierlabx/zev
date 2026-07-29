@@ -1,4 +1,4 @@
-import { Suspense, lazy, type ComponentType } from "react";
+import { type ComponentType, lazy, Suspense } from "react";
 
 /**
  * 页面加载占位组件

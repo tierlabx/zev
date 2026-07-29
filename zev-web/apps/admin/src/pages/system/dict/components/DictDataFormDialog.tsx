@@ -1,11 +1,15 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import Modal from "@zev/ui/components/animate/overlay/modal";
 import { Button } from "@zev/ui/components/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@zev/ui/components/form";
 import { Input } from "@zev/ui/components/input";
-import { Label } from "@zev/ui/components/label";
 import { Switch } from "@zev/ui/components/switch";
-import { useEffect, useState } from "react";
+import { motion, useAnimation } from "framer-motion";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
 import { createDictData, type DictData, updateDictData } from "@/api/system/dict";
 
 interface DictDataFormDialogProps {
@@ -16,6 +20,14 @@ interface DictDataFormDialogProps {
 	onSuccess: () => void;
 }
 
+const dictDataSchema = z.object({
+	label: z.string().min(1, "数据标签不能为空").max(32, "数据标签不能超过32个字符"),
+	value: z.string().min(1, "数据键值不能为空"),
+	sort: z.number().default(0),
+	status: z.number().default(0),
+	remark: z.string().optional(),
+});
+
 export function DictDataFormDialog({
 	open,
 	onOpenChange,
@@ -23,29 +35,33 @@ export function DictDataFormDialog({
 	dictType,
 	onSuccess,
 }: DictDataFormDialogProps) {
-	const [formData, setFormData] = useState({
-		label: "",
-		value: "",
-		sort: 0,
-		status: 0,
-		remark: "",
+	const controls = useAnimation();
+	const form = useForm<z.infer<typeof dictDataSchema>>({
+		resolver: zodResolver(dictDataSchema) as any,
+		defaultValues: {
+			label: "",
+			value: "",
+			sort: 0,
+			status: 0,
+			remark: "",
+		},
 	});
 
 	useEffect(() => {
 		if (open) {
 			if (editingDictData) {
-				setFormData({
+				form.reset({
 					label: editingDictData.label,
 					value: editingDictData.value,
 					sort: editingDictData.sort,
 					status: editingDictData.status,
-					remark: editingDictData.remark,
+					remark: editingDictData.remark || "",
 				});
 			} else {
-				setFormData({ label: "", value: "", sort: 0, status: 0, remark: "" });
+				form.reset({ label: "", value: "", sort: 0, status: 0, remark: "" });
 			}
 		}
-	}, [open, editingDictData]);
+	}, [open, editingDictData, form]);
 
 	const createMutation = useMutation({
 		mutationFn: createDictData,
@@ -71,20 +87,26 @@ export function DictDataFormDialog({
 		},
 	});
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
+	const onSubmit = (values: z.infer<typeof dictDataSchema>) => {
 		if (editingDictData) {
 			updateMutation.mutate({
 				ID: editingDictData.ID,
 				dict_type: dictType,
-				...formData,
+				...values,
 			} as Partial<DictData>);
 		} else {
 			createMutation.mutate({
 				dict_type: dictType,
-				...formData,
+				...values,
 			} as Partial<DictData>);
 		}
+	};
+
+	const onInvalid = () => {
+		controls.start({
+			x: [0, -10, 10, -10, 10, -5, 5, 0],
+			transition: { duration: 0.4 },
+		});
 	};
 
 	return (
@@ -98,60 +120,85 @@ export function DictDataFormDialog({
 				</p>
 			</div>
 
-			<form onSubmit={handleSubmit} className="space-y-4 mt-6">
-				<div className="space-y-2">
-					<Label htmlFor="label">数据标签</Label>
-					<Input
-						id="label"
-						value={formData.label}
-						onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-						required
+			<Form {...form}>
+				<motion.form animate={controls} onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-4 mt-6">
+					<FormField
+						control={form.control}
+						name="label"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>数据标签</FormLabel>
+								<FormControl>
+									<Input placeholder="输入数据标签" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="value">数据键值</Label>
-					<Input
-						id="value"
-						value={formData.value}
-						onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-						required
+					<FormField
+						control={form.control}
+						name="value"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>数据键值</FormLabel>
+								<FormControl>
+									<Input placeholder="输入数据键值" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="sort">排序</Label>
-					<Input
-						id="sort"
-						type="number"
-						value={formData.sort}
-						onChange={(e) => setFormData({ ...formData, sort: Number(e.target.value) })}
+					<FormField
+						control={form.control}
+						name="sort"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>排序</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="remark">备注</Label>
-					<Input
-						id="remark"
-						value={formData.remark}
-						onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
+					<FormField
+						control={form.control}
+						name="remark"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>备注</FormLabel>
+								<FormControl>
+									<Input placeholder="输入备注" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-				</div>
-				<div className="flex items-center space-x-2 pt-2">
-					<Switch
-						id="status"
-						checked={formData.status === 0}
-						onCheckedChange={(checked) => setFormData({ ...formData, status: checked ? 0 : 1 })}
+					<FormField
+						control={form.control}
+						name="status"
+						render={({ field }) => (
+							<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+								<div className="space-y-0.5">
+									<FormLabel>{field.value === 0 ? "正常" : "停用"}</FormLabel>
+								</div>
+								<FormControl>
+									<Switch checked={field.value === 0} onCheckedChange={(checked) => field.onChange(checked ? 0 : 1)} />
+								</FormControl>
+							</FormItem>
+						)}
 					/>
-					<Label htmlFor="status">{formData.status === 0 ? "正常" : "停用"}</Label>
-				</div>
 
-				<div className="pt-4 flex justify-end">
-					<Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
-						取消
-					</Button>
-					<Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-						{createMutation.isPending || updateMutation.isPending ? "保存中..." : "保存"}
-					</Button>
-				</div>
-			</form>
+					<div className="pt-4 flex justify-end">
+						<Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
+							取消
+						</Button>
+						<Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+							{createMutation.isPending || updateMutation.isPending ? "保存中..." : "保存"}
+						</Button>
+					</div>
+				</motion.form>
+			</Form>
 		</Modal>
 	);
 }

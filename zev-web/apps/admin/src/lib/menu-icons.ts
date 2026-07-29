@@ -1,12 +1,12 @@
 import {
 	Book,
-	LayoutDashboard,
 	FileText,
+	LayoutDashboard,
+	type LucideIcon,
 	Settings,
 	ShieldCheck,
 	TreeDeciduous,
 	Users,
-	type LucideIcon,
 } from "lucide-react";
 
 /**

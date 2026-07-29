@@ -2,9 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@zev/ui/components/button";
 import { Card } from "@zev/ui/components/card";
+import { Input } from "@zev/ui/components/input";
 import { Edit, Plus, Trash2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useDebounce } from "use-debounce";
 import {
 	type DictData,
 	type DictType,
@@ -15,12 +17,17 @@ import {
 } from "@/api/system/dict";
 import { ZevTable } from "@/components/zev-table";
 import { useConfirm } from "@/hooks/use-confirm";
+import { usePermission } from "@/hooks/use-permission";
 import { DictDataFormDialog } from "./components/DictDataFormDialog";
 import { DictTypeFormDialog } from "./components/DictTypeFormDialog";
 
 export default function DictManagement() {
 	const queryClient = useQueryClient();
 	const { confirm, ConfirmDialog } = useConfirm();
+	const { hasPermission } = usePermission();
+
+	const [searchKeyword, setSearchKeyword] = useState("");
+	const [debouncedKeyword] = useDebounce(searchKeyword, 300);
 
 	// Selection state
 	const [selectedDictType, setSelectedDictType] = useState<DictType | null>(null);
@@ -34,8 +41,8 @@ export default function DictManagement() {
 
 	// Queries
 	const { data: typeData, isLoading: isTypeLoading } = useQuery({
-		queryKey: ["dictTypes"],
-		queryFn: () => getDictTypeList({ page: 1, pageSize: 1000 }),
+		queryKey: ["dictTypes", debouncedKeyword],
+		queryFn: () => getDictTypeList({ page: 1, pageSize: 1000, keyword: debouncedKeyword }),
 	});
 
 	const { data: dataData, isLoading: isDataLoading } = useQuery({
@@ -138,22 +145,26 @@ export default function DictManagement() {
 				header: () => <div className="text-right">操作</div>,
 				cell: ({ row }) => (
 					<div className="flex justify-end space-x-2">
-						<Button variant="outline" size="icon" onClick={(e) => handleEditType(e, row.original)} title="编辑">
-							<Edit className="h-4 w-4" />
-						</Button>
-						<Button
-							variant="destructive"
-							size="icon"
-							onClick={(e) => handleDeleteType(e, row.original.ID)}
-							title="删除"
-						>
-							<Trash2 className="h-4 w-4" />
-						</Button>
+						{hasPermission("system:dict:update") && (
+							<Button variant="outline" size="icon" onClick={(e) => handleEditType(e, row.original)} title="编辑">
+								<Edit className="h-4 w-4" />
+							</Button>
+						)}
+						{hasPermission("system:dict:delete") && (
+							<Button
+								variant="destructive"
+								size="icon"
+								onClick={(e) => handleDeleteType(e, row.original.ID)}
+								title="删除"
+							>
+								<Trash2 className="h-4 w-4" />
+							</Button>
+						)}
 					</div>
 				),
 			},
 		],
-		[handleEditType, handleDeleteType],
+		[handleEditType, handleDeleteType, hasPermission],
 	);
 
 	const dataColumns = useMemo<ColumnDef<DictData>[]>(
@@ -184,17 +195,21 @@ export default function DictManagement() {
 				header: () => <div className="text-right">操作</div>,
 				cell: ({ row }) => (
 					<div className="flex justify-end space-x-2">
-						<Button variant="outline" size="icon" onClick={() => handleEditData(row.original)} title="编辑">
-							<Edit className="h-4 w-4" />
-						</Button>
-						<Button variant="destructive" size="icon" onClick={() => handleDeleteData(row.original.ID)} title="删除">
-							<Trash2 className="h-4 w-4" />
-						</Button>
+						{hasPermission("system:dict:update") && (
+							<Button variant="outline" size="icon" onClick={() => handleEditData(row.original)} title="编辑">
+								<Edit className="h-4 w-4" />
+							</Button>
+						)}
+						{hasPermission("system:dict:delete") && (
+							<Button variant="destructive" size="icon" onClick={() => handleDeleteData(row.original.ID)} title="删除">
+								<Trash2 className="h-4 w-4" />
+							</Button>
+						)}
 					</div>
 				),
 			},
 		],
-		[handleEditData, handleDeleteData],
+		[handleEditData, handleDeleteData, hasPermission],
 	);
 
 	return (
@@ -204,22 +219,31 @@ export default function DictManagement() {
 				<Card className="col-span-1 rounded-md shadow-sm border p-4 flex flex-col">
 					<div className="flex items-center justify-between mb-4">
 						<h2 className="text-lg font-semibold">字典类型</h2>
-						<Button onClick={handleAddType} size="sm">
-							<Plus className="mr-2 h-4 w-4" />
-							添加类型
-						</Button>
+						{hasPermission("system:dict:create") && (
+							<Button onClick={handleAddType} size="sm">
+								<Plus className="mr-2 h-4 w-4" />
+								添加类型
+							</Button>
+						)}
+					</div>
+					<div className="mb-4">
+						<Input
+							placeholder="搜索类型名称..."
+							value={searchKeyword}
+							onChange={(e) => setSearchKeyword(e.target.value)}
+						/>
 					</div>
 					<div className="flex-1 min-h-0">
-							<ZevTable
-								columns={typeColumns}
-								data={dictTypes}
-								isLoading={isTypeLoading}
-								containerHeight="calc(100vh - 200px)"
-								onRowClick={(row) => setSelectedDictType(row)}
-								className="border-gray-200"
-								pagination={false}
-								showToolbar={false}
-							/>
+						<ZevTable
+							columns={typeColumns}
+							data={dictTypes}
+							isLoading={isTypeLoading}
+							containerHeight="calc(100vh - 200px)"
+							onRowClick={(row) => setSelectedDictType(row)}
+							className="border-gray-200"
+							pagination={false}
+							showToolbar={false}
+						/>
 					</div>
 				</Card>
 
@@ -228,24 +252,26 @@ export default function DictManagement() {
 					<div className="flex items-center justify-between mb-4">
 						<h2 className="text-lg font-semibold">
 							字典数据{" "}
-							{selectedDictType && <span className="text-[#1677FF] text-sm ml-2">({selectedDictType.name})</span>}
+							{selectedDictType && <span className="text-blue-600 text-sm ml-2">({selectedDictType.name})</span>}
 						</h2>
-						<Button onClick={handleAddData} size="sm" disabled={!selectedDictType}>
-							<Plus className="mr-2 h-4 w-4" />
-							添加数据
-						</Button>
+						{hasPermission("system:dict:create") && (
+							<Button onClick={handleAddData} size="sm" disabled={!selectedDictType}>
+								<Plus className="mr-2 h-4 w-4" />
+								添加数据
+							</Button>
+						)}
 					</div>
 					<div className="flex-1 min-h-0">
 						{selectedDictType ? (
-								<ZevTable
-									columns={dataColumns}
-									data={dictDataList}
-									isLoading={isDataLoading}
-									containerHeight="calc(100vh - 200px)"
-									className="border-gray-200"
-									pagination={false}
-									showToolbar={false}
-								/>
+							<ZevTable
+								columns={dataColumns}
+								data={dictDataList}
+								isLoading={isDataLoading}
+								containerHeight="calc(100vh - 200px)"
+								className="border-gray-200"
+								pagination={false}
+								showToolbar={false}
+							/>
 						) : (
 							<div className="h-[calc(100vh-200px)] flex items-center justify-center border border-dashed rounded-md text-gray-400">
 								请在左侧选择一个字典类型

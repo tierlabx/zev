@@ -20,3 +20,7 @@ export const updateUser = (data: Partial<User>) => {
 export const deleteUser = (id: number) => {
 	return request.delete(`/system/user/delete/${id}`);
 };
+
+export const assignUserRole = (id: number, roleId: number) => {
+	return request.post(`/system/user/role/${id}`, { role_id: roleId });
+};

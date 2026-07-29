@@ -251,3 +251,31 @@ func (c *UserController) UserInfo(ctx *gin.Context) {
 
 	response.SuccessData(res, ctx)
 }
+
+// List 重写获取用户列表，支持 keyword 模糊搜索
+// @Summary 获取用户列表
+// @Description 获取分页用户列表，支持按用户名、昵称、邮箱进行 keyword 模糊搜索
+// @Tags 系统管理-用户
+// @Produce json
+// @Security Bearer
+// @Param page query int false "页码"
+// @Param pageSize query int false "每页数量"
+// @Param keyword query string false "搜索关键词"
+// @Success 200 {object} response.Response "成功"
+// @Router /api/system/user/list [get]
+func (c *UserController) List(ctx *gin.Context) {
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("pageSize", "10"))
+	keyword := ctx.Query("keyword")
+
+	list, total, err := c.userService.ListWithKeyword(page, pageSize, keyword)
+	if err != nil {
+		response.FailMessage("获取列表失败", ctx)
+		return
+	}
+
+	response.SuccessData(map[string]interface{}{
+		"list":  list,
+		"total": total,
+	}, ctx)
+}

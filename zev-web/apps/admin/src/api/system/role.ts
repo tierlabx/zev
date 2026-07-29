@@ -14,6 +14,7 @@ export interface Role {
 export interface RoleListParams {
 	page: number;
 	pageSize: number;
+	keyword?: string;
 }
 
 export interface RoleListResponse {

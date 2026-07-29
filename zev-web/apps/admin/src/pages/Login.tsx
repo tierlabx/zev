@@ -10,11 +10,11 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useLoginMutation, getUserInfoApi } from "@/api/system/auth";
+import { getUserInfoApi, useLoginMutation } from "@/api/system/auth";
 import logoUrl from "@/assets/logo-animated.svg";
+import ThreeKoiBackground from "@/components/ThreeKoiBackground/index";
 import { findFirstPagePath } from "@/lib/menu-utils";
 import { useUserStore } from "@/store";
-import ThreeKoiBackground from "@/components/ThreeKoiBackground/index";
 
 const loginSchema = z.object({
 	username: z.string().min(1, { message: "请输入用户名或邮箱" }),

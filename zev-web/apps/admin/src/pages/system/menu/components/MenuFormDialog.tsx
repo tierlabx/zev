@@ -1,10 +1,15 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import Modal from "@zev/ui/components/animate/overlay/modal";
 import { Button } from "@zev/ui/components/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@zev/ui/components/form";
 import { Input } from "@zev/ui/components/input";
-import { Label } from "@zev/ui/components/label";
-import { useEffect, useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zev/ui/components/select";
+import { motion, useAnimation } from "framer-motion";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
 import { createMenu, type Menu, updateMenu } from "@/api/system/menu";
 
 interface MenuFormDialogProps {
@@ -15,33 +20,74 @@ interface MenuFormDialogProps {
 	onSuccess: () => void;
 }
 
-export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSuccess }: MenuFormDialogProps) {
-	const [formData, setFormData] = useState<Partial<Menu>>({
-		parent_id: 0,
-		name: "",
-		path: "",
-		component: "",
-		icon: "",
-		sort: 0,
-		type: "C",
-		perms: "",
+const menuSchema = z
+	.object({
+		parent_id: z.number(),
+		type: z.string(),
+		name: z.string().min(1, "菜单名称不能为空"),
+		path: z.string().optional(),
+		component: z.string().optional(),
+		icon: z.string().optional(),
+		sort: z.number().default(0),
+		perms: z.string().optional(),
+	})
+	.superRefine((data, ctx) => {
+		if (data.type === "C" && (!data.path || data.path.trim() === "")) {
+			ctx.addIssue({
+				path: ["path"],
+				message: "菜单类型必须填写路由路径",
+				code: z.ZodIssueCode.custom,
+			});
+		}
+		if (data.type === "C" && (!data.component || data.component.trim() === "")) {
+			ctx.addIssue({
+				path: ["component"],
+				message: "菜单类型必须填写组件路径",
+				code: z.ZodIssueCode.custom,
+			});
+		}
+		if (data.type === "F" && (!data.perms || data.perms.trim() === "")) {
+			ctx.addIssue({
+				path: ["perms"],
+				message: "按钮类型必须填写权限标识",
+				code: z.ZodIssueCode.custom,
+			});
+		}
 	});
+
+export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSuccess }: MenuFormDialogProps) {
+	const controls = useAnimation();
+	const form = useForm<z.infer<typeof menuSchema>>({
+		resolver: zodResolver(menuSchema) as any,
+		defaultValues: {
+			parent_id: 0,
+			name: "",
+			path: "",
+			component: "",
+			icon: "",
+			sort: 0,
+			type: "C",
+			perms: "",
+		},
+	});
+
+	const selectedType = form.watch("type");
 
 	useEffect(() => {
 		if (open) {
 			if (editingMenu) {
-				setFormData({
+				form.reset({
 					parent_id: editingMenu.parent_id,
 					name: editingMenu.name,
-					path: editingMenu.path,
-					component: editingMenu.component,
-					icon: editingMenu.icon,
+					path: editingMenu.path || "",
+					component: editingMenu.component || "",
+					icon: editingMenu.icon || "",
 					sort: editingMenu.sort,
 					type: editingMenu.type,
-					perms: editingMenu.perms,
+					perms: editingMenu.perms || "",
 				});
 			} else {
-				setFormData({
+				form.reset({
 					parent_id: parentId,
 					name: "",
 					path: "",
@@ -53,7 +99,7 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 				});
 			}
 		}
-	}, [open, editingMenu, parentId]);
+	}, [open, editingMenu, parentId, form]);
 
 	const createMutation = useMutation({
 		mutationFn: createMenu,
@@ -79,16 +125,22 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 		},
 	});
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
+	const onSubmit = (values: z.infer<typeof menuSchema>) => {
 		if (editingMenu) {
 			updateMutation.mutate({
 				ID: editingMenu.ID,
-				...formData,
-			});
+				...values,
+			} as Partial<Menu>);
 		} else {
-			createMutation.mutate(formData);
+			createMutation.mutate(values as Partial<Menu>);
 		}
+	};
+
+	const onInvalid = () => {
+		controls.start({
+			x: [0, -10, 10, -10, 10, -5, 5, 0],
+			transition: { duration: 0.4 },
+		});
 	};
 
 	return (
@@ -100,113 +152,150 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 				</p>
 			</div>
 
-			<form onSubmit={handleSubmit} className="space-y-4 mt-6">
-				<div className="space-y-2">
-					<Label htmlFor="type">菜单类型</Label>
-					<select
-						id="type"
-						className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-						value={formData.type}
-						onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-					>
-						<option value="M">目录</option>
-						<option value="C">菜单</option>
-						<option value="F">按钮</option>
-					</select>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="name">菜单名称</Label>
-					<Input
-						id="name"
-						value={formData.name}
-						onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-						required
-						placeholder={
-							formData.type === "M" ? "如：系统管理" : formData.type === "C" ? "如：用户管理" : "如：新增用户"
-						}
+			<Form {...form}>
+				<motion.form animate={controls} onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-4 mt-6">
+					<FormField
+						control={form.control}
+						name="type"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>菜单类型</FormLabel>
+								<Select onValueChange={field.onChange} value={field.value}>
+									<FormControl>
+										<SelectTrigger>
+											<SelectValue placeholder="选择菜单类型" />
+										</SelectTrigger>
+									</FormControl>
+									<SelectContent>
+										<SelectItem value="M">目录</SelectItem>
+										<SelectItem value="C">菜单</SelectItem>
+										<SelectItem value="F">按钮</SelectItem>
+									</SelectContent>
+								</Select>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="parent_id">父级 ID</Label>
-					<Input
-						id="parent_id"
-						type="number"
-						value={formData.parent_id}
-						onChange={(e) => setFormData({ ...formData, parent_id: Number(e.target.value) })}
-						required
+					<FormField
+						control={form.control}
+						name="name"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>菜单名称</FormLabel>
+								<FormControl>
+									<Input
+										placeholder={
+											selectedType === "M" ? "如：系统管理" : selectedType === "C" ? "如：用户管理" : "如：新增用户"
+										}
+										{...field}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-				</div>
-
-				{formData.type !== "F" && (
-					<div className="space-y-2">
-						<Label htmlFor="path">路由路径</Label>
-						<Input
-							id="path"
-							value={formData.path}
-							onChange={(e) => setFormData({ ...formData, path: e.target.value })}
-							required={formData.type === "C"}
-							placeholder={formData.type === "M" ? "如：/system" : "如：/system/user"}
-						/>
-					</div>
-				)}
-
-				{formData.type === "C" && (
-					<div className="space-y-2">
-						<Label htmlFor="component">组件路径</Label>
-						<Input
-							id="component"
-							value={formData.component}
-							onChange={(e) => setFormData({ ...formData, component: e.target.value })}
-							required
-							placeholder="如：system/user/index"
-						/>
-					</div>
-				)}
-
-				{formData.type !== "M" && (
-					<div className="space-y-2">
-						<Label htmlFor="perms">权限标识</Label>
-						<Input
-							id="perms"
-							value={formData.perms}
-							onChange={(e) => setFormData({ ...formData, perms: e.target.value })}
-							required={formData.type === "F"}
-							placeholder="如：system:user:add"
-						/>
-					</div>
-				)}
-
-				{formData.type !== "F" && (
-					<div className="space-y-2">
-						<Label htmlFor="icon">图标</Label>
-						<Input
-							id="icon"
-							value={formData.icon}
-							onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-							placeholder="如：Settings"
-						/>
-					</div>
-				)}
-
-				<div className="space-y-2">
-					<Label htmlFor="sort">排序</Label>
-					<Input
-						id="sort"
-						type="number"
-						value={formData.sort}
-						onChange={(e) => setFormData({ ...formData, sort: Number(e.target.value) })}
+					<FormField
+						control={form.control}
+						name="parent_id"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>父级 ID</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-				</div>
 
-				<div className="pt-4 flex justify-end">
-					<Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
-						取消
-					</Button>
-					<Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-						{createMutation.isPending || updateMutation.isPending ? "保存中..." : "保存"}
-					</Button>
-				</div>
-			</form>
+					{selectedType !== "F" && (
+						<FormField
+							control={form.control}
+							name="path"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>路由路径</FormLabel>
+									<FormControl>
+										<Input placeholder={selectedType === "M" ? "如：/system" : "如：/system/user"} {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					)}
+
+					{selectedType === "C" && (
+						<FormField
+							control={form.control}
+							name="component"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>组件路径</FormLabel>
+									<FormControl>
+										<Input placeholder="如：system/user/index" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					)}
+
+					{selectedType !== "M" && (
+						<FormField
+							control={form.control}
+							name="perms"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>权限标识</FormLabel>
+									<FormControl>
+										<Input placeholder="如：system:user:add" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					)}
+
+					{selectedType !== "F" && (
+						<FormField
+							control={form.control}
+							name="icon"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>图标</FormLabel>
+									<FormControl>
+										<Input placeholder="如：Settings" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					)}
+
+					<FormField
+						control={form.control}
+						name="sort"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>排序</FormLabel>
+								<FormControl>
+									<Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					<div className="pt-4 flex justify-end">
+						<Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
+							取消
+						</Button>
+						<Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+							{createMutation.isPending || updateMutation.isPending ? "保存中..." : "保存"}
+						</Button>
+					</div>
+				</motion.form>
+			</Form>
 		</Modal>
 	);
 }

@@ -1,11 +1,15 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import Modal from "@zev/ui/components/animate/overlay/modal";
 import { Button } from "@zev/ui/components/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@zev/ui/components/form";
 import { Input } from "@zev/ui/components/input";
-import { Label } from "@zev/ui/components/label";
 import { Switch } from "@zev/ui/components/switch";
-import { useEffect, useState } from "react";
+import { motion, useAnimation } from "framer-motion";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
 import { createDictType, type DictType, updateDictType } from "@/api/system/dict";
 
 interface DictTypeFormDialogProps {
@@ -15,28 +19,39 @@ interface DictTypeFormDialogProps {
 	onSuccess: () => void;
 }
 
+const dictTypeSchema = z.object({
+	name: z.string().min(2, "字典名称至少需要2个字符").max(32, "字典名称不能超过32个字符"),
+	type: z.string().min(2, "字典类型至少需要2个字符"),
+	status: z.number().default(0),
+	remark: z.string().optional(),
+});
+
 export function DictTypeFormDialog({ open, onOpenChange, editingDictType, onSuccess }: DictTypeFormDialogProps) {
-	const [formData, setFormData] = useState({
-		name: "",
-		type: "",
-		status: 0,
-		remark: "",
+	const controls = useAnimation();
+	const form = useForm<z.infer<typeof dictTypeSchema>>({
+		resolver: zodResolver(dictTypeSchema) as any,
+		defaultValues: {
+			name: "",
+			type: "",
+			status: 0,
+			remark: "",
+		},
 	});
 
 	useEffect(() => {
 		if (open) {
 			if (editingDictType) {
-				setFormData({
+				form.reset({
 					name: editingDictType.name,
 					type: editingDictType.type,
 					status: editingDictType.status,
-					remark: editingDictType.remark,
+					remark: editingDictType.remark || "",
 				});
 			} else {
-				setFormData({ name: "", type: "", status: 0, remark: "" });
+				form.reset({ name: "", type: "", status: 0, remark: "" });
 			}
 		}
-	}, [open, editingDictType]);
+	}, [open, editingDictType, form]);
 
 	const createMutation = useMutation({
 		mutationFn: createDictType,
@@ -62,18 +77,22 @@ export function DictTypeFormDialog({ open, onOpenChange, editingDictType, onSucc
 		},
 	});
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
+	const onSubmit = (values: z.infer<typeof dictTypeSchema>) => {
 		if (editingDictType) {
 			updateMutation.mutate({
 				ID: editingDictType.ID,
-				...formData,
+				...values,
 			} as Partial<DictType>);
 		} else {
-			createMutation.mutate({
-				...formData,
-			} as Partial<DictType>);
+			createMutation.mutate(values as Partial<DictType>);
 		}
+	};
+
+	const onInvalid = () => {
+		controls.start({
+			x: [0, -10, 10, -10, 10, -5, 5, 0],
+			transition: { duration: 0.4 },
+		});
 	};
 
 	return (
@@ -87,51 +106,72 @@ export function DictTypeFormDialog({ open, onOpenChange, editingDictType, onSucc
 				</p>
 			</div>
 
-			<form onSubmit={handleSubmit} className="space-y-4 mt-6">
-				<div className="space-y-2">
-					<Label htmlFor="name">字典名称</Label>
-					<Input
-						id="name"
-						value={formData.name}
-						onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-						required
+			<Form {...form}>
+				<motion.form animate={controls} onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-4 mt-6">
+					<FormField
+						control={form.control}
+						name="name"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>字典名称</FormLabel>
+								<FormControl>
+									<Input placeholder="输入字典名称" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="type">字典类型</Label>
-					<Input
-						id="type"
-						value={formData.type}
-						onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-						required
+					<FormField
+						control={form.control}
+						name="type"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>字典类型</FormLabel>
+								<FormControl>
+									<Input placeholder="输入字典类型" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="remark">备注</Label>
-					<Input
-						id="remark"
-						value={formData.remark}
-						onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
+					<FormField
+						control={form.control}
+						name="remark"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>备注</FormLabel>
+								<FormControl>
+									<Input placeholder="输入备注" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-				</div>
-				<div className="flex items-center space-x-2 pt-2">
-					<Switch
-						id="status"
-						checked={formData.status === 0}
-						onCheckedChange={(checked) => setFormData({ ...formData, status: checked ? 0 : 1 })}
+					<FormField
+						control={form.control}
+						name="status"
+						render={({ field }) => (
+							<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+								<div className="space-y-0.5">
+									<FormLabel>{field.value === 0 ? "正常" : "停用"}</FormLabel>
+								</div>
+								<FormControl>
+									<Switch checked={field.value === 0} onCheckedChange={(checked) => field.onChange(checked ? 0 : 1)} />
+								</FormControl>
+							</FormItem>
+						)}
 					/>
-					<Label htmlFor="status">{formData.status === 0 ? "正常" : "停用"}</Label>
-				</div>
 
-				<div className="pt-4 flex justify-end">
-					<Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
-						取消
-					</Button>
-					<Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-						{createMutation.isPending || updateMutation.isPending ? "保存中..." : "保存"}
-					</Button>
-				</div>
-			</form>
+					<div className="pt-4 flex justify-end">
+						<Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
+							取消
+						</Button>
+						<Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+							{createMutation.isPending || updateMutation.isPending ? "保存中..." : "保存"}
+						</Button>
+					</div>
+				</motion.form>
+			</Form>
 		</Modal>
 	);
 }

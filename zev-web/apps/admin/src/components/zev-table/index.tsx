@@ -1,19 +1,19 @@
-import * as React from "react";
 import {
 	type ColumnDef,
-	type SortingState,
-	type VisibilityState,
-	type RowSelectionState,
 	flexRender,
 	getCoreRowModel,
 	getSortedRowModel,
+	type RowSelectionState,
+	type SortingState,
 	useReactTable,
+	type VisibilityState,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { Skeleton } from "@zev/ui/components/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@zev/ui/components/table";
 import { cn } from "@zev/ui/lib/utils";
 import { motion, type Variants } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import * as React from "react";
 
 import { Pagination } from "./pagination";
 import { TableToolbar } from "./table-toolbar";
@@ -100,7 +100,7 @@ export function ZevTable<TData, TValue>({
 			const selectedRows = table.getSelectedRowModel().rows.map((row) => row.original);
 			onSelectionChange(selectedRows);
 		}
-	}, [rowSelection, table, onSelectionChange]);
+	}, [table, onSelectionChange]);
 
 	const { rows } = table.getRowModel();
 	const tableContainerRef = React.useRef<HTMLDivElement>(null);
@@ -126,99 +126,119 @@ export function ZevTable<TData, TValue>({
 			{showToolbar && <TableToolbar table={table} />}
 
 			<div ref={tableContainerRef} className="w-full overflow-auto relative" style={{ height: containerHeight }}>
-				{isLoading && data.length === 0 && (
-					<div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-[1px]">
-						<div className="flex flex-col items-center justify-center space-y-2 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-							<Loader2 className="h-6 w-6 animate-spin text-black" />
-							<span className="text-sm text-gray-500">正在加载数据...</span>
-						</div>
-					</div>
-				)}
-
-				<Table className="relative w-full">
-					<TableHeader className="sticky top-0 z-20">
-						{table.getHeaderGroups().map((headerGroup) => (
-							<TableRow key={headerGroup.id} className="bg-gray-50/90 backdrop-blur-md border-b-gray-200">
-								{headerGroup.headers.map((header) => {
-									return (
-										<TableHead
-											key={header.id}
-											colSpan={header.colSpan}
-											style={{ width: header.getSize() }}
-											onClick={header.column.getToggleSortingHandler()}
-											className={cn(
-												header.column.getCanSort() ? "cursor-pointer select-none" : "",
-												"transition-colors hover:text-gray-900 text-gray-600 font-medium",
-											)}
-										>
-											{header.isPlaceholder ? null : (
-												<div className="flex items-center space-x-2">
-													{flexRender(header.column.columnDef.header, header.getContext())}
-													{{
-														asc: <span className="text-[10px] text-black">▲</span>,
-														desc: <span className="text-[10px] text-black">▼</span>,
-													}[header.column.getIsSorted() as string] ?? null}
-												</div>
-											)}
-										</TableHead>
-									);
-								})}
+				{isLoading && data.length === 0 ? (
+					<Table className="relative w-full">
+						<TableHeader className="sticky top-0 z-20">
+							<TableRow className="bg-gray-50/90 backdrop-blur-md border-b-gray-200">
+								{columns.map((_, idx) => (
+									// biome-ignore lint/suspicious/noArrayIndexKey: Static array for skeleton loading
+									<TableHead key={idx} className="font-medium text-gray-600">
+										<Skeleton className="h-4 w-20" />
+									</TableHead>
+								))}
 							</TableRow>
-						))}
-					</TableHeader>
-					<TableBody>
-						{paddingTop > 0 && (
-							<tr>
-								<td style={{ height: `${paddingTop}px` }} />
-							</tr>
-						)}
-
-						{virtualItems.map((virtualRow, idx) => {
-							const row = rows[virtualRow.index];
-							// 尝试获取唯一标识作为 key，如果没有则回退到 row.id
-							const rowKey = (row.original as any).ID || (row.original as any).id || row.id;
-							
-							return (
-								<MotionTableRow
-									key={rowKey}
-									custom={idx}
-									initial="hidden"
-									animate="visible"
-									variants={rowVariants}
-									data-index={virtualRow.index}
-									ref={rowVirtualizer.measureElement}
-									onClick={() => onRowClick?.(row.original)}
-									data-state={row.getIsSelected() && "selected"}
-									className={cn(
-										onRowClick && "cursor-pointer",
-										"transition-colors hover:bg-gray-50 border-b-gray-100",
-										row.getIsSelected() && "bg-gray-50/50",
-									)}
-								>
-									{row.getVisibleCells().map((cell) => (
-										<TableCell key={cell.id} style={{ width: cell.column.getSize() }} className="py-3">
-											{flexRender(cell.column.columnDef.cell, cell.getContext())}
+						</TableHeader>
+						<TableBody>
+							{Array.from({ length: pageSize || 10 }).map((_, idx) => (
+								// biome-ignore lint/suspicious/noArrayIndexKey: Static array for skeleton loading
+								<TableRow key={idx} className="border-b-gray-100">
+									{columns.map((_, colIdx) => (
+										// biome-ignore lint/suspicious/noArrayIndexKey: Static array for skeleton loading
+										<TableCell key={colIdx} className="py-4">
+											<Skeleton className="h-4 w-full max-w-[120px]" />
 										</TableCell>
 									))}
-								</MotionTableRow>
-							);
-						})}
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				) : (
+					<Table className="relative w-full">
+						<TableHeader className="sticky top-0 z-20">
+							{table.getHeaderGroups().map((headerGroup) => (
+								<TableRow key={headerGroup.id} className="bg-gray-50/90 backdrop-blur-md border-b-gray-200">
+									{headerGroup.headers.map((header) => {
+										return (
+											<TableHead
+												key={header.id}
+												colSpan={header.colSpan}
+												style={{ width: header.getSize() }}
+												onClick={header.column.getToggleSortingHandler()}
+												className={cn(
+													header.column.getCanSort() ? "cursor-pointer select-none" : "",
+													"transition-colors hover:text-gray-900 text-gray-600 font-medium",
+												)}
+											>
+												{header.isPlaceholder ? null : (
+													<div className="flex items-center space-x-2">
+														{flexRender(header.column.columnDef.header, header.getContext())}
+														{{
+															asc: <span className="text-[10px] text-black">▲</span>,
+															desc: <span className="text-[10px] text-black">▼</span>,
+														}[header.column.getIsSorted() as string] ?? null}
+													</div>
+												)}
+											</TableHead>
+										);
+									})}
+								</TableRow>
+							))}
+						</TableHeader>
+						<TableBody>
+							{paddingTop > 0 && (
+								<tr>
+									<td style={{ height: `${paddingTop}px` }} />
+								</tr>
+							)}
 
-						{paddingBottom > 0 && (
-							<tr>
-								<td style={{ height: `${paddingBottom}px` }} />
-							</tr>
-						)}
+							{virtualItems.map((virtualRow, idx) => {
+								const row = rows[virtualRow.index];
+								// 尝试获取唯一标识作为 key，如果没有则回退到 row.id
+								// biome-ignore lint/suspicious/noExplicitAny: Generic row mapping fallback
+								const rowKey = (row.original as any).ID || (row.original as any).id || row.id;
 
-						{!isLoading && rows.length === 0 && (
-							<TableRow>
-								<TableCell colSpan={columns.length} className="h-32 text-center text-gray-500">
-									暂无数据
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</Table>
+								return (
+									<MotionTableRow
+										key={rowKey}
+										custom={idx}
+										initial="hidden"
+										animate="visible"
+										variants={rowVariants}
+										data-index={virtualRow.index}
+										ref={rowVirtualizer.measureElement}
+										onClick={() => onRowClick?.(row.original)}
+										data-state={row.getIsSelected() && "selected"}
+										className={cn(
+											onRowClick && "cursor-pointer",
+											"transition-colors hover:bg-gray-50 border-b-gray-100",
+											row.getIsSelected() && "bg-gray-50/50",
+										)}
+									>
+										{row.getVisibleCells().map((cell) => (
+											<TableCell key={cell.id} style={{ width: cell.column.getSize() }} className="py-3">
+												{flexRender(cell.column.columnDef.cell, cell.getContext())}
+											</TableCell>
+										))}
+									</MotionTableRow>
+								);
+							})}
+
+							{paddingBottom > 0 && (
+								<tr>
+									<td style={{ height: `${paddingBottom}px` }} />
+								</tr>
+							)}
+
+							{!isLoading && rows.length === 0 && (
+								<TableRow>
+									<TableCell colSpan={columns.length} className="h-32 text-center text-gray-500">
+										暂无数据
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
+				)}
 			</div>
 
 			{pagination && onPageChange && onPageSizeChange && (

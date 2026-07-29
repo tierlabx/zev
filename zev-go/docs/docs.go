@@ -38,6 +38,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/dashboard/stats": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "获取用户、角色、菜单等数量，近期趋势和最新活动记录",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理-仪表盘"
+                ],
+                "summary": "获取仪表盘统计数据",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DashboardRes"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/dict/data/create": {
             "post": {
                 "security": [
@@ -1521,6 +1558,91 @@ const docTemplate = `{
             "properties": {
                 "role_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.DashboardActivityRes": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "operator": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DashboardHealthRes": {
+            "type": "object",
+            "properties": {
+                "apiUsage": {
+                    "type": "integer"
+                },
+                "cpuUsage": {
+                    "type": "integer"
+                },
+                "dbResponse": {
+                    "type": "integer"
+                },
+                "memoryUsage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.DashboardRes": {
+            "type": "object",
+            "properties": {
+                "activities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.DashboardActivityRes"
+                    }
+                },
+                "health": {
+                    "$ref": "#/definitions/dto.DashboardHealthRes"
+                },
+                "stats": {
+                    "$ref": "#/definitions/dto.DashboardStatsRes"
+                },
+                "trends": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.DashboardTrendRes"
+                    }
+                }
+            }
+        },
+        "dto.DashboardStatsRes": {
+            "type": "object",
+            "properties": {
+                "dictTotal": {
+                    "type": "integer"
+                },
+                "menuTotal": {
+                    "type": "integer"
+                },
+                "roleTotal": {
+                    "type": "integer"
+                },
+                "userTotal": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.DashboardTrendRes": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
                 }
             }
         },

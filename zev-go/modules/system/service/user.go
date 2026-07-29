@@ -64,3 +64,19 @@ func (s *UserService) Login(req dto.LoginReq) (*dto.LoginRes, error) {
 func (s *UserService) AssignRole(userID uint, roleID uint) error {
 	return s.DB.Model(&entity.User{}).Where("id = ?", userID).Update("role_id", roleID).Error
 }
+
+func (s *UserService) ListWithKeyword(page, pageSize int, keyword string) ([]entity.User, int64, error) {
+	var entities []entity.User
+	var total int64
+	var model entity.User
+
+	db := s.DB.Model(&model)
+	if keyword != "" {
+		db = db.Where("username LIKE ? OR nickname LIKE ? OR email LIKE ?", "%"+keyword+"%", "%"+keyword+"%", "%"+keyword+"%")
+	}
+
+	db.Count(&total)
+	err := db.Offset((page - 1) * pageSize).Limit(pageSize).Find(&entities).Error
+
+	return entities, total, err
+}

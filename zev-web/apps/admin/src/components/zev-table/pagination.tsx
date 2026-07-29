@@ -1,7 +1,7 @@
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { Button } from "@zev/ui/components/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zev/ui/components/select";
 import { cn } from "@zev/ui/lib/utils";
+import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 
 interface PaginationProps {
 	page: number;
@@ -36,6 +36,7 @@ export function Pagination({ page, pageSize, total, onPageChange, onPageSizeChan
 		return pages.map((p, idx) => {
 			if (p === "ellipsis") {
 				return (
+					// biome-ignore lint/suspicious/noArrayIndexKey: Static array mapping for pagination
 					<div key={`ellipsis-${idx}`} className="flex items-end justify-center w-8 h-8 pb-1 text-gray-400">
 						<MoreHorizontal className="w-4 h-4" />
 					</div>

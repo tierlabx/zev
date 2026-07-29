@@ -24,9 +24,7 @@ function joinPath(parent: string, child: string): string {
  * - 任何需要"第一个可用页面"的场景
  */
 export function findFirstPagePath(menus: MenuItem[], parentPath = ""): string | null {
-	const sorted = [...menus]
-		.filter((m) => m.type === "M" || m.type === "C")
-		.sort((a, b) => a.sort - b.sort);
+	const sorted = [...menus].filter((m) => m.type === "M" || m.type === "C").sort((a, b) => a.sort - b.sort);
 
 	for (const menu of sorted) {
 		const fullPath = joinPath(parentPath, menu.path);

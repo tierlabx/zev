@@ -25,6 +25,7 @@ export interface DictData {
 export interface ListParams {
 	page: number;
 	pageSize: number;
+	keyword?: string;
 }
 
 export interface DictTypeListResponse {

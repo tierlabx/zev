@@ -4,15 +4,17 @@ import { Badge } from "@zev/ui/components/badge";
 import { Button } from "@zev/ui/components/button";
 import { Card } from "@zev/ui/components/card";
 import { Input } from "@zev/ui/components/input";
-import { Edit, Plus, Trash2 } from "lucide-react";
+import { Edit, Plus, ShieldCheck, Trash2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useDebounce } from "use-debounce";
 import { getRoleList } from "@/api/system/role";
 import { deleteUser, getUserList, type User } from "@/api/system/user";
 import { ZevTable } from "@/components/zev-table";
 import { Checkbox } from "@/components/zev-table/checkbox";
 import { useConfirm } from "@/hooks/use-confirm";
 import { usePermission } from "@/hooks/use-permission";
+import { AssignUserRoleDialog } from "./components/AssignUserRoleDialog";
 import { UserFormDialog } from "./components/UserFormDialog";
 
 export default function UserManagement() {
@@ -23,13 +25,17 @@ export default function UserManagement() {
 
 	const { confirm, ConfirmDialog } = useConfirm();
 	const [search, setSearch] = useState("");
+	const [debouncedSearch] = useDebounce(search, 300);
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [editingUser, setEditingUser] = useState<User | null>(null);
 
+	const [isAssignRoleDialogOpen, setIsAssignRoleDialogOpen] = useState(false);
+	const [assigningUser, setAssigningUser] = useState<User | null>(null);
+
 	const { data, isLoading } = useQuery({
-		queryKey: ["users", page, pageSize, search],
-		queryFn: () => getUserList({ page, pageSize }),
+		queryKey: ["users", page, pageSize, debouncedSearch],
+		queryFn: () => getUserList({ page, pageSize, keyword: debouncedSearch }),
 	});
 
 	const { data: roleData } = useQuery({
@@ -57,6 +63,11 @@ export default function UserManagement() {
 	const handleEdit = useCallback((user: User) => {
 		setEditingUser(user);
 		setIsDialogOpen(true);
+	}, []);
+
+	const handleAssignRole = useCallback((user: User) => {
+		setAssigningUser(user);
+		setIsAssignRoleDialogOpen(true);
 	}, []);
 
 	const handleDelete = useCallback(
@@ -126,7 +137,9 @@ export default function UserManagement() {
 					row.original.status === 1 ? (
 						<Badge variant="destructive">禁用</Badge>
 					) : (
-						<Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">正常</Badge>
+						<Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">
+							正常
+						</Badge>
 					),
 			},
 			{
@@ -139,8 +152,13 @@ export default function UserManagement() {
 				header: () => <div className="text-right">操作</div>,
 				cell: ({ row }) => (
 					<div className="flex justify-end space-x-2">
+						{hasPermission("system:user:assign") && (
+							<Button variant="outline" size="icon" onClick={() => handleAssignRole(row.original)} title="分配角色">
+								<ShieldCheck className="h-4 w-4" />
+							</Button>
+						)}
 						{hasPermission("system:user:update") && (
-							<Button variant="outline" size="icon" onClick={() => handleEdit(row.original)}>
+							<Button variant="outline" size="icon" onClick={() => handleEdit(row.original)} title="编辑">
 								<Edit className="h-4 w-4" />
 							</Button>
 						)}
@@ -153,7 +171,7 @@ export default function UserManagement() {
 				),
 			},
 		],
-		[handleEdit, handleDelete, roles, hasPermission],
+		[handleEdit, handleDelete, roles, hasPermission, handleAssignRole],
 	);
 
 	return (
@@ -170,10 +188,13 @@ export default function UserManagement() {
 			<Card className="rounded-md shadow-sm border p-4">
 				<div className="flex items-center justify-between mb-4">
 					<Input
-						placeholder="搜索用户..."
+						placeholder="搜索用户名、昵称或邮箱..."
 						className="w-[300px]"
 						value={search}
-						onChange={(e) => setSearch(e.target.value)}
+						onChange={(e) => {
+							setSearch(e.target.value);
+							setPage(1);
+						}}
 					/>
 				</div>
 
@@ -197,6 +218,14 @@ export default function UserManagement() {
 				open={isDialogOpen}
 				onOpenChange={setIsDialogOpen}
 				editingUser={editingUser}
+				onSuccess={() => queryClient.invalidateQueries({ queryKey: ["users"] })}
+			/>
+			<AssignUserRoleDialog
+				open={isAssignRoleDialogOpen}
+				onOpenChange={setIsAssignRoleDialogOpen}
+				userId={assigningUser?.ID || null}
+				currentRoleId={assigningUser?.role_id}
+				roles={roles}
 				onSuccess={() => queryClient.invalidateQueries({ queryKey: ["users"] })}
 			/>
 			<ConfirmDialog />

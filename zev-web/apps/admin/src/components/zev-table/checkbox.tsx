@@ -1,6 +1,6 @@
-import * as React from "react";
 import { cn } from "@zev/ui/lib/utils";
 import { Check, Minus } from "lucide-react";
+import * as React from "react";
 
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "checked"> {
 	checked?: boolean | "indeterminate";

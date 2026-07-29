@@ -1,18 +1,14 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@zev/ui/components/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@zev/ui/components/card";
 import { Separator } from "@zev/ui/components/separator";
-import { Shield, Mail, User as UserIcon, Clock } from "lucide-react";
+import { Clock, Mail, Shield, User as UserIcon } from "lucide-react";
 import { useUserStore } from "@/store";
 
 export default function Profile() {
 	const userInfo = useUserStore((state) => state.userInfo);
 
 	if (!userInfo) {
-		return (
-			<div className="flex h-full items-center justify-center text-muted-foreground">
-				加载中...
-			</div>
-		);
+		return <div className="flex h-full items-center justify-center text-muted-foreground">加载中...</div>;
 	}
 
 	const initials = (userInfo.nickname || userInfo.username || "U").slice(0, 2).toUpperCase();
@@ -35,9 +31,7 @@ export default function Profile() {
 					<div className="flex items-center gap-4">
 						<Avatar className="h-20 w-20 border-2 border-[#E5E5E5]">
 							<AvatarImage src={userInfo.avatar} alt={userInfo.nickname} />
-							<AvatarFallback className="text-2xl font-semibold bg-[#EFF6FF] text-[#2563EB]">
-								{initials}
-							</AvatarFallback>
+							<AvatarFallback className="text-2xl font-semibold bg-[#EFF6FF] text-[#2563EB]">{initials}</AvatarFallback>
 						</Avatar>
 						<div>
 							<h3 className="text-xl font-semibold text-gray-900">{userInfo.nickname}</h3>

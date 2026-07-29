@@ -1,27 +1,22 @@
 import { useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import * as THREE from "three";
 import bgOnlyStatic from "../../assets/bg-only.svg";
-import whiteFishStatic from "../../assets/white-fish.svg";
 import blackFishStatic from "../../assets/black-fish.svg";
-import {
-	bgVertexShader,
-	bgFragmentShader,
-	fishVertexShader,
-	fishFragmentShader,
-} from "./shaders";
+import whiteFishStatic from "../../assets/white-fish.svg";
+import { bgFragmentShader, bgVertexShader, fishFragmentShader, fishVertexShader } from "./shaders";
 
 export function Scene() {
 	const bgTexture = useTexture(bgOnlyStatic);
 	const whiteFishTexture = useTexture(whiteFishStatic);
 	const blackFishTexture = useTexture(blackFishStatic);
-	
+
 	// 强制贴图使用 SRGB 颜色空间
 	bgTexture.colorSpace = THREE.SRGBColorSpace;
 	whiteFishTexture.colorSpace = THREE.SRGBColorSpace;
 	blackFishTexture.colorSpace = THREE.SRGBColorSpace;
-	
+
 	const bgMaterialRef = useRef<THREE.ShaderMaterial>(null);
 	const whiteFishMaterialRef = useRef<THREE.ShaderMaterial>(null);
 	const blackFishMaterialRef = useRef<THREE.ShaderMaterial>(null);
@@ -33,19 +28,28 @@ export function Scene() {
 	const planeWidth = viewport.width * 1.5;
 	const planeHeight = viewport.height * 1.5;
 
-	const createUniforms = (tex: THREE.Texture, pivot: THREE.Vector2) => ({
-		uTexture: { value: tex },
-		uTime: { value: 0 },
-		uMouse: { value: new THREE.Vector2(0.5, 0.5) },
-		uPivot: { value: pivot },
-		uWag: { value: 0 },
-	});
+	const createUniforms = useCallback(
+		(tex: THREE.Texture, pivot: THREE.Vector2) => ({
+			uTexture: { value: tex },
+			uTime: { value: 0 },
+			uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+			uPivot: { value: pivot },
+			uWag: { value: 0 },
+		}),
+		[],
+	);
 
-	const bgUniforms = useMemo(() => createUniforms(bgTexture, new THREE.Vector2(0.5, 0.5)), [bgTexture]);
+	const bgUniforms = useMemo(() => createUniforms(bgTexture, new THREE.Vector2(0.5, 0.5)), [bgTexture, createUniforms]);
 	// 白鱼的图片几何中心点大约在 UV (0.41, 0.65)
-	const whiteFishUniforms = useMemo(() => createUniforms(whiteFishTexture, new THREE.Vector2(0.41, 0.65)), [whiteFishTexture]);
+	const whiteFishUniforms = useMemo(
+		() => createUniforms(whiteFishTexture, new THREE.Vector2(0.41, 0.65)),
+		[whiteFishTexture, createUniforms],
+	);
 	// 黑鱼的图片几何中心点大约在 UV (0.57, 0.34)
-	const blackFishUniforms = useMemo(() => createUniforms(blackFishTexture, new THREE.Vector2(0.57, 0.34)), [blackFishTexture]);
+	const blackFishUniforms = useMemo(
+		() => createUniforms(blackFishTexture, new THREE.Vector2(0.57, 0.34)),
+		[blackFishTexture, createUniforms],
+	);
 
 	useFrame((state, delta) => {
 		const targetX = (state.mouse.x + 1) / 2;
@@ -56,10 +60,10 @@ export function Scene() {
 			bgMaterialRef.current.uniforms.uTime.value += delta;
 			bgMaterialRef.current.uniforms.uMouse.value.lerp(lerpedMouse, 0.1);
 		}
-		
+
 		// 鱼体摆动的基准幅度 (传递给着色器，时间控制由着色器内的 uTime 完成)
 		const baseWagAmplitude = 0.01;
-		
+
 		if (whiteFishMaterialRef.current) {
 			whiteFishMaterialRef.current.uniforms.uTime.value += delta;
 			whiteFishMaterialRef.current.uniforms.uMouse.value.lerp(lerpedMouse, 0.1);
@@ -86,7 +90,7 @@ export function Scene() {
 		if (fishesGroupRef.current) {
 			fishesGroupRef.current.position.x = Math.sin(time * 0.4) * 0.15;
 			fishesGroupRef.current.position.y = Math.cos(time * 0.3) * 0.1;
-			
+
 			// 模拟轻微的上下沉浮 (缩放)
 			const depthScale = 1.0 + Math.sin(time * 0.8) * 0.03;
 			fishesGroupRef.current.scale.set(depthScale, depthScale, 1);
@@ -111,7 +115,7 @@ export function Scene() {
 					depthWrite={false}
 				/>
 			</mesh>
-			
+
 			{/* 将鱼包裹在一个组里，统一控制游走和沉浮 */}
 			<group ref={fishesGroupRef}>
 				{/* 白鱼层 */}

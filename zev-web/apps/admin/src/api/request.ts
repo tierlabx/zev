@@ -1,4 +1,5 @@
 import axios, { type AxiosRequestConfig } from "axios";
+import { toast } from "sonner";
 import { useUserStore } from "@/store";
 
 const service = axios.create({
@@ -26,16 +27,37 @@ service.interceptors.response.use(
 				// 使用 window.location.href 而非 router.navigate，
 				// 确保路由树从清空后的 store 重建
 				window.location.href = "/login";
+			} else if (res.code === 403) {
+				toast.error("权限不足，无法执行此操作");
+			} else {
+				toast.error(res.msg || "Error");
 			}
 			return Promise.reject(new Error(res.msg || "Error"));
 		}
 		return res.data;
 	},
 	(error) => {
-		if (error.response?.status === 401) {
+		const status = error.response?.status;
+
+		if (status === 401) {
 			useUserStore.getState().logout();
 			window.location.href = "/login";
+		} else if (status === 403) {
+			toast.error("权限不足，无法执行此操作");
+		} else if (status === 400) {
+			toast.error(error.response?.data?.msg || "参数错误");
+		} else if (status === 404) {
+			toast.error("请求的资源不存在");
+		} else if (status === 500) {
+			toast.error("服务器异常，请稍后重试");
+		} else if (error.code === "ECONNABORTED") {
+			toast.error("请求超时，请重试");
+		} else if (error.message === "Network Error" || !error.response) {
+			toast.error("网络连接异常，请检查网络");
+		} else {
+			toast.error(error.message || "请求失败");
 		}
+
 		return Promise.reject(error);
 	},
 );

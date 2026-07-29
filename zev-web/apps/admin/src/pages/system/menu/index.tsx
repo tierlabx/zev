@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { deleteMenu, getMenuTree, type Menu } from "@/api/system/menu";
 import { ZevTable } from "@/components/zev-table";
 import { useConfirm } from "@/hooks/use-confirm";
+import { usePermission } from "@/hooks/use-permission";
 import { MenuFormDialog } from "./components/MenuFormDialog";
 
 interface FlattenedMenu extends Menu {
@@ -28,6 +29,7 @@ const flattenTree = (menus: Menu[], level: number = 0): FlattenedMenu[] => {
 export default function MenuManagement() {
 	const queryClient = useQueryClient();
 	const { confirm, ConfirmDialog } = useConfirm();
+	const { hasPermission } = usePermission();
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
@@ -101,33 +103,47 @@ export default function MenuManagement() {
 				header: () => <div className="text-right">操作</div>,
 				cell: ({ row }) => (
 					<div className="flex justify-end space-x-2">
-						<Button variant="outline" size="icon" onClick={() => handleAdd(row.original.ID)} title="添加子菜单">
-							<Plus className="h-4 w-4" />
-						</Button>
-						<Button variant="outline" size="icon" onClick={() => handleEdit(row.original as Menu)} title="编辑">
-							<Edit className="h-4 w-4" />
-						</Button>
-						<Button variant="destructive" size="icon" onClick={() => handleDelete(row.original.ID)} title="删除">
-							<Trash2 className="h-4 w-4" />
-						</Button>
+						{hasPermission("system:menu:create") && (
+							<Button variant="outline" size="icon" onClick={() => handleAdd(row.original.ID)} title="添加子菜单">
+								<Plus className="h-4 w-4" />
+							</Button>
+						)}
+						{hasPermission("system:menu:update") && (
+							<Button variant="outline" size="icon" onClick={() => handleEdit(row.original as Menu)} title="编辑">
+								<Edit className="h-4 w-4" />
+							</Button>
+						)}
+						{hasPermission("system:menu:delete") && (
+							<Button variant="destructive" size="icon" onClick={() => handleDelete(row.original.ID)} title="删除">
+								<Trash2 className="h-4 w-4" />
+							</Button>
+						)}
 					</div>
 				),
 			},
 		],
-		[handleAdd, handleEdit, handleDelete],
+		[handleAdd, handleEdit, handleDelete, hasPermission],
 	);
 
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center justify-end">
-				<Button onClick={() => handleAdd(0)}>
-					<Plus className="mr-2 h-4 w-4" />
-					添加菜单
-				</Button>
+				{hasPermission("system:menu:create") && (
+					<Button onClick={() => handleAdd(0)}>
+						<Plus className="mr-2 h-4 w-4" />
+						添加菜单
+					</Button>
+				)}
 			</div>
 
 			<Card className="rounded-md shadow-sm border p-4">
-				<ZevTable columns={columns} data={flattenedMenus} isLoading={isLoading} containerHeight="calc(100vh - 200px)" pagination={false} />
+				<ZevTable
+					columns={columns}
+					data={flattenedMenus}
+					isLoading={isLoading}
+					containerHeight="calc(100vh - 200px)"
+					pagination={false}
+				/>
 			</Card>
 
 			<MenuFormDialog

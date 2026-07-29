@@ -41,6 +41,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 	menuService := service.NewMenuService(db)
 	dictTypeService := service.NewDictTypeService(db)
 	dictDataService := service.NewDictDataService(db)
+	dashboardService := service.NewDashboardService(db)
 
 	// 4. 初始化 Controller 层
 	openController := controller.NewOpenController(db)
@@ -49,6 +50,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 	menuController := controller.NewMenuController(menuService)
 	dictTypeController := controller.NewDictTypeController(dictTypeService)
 	dictDataController := controller.NewDictDataController(dictDataService)
+	dashboardController := controller.NewDashboardController(dashboardService)
 
 
 
@@ -67,6 +69,12 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 		// 跨域处理中间件
 		protected.Use(middleware.Cors())
 		{
+			// Dashboard 路由
+			dashboardGroup := protected.Group("/dashboard")
+			{
+				dashboardGroup.GET("/stats", dashboardController.GetStats)
+			}
+
 			// 用户路由
 			userGroup := protected.Group("/user")
 			{

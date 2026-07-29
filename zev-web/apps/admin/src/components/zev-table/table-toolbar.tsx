@@ -1,4 +1,3 @@
-import { Settings2 } from "lucide-react";
 import type { Table } from "@tanstack/react-table";
 import { Button } from "@zev/ui/components/button";
 import {
@@ -9,6 +8,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@zev/ui/components/dropdown-menu";
+import { Settings2 } from "lucide-react";
 
 interface TableToolbarProps<TData> {
 	table: Table<TData>;

@@ -1,6 +1,6 @@
 import { createRouter } from "@tanstack/react-router";
-import { buildRouteTree } from "./routes";
 import { useUserStore } from "@/store";
+import { buildRouteTree } from "./routes";
 
 /**
  * 从持久化的 store 中读取菜单数据，构建完整路由树并创建 router

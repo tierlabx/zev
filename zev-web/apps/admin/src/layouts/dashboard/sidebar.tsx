@@ -2,10 +2,10 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { cn } from "@zev/ui/lib/utils";
 import { ChevronDown, ChevronsLeft, ChevronsRight, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { MenuItem } from "@/api/interface/system/user";
 import logoUrl from "@/assets/logo-animated.svg";
 import { getMenuIcon } from "@/lib/menu-icons";
 import { useUserStore } from "@/store";
-import type { MenuItem } from "@/api/interface/system/user";
 import { useLayoutStore } from "@/store/layout";
 
 type NavItemType = {
@@ -24,9 +24,7 @@ function buildNavItems(menus: MenuItem[], parentPath = ""): NavItemType[] {
 	return menus
 		.filter((m) => m.type === "M" || m.type === "C")
 		.map((m) => {
-			const fullPath = m.path.startsWith("/")
-				? m.path
-				: `${parentPath}/${m.path}`.replace(/\/+/g, "/");
+			const fullPath = m.path.startsWith("/") ? m.path : `${parentPath}/${m.path}`.replace(/\/+/g, "/");
 
 			const item: NavItemType = {
 				name: m.name,

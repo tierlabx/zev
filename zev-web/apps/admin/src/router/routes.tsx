@@ -1,14 +1,8 @@
-import {
-	type AnyRoute,
-	Outlet,
-	createRootRoute,
-	createRoute,
-	redirect,
-} from "@tanstack/react-router";
+import { type AnyRoute, createRootRoute, createRoute, Outlet, redirect } from "@tanstack/react-router";
 import App from "@/App";
 import type { MenuItem } from "@/api/interface/system/user";
-import { findFirstPagePath } from "@/lib/menu-utils";
 import DashboardLayout from "@/layouts/dashboard";
+import { findFirstPagePath } from "@/lib/menu-utils";
 import Login from "@/pages/Login";
 import { componentMap, NotFoundComponent } from "@/router/components";
 import { useUserStore } from "@/store";
@@ -85,15 +79,9 @@ function joinPath(parentPath: string, childPath: string): string {
  * @param accumulatedPath 累积的完整路径前缀（用于 index 重定向）
  * @returns 路由对象数组
  */
-function buildDynamicRoutes(
-	menus: MenuItem[],
-	parent: AnyRoute,
-	accumulatedPath = "",
-): AnyRoute[] {
+function buildDynamicRoutes(menus: MenuItem[], parent: AnyRoute, accumulatedPath = ""): AnyRoute[] {
 	// 过滤 M/C 类型并按 sort 排序
-	const validMenus = [...menus]
-		.filter((m) => m.type === "M" || m.type === "C")
-		.sort((a, b) => a.sort - b.sort);
+	const validMenus = [...menus].filter((m) => m.type === "M" || m.type === "C").sort((a, b) => a.sort - b.sort);
 
 	const routes: AnyRoute[] = [];
 

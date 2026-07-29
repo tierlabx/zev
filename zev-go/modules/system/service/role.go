@@ -70,3 +70,19 @@ func (s *RoleService) GetRolePerms(roleID uint) ([]string, error) {
 	}
 	return perms, nil
 }
+
+func (s *RoleService) ListWithKeyword(page, pageSize int, keyword string) ([]entity.Role, int64, error) {
+	var entities []entity.Role
+	var total int64
+	var model entity.Role
+
+	db := s.DB.Model(&model)
+	if keyword != "" {
+		db = db.Where("name LIKE ? OR code LIKE ?", "%"+keyword+"%", "%"+keyword+"%")
+	}
+
+	db.Count(&total)
+	err := db.Offset((page - 1) * pageSize).Limit(pageSize).Find(&entities).Error
+
+	return entities, total, err
+}
