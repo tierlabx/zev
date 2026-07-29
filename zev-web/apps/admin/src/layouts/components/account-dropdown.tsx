@@ -29,8 +29,10 @@ export function AccountDropdown() {
 		} catch {
 			// logout failure is fine, we clear local state anyway
 		} finally {
+			// 清除 store 后用 window.location.href 触发页面刷新，
+			// 让 router 模块从清空后的 store 重建路由树（仅 login 路由）
 			logout();
-			navigate({ to: "/login" });
+			window.location.href = "/login";
 		}
 	};
 
@@ -56,7 +58,7 @@ export function AccountDropdown() {
 					</div>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem className="cursor-pointer" onClick={() => navigate({ to: "/dashboard" })}>
+				<DropdownMenuItem className="cursor-pointer" onClick={() => navigate({ to: "/profile" as never })}>
 					<User className="mr-2 h-4 w-4" />
 					<span>个人中心</span>
 				</DropdownMenuItem>

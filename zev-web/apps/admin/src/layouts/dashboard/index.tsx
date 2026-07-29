@@ -15,12 +15,20 @@ export default function DashboardLayout() {
 	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
-		// 有 token 但没有 userInfo（如页面刷新），自动获取
+		// 有 token 但没有 userInfo（如持久化数据不完整），自动获取
 		if (token && !userInfo && !loading) {
 			setLoading(true);
+			// 记录获取前的 menus 状态
+			const hadMenus = useUserStore.getState().menus.length > 0;
 			getUserInfoApi()
 				.then((info) => {
 					setUserInfo(info);
+					// 如果之前 menus 为空但现在有数据，说明路由树需要重建
+					// （router 在模块加载时从空 menus 构建，没有动态路由）
+					if (!hadMenus && info.menus?.length > 0) {
+						window.location.reload();
+						return;
+					}
 				})
 				.catch(() => {
 					// 获取用户信息失败（token 过期等），清除登录状态

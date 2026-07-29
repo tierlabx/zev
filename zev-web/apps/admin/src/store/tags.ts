@@ -15,7 +15,7 @@ interface TagsState {
 }
 
 export const useTagsStore = create<TagsState>((set) => ({
-	visitedViews: [{ path: "/dashboard", title: "仪表盘", closable: false }],
+	visitedViews: [],
 	addView: (view) =>
 		set((state) => {
 			if (state.visitedViews.some((v) => v.path === view.path)) return state;

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { useLoginMutation, getUserInfoApi } from "@/api/system/auth";
 import logoUrl from "@/assets/logo-animated.svg";
+import { findFirstPagePath } from "@/lib/menu-utils";
 import { useUserStore } from "@/store";
 import ThreeKoiBackground from "@/components/ThreeKoiBackground/index";
 
@@ -60,11 +61,17 @@ export default function Login() {
 					try {
 						const userInfo = await getUserInfoApi();
 						setUserInfo(userInfo);
+						// 用 window.location.href 触发页面刷新，
+						// 让 router 模块从更新后的 store 重建动态路由树
+						// 跳转到用户有权限的第一个页面
+						const firstPage = findFirstPagePath(userInfo.menus);
+						window.location.href = firstPage || "/login";
+						return;
 					} catch {
 						toast.error("获取用户信息失败");
 					}
 				}
-				navigate({ to: "/dashboard" });
+				navigate({ to: "/login" });
 			},
 			onError: (err) => {
 				toast.error(err.message || "登录失败");

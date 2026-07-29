@@ -1,5 +1,4 @@
 import axios, { type AxiosRequestConfig } from "axios";
-import { router } from "@/router";
 import { useUserStore } from "@/store";
 
 const service = axios.create({
@@ -20,11 +19,13 @@ service.interceptors.request.use((config) => {
 service.interceptors.response.use(
 	(response) => {
 		const res = response.data;
-		// 后端有统一返回格式： E:\code\Go\zev\zev-go\pkg\response 在这里
+		// 后端统一返回格式 { code, msg, data }
 		if (res.code !== 200) {
 			if (res.code === 401) {
 				useUserStore.getState().logout();
-				router.navigate({ to: "/login" }).catch(() => {});
+				// 使用 window.location.href 而非 router.navigate，
+				// 确保路由树从清空后的 store 重建
+				window.location.href = "/login";
 			}
 			return Promise.reject(new Error(res.msg || "Error"));
 		}
@@ -33,7 +34,7 @@ service.interceptors.response.use(
 	(error) => {
 		if (error.response?.status === 401) {
 			useUserStore.getState().logout();
-			router.navigate({ to: "/login" }).catch(() => {});
+			window.location.href = "/login";
 		}
 		return Promise.reject(error);
 	},

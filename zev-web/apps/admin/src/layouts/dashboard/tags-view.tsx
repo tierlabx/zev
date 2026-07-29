@@ -8,6 +8,8 @@ import {
 import { cn } from "@zev/ui/lib/utils";
 import { ChevronDown, ChevronLeft, ChevronRight, RotateCw, X } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { findFirstPagePath } from "@/lib/menu-utils";
+import { useUserStore } from "@/store";
 import { useTagsStore } from "@/store/tags";
 
 export function TagsView() {
@@ -15,19 +17,26 @@ export function TagsView() {
 	const navigate = useNavigate();
 	const matches = useMatches();
 	const { visitedViews, addView, removeView, closeOthers, closeAll } = useTagsStore();
+	const menus = useUserStore((state) => state.menus);
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+	// 获取第一个可用页面路径（用于回退导航）
+	const firstPagePath = findFirstPagePath(menus) || "/login";
 
 	useEffect(() => {
 		// find the deepest match that has a title in staticData
 		const match = [...matches].reverse().find((m) => m.staticData?.title);
 		const title = (match?.staticData?.title as string) || "新标签";
 
+		// 第一个页面路径的标签不可关闭
+		const isHome = location.pathname === firstPagePath;
+
 		addView({
 			path: location.pathname,
 			title: title,
-			closable: location.pathname !== "/dashboard",
+			closable: !isHome,
 		});
-	}, [location.pathname, matches, addView]);
+	}, [location.pathname, matches, addView, firstPagePath]);
 
 	const handleClose = (e: React.MouseEvent, path: string) => {
 		e.preventDefault();
@@ -38,11 +47,11 @@ export function TagsView() {
 
 		// If we are closing the active tab, navigate to the adjacent tab
 		if (path === location.pathname) {
-			const prevView = visitedViews[index - 1] || visitedViews[0];
+			const prevView = visitedViews[index - 1] || visitedViews[index + 1];
 			if (prevView) {
-				navigate({ to: prevView.path });
+				navigate({ to: prevView.path as never });
 			} else {
-				navigate({ to: "/dashboard" });
+				navigate({ to: firstPagePath as never });
 			}
 		}
 	};
@@ -70,7 +79,7 @@ export function TagsView() {
 			<div
 				ref={scrollContainerRef}
 				className="flex-1 overflow-x-auto flex items-center gap-1.5 h-full px-1 scroll-smooth"
-				style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+				style={{ scrollbarWidth: "none", msScrollSnapType: "none" }}
 			>
 				<style>{`div::-webkit-scrollbar { display: none; }`}</style>
 				{visitedViews.map((view) => {
@@ -78,15 +87,15 @@ export function TagsView() {
 					return (
 						<Link
 							key={view.path}
-							to={view.path}
+							to={view.path as never}
 							className={cn(
 								"flex items-center gap-2 h-[26px] px-3 border rounded-sm transition-colors whitespace-nowrap",
 								isActive
-									? "bg-[#E6F4FF] border-[#1677FF] text-[#1677FF]"
-									: "bg-white border-[#E5E5E5] text-[#666] hover:text-[#1677FF]",
+									? "bg-[#EFF6FF] border-[#2563EB] text-[#2563EB]"
+									: "bg-white border-[#E5E5E5] text-[#666] hover:text-[#2563EB]",
 							)}
 						>
-							{isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#1677FF]" />}
+							{isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB]" />}
 							<span className="text-xs">{view.title}</span>
 							{view.closable !== false && (
 								<X
@@ -129,7 +138,7 @@ export function TagsView() {
 					<DropdownMenuItem
 						onClick={() => {
 							closeAll();
-							navigate({ to: "/dashboard" });
+							navigate({ to: firstPagePath as never });
 						}}
 					>
 						关闭全部

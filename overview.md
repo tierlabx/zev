@@ -1,71 +1,81 @@
-# RBAC 权限系统完善 + 前端优化
+# Zev 动态路由生成 — 改动概览
 
-## 完成内容
+## 目标
 
-### 后端 (zev-go) — RBAC 权限系统完善
+将前端路由从硬编码静态定义改为从后端菜单数据自动生成，实现真正的动态路由——不同角色用户登录后只能访问其权限范围内的路由。
 
-| 改动项 | 文件 | 说明 |
-|--------|------|------|
-| User 实体增强 | `entity/user.go` | 新增 Status/Email/Avatar 字段 |
-| JWT 配置化 | `config/config.go`, `jwtx/jwt.go` | 密钥/过期时间从环境变量读取 |
-| **新增 /user/info 接口** | `controller/user.go`, `init.go` | 返回用户信息+权限+菜单树 |
-| 按角色过滤菜单树 | `service/menu.go` | `GetMenuTreeByRole()` 方法 |
-| 获取角色权限标识 | `service/role.go` | `GetRolePerms()` 方法，admin 返回 `["*"]` |
-| 登录状态检查 | `service/user.go` | 禁用账号无法登录 |
-| Bug 修复 | `dto/role.go` | AssignRoleMenusReq JSON tag 修正 |
-| Seed 数据增强 | `seed/seed.json` | 16 个按钮级权限 + 仪表盘/个人中心菜单 |
-| main.go 初始化 | `main.go` | 启动时调用 `jwtx.Init()` |
+## 核心改动
 
-### 前端 (zev-web) — 优化与权限集成
+### 1. 组件注册表 (`src/router/components.tsx`)
 
-| 改动项 | 文件 | 说明 |
-|--------|------|------|
-| **路由守卫** | `router/routes.tsx` | beforeLoad 检查 token |
-| **Store 扩展** | `store/index.ts` | 存储 userInfo/permissions/menus + hasPermission() |
-| **权限 Hook** | `hooks/use-permission.ts` | hasPermission / hasAnyPermission / hasAllPermissions |
-| **动态侧边栏** | `layouts/dashboard/sidebar.tsx` | 从 Store 菜单数据动态渲染 |
-| 图标映射 | `lib/menu-icons.ts` | 后端 icon 字段 → lucide-react 组件 |
-| 刷新自动获取 | `layouts/dashboard/index.tsx` | 有 token 无 userInfo 时自动 fetch |
-| 登录后获取信息 | `pages/Login.tsx` | 登录成功调用 /user/info |
-| 用户下拉菜单 | `layouts/components/account-dropdown.tsx` | 显示真实用户信息 |
-| 用户管理权限控制 | `pages/system/user/index.tsx` | 按钮根据权限条件渲染 |
-| 用户表单增强 | `pages/system/user/components/UserFormDialog.tsx` | 新增邮箱/状态字段 |
-| API 修复 | `api/system/role.ts` | assignRoleMenus 字段名修正 |
-| API 增强 | `api/system/auth.ts` | 新增 getUserInfoApi() |
-| 类型定义 | `api/interface/system/user.ts` | 新增 UserInfo/MenuItem 类型 |
-| TS 修复 | `components/zev-table/checkbox.tsx` | CheckboxProps 类型冲突 |
+后端菜单 `component` 字段（如 `dashboard/index`、`system/user/index`）到前端 `React.lazy()` 组件的映射表。新增页面时只需在此注册，无需修改路由代码。
 
-### RBAC 权限流转架构
+### 2. 动态路由生成器 (`src/router/routes.tsx`)
+
+`buildRouteTree(menus)` 函数递归遍历后端菜单树，自动生成 TanStack Router 路由对象：
+
+- **M 目录类型** → 创建父路由，递归添加子路由，自动生成 index 重定向
+- **C 菜单类型** → 创建带 lazy 组件的路由，从 componentMap 解析
+- **F 按钮类型** → 跳过，不生成路由（仅用于权限控制）
+
+### 3. 路由器工厂 (`src/router/index.tsx`)
+
+模块加载时从 zustand persist 同步读取持久化的菜单数据，调用 `buildRouteTree()` 构建完整路由树。
+
+### 4. 认证流程更新
+
+| 场景 | 旧方式 | 新方式 |
+|------|--------|--------|
+| 登录成功 | `navigate({ to: "/dashboard" })` | `window.location.href = firstPage` — 触发页面重建路由树 |
+| 退出登录 | `navigate({ to: "/login" })` | `window.location.href = "/login"` — 触发页面重建路由树 |
+| 401 响应 | `router.navigate({ to: "/login" })` | `window.location.href = "/login"` — 移除 router 依赖 |
+| 页面刷新 | 静态路由 | 从 persist 读取 menus，动态构建路由树 |
+
+### 5. 新增页面
+
+- `src/pages/Profile.tsx` — 个人中心页面（展示用户信息 + 权限标识）
+- `src/pages/NotFound.tsx` — 404 页面（动画入场 + 回到首页）
+
+### 6. 辅助改动
+
+- `src/lib/menu-utils.ts` — 共享的 `findFirstPagePath()` 工具函数
+- `src/store/tags.ts` — 移除硬编码的初始 dashboard 标签
+- `src/layouts/dashboard/tags-view.tsx` — 回退导航使用动态首页路径
+- `src/layouts/dashboard/index.tsx` — 检测 menus 从空到有时自动 reload 重建路由
+- `src/layouts/components/account-dropdown.tsx` — 个人中心导航到 `/profile`
+
+## 编译验证
+
+- ✅ `tsc -b --force` — TypeScript 类型检查通过
+- ✅ `vite build` — 生产构建通过，代码分割正常（每页面独立 chunk）
+- ✅ `go build ./...` — 后端编译通过
+
+## 路由流程图
 
 ```
-用户登录 → /system/login → 返回 JWT Token
-                ↓
-        前端存储 Token
-                ↓
-        调用 /system/user/info
-                ↓
-    返回 { userInfo, permissions[], menus[] }
-                ↓
-    ┌───────────────────────────────────┐
-    │  permissions → usePermission Hook │ → 按钮级权限控制
-    │  menus[]     → 动态侧边栏渲染      │ → 菜单级权限控制
-    │  userInfo    → Header 用户展示     │ → 用户信息显示
-    └───────────────────────────────────┘
-                ↓
-    API 请求 → AuthMiddleware → RequirePermission → 业务处理
-    (JWT 解析 userID/roleID)  (查 sys_role_menus 表)
+后端 /user/info → 返回按角色过滤的菜单树
+        ↓
+zustand store (persist → localStorage)
+        ↓
+router/index.tsx 模块加载时同步读取 menus
+        ↓
+buildRouteTree(menus) 递归生成路由树
+  ├── loginRoute (固定)
+  ├── layoutRoute → 动态子路由
+  │   ├── /dashboard (C → Dashboard 组件)
+  │   ├── /system (M → 目录, 无组件)
+  │   │   ├── / (index → 重定向到 /system/user)
+  │   │   ├── /user (C → UserManagement)
+  │   │   ├── /role (C → RoleManagement)
+  │   │   └── /menu (C → MenuManagement)
+  │   ├── /profile (C → Profile)
+  │   └── /404 (固定兜底)
+  └── $ (splat → 重定向到第一个可用页面)
 ```
 
-### 编译验证
+## 后续建议
 
-- ✅ Go 后端编译通过 (`go build ./...`)
-- ✅ TypeScript 类型检查通过 (`tsc -b --force`)
-- ✅ Vite 生产构建通过 (`vite build`)
-
-### 后续建议
-
-1. **动态路由**: 目前路由仍为静态定义，可进一步改为从后端菜单数据动态生成路由
-2. **权限缓存**: RBAC 中间件每次请求查库，可引入 Redis 缓存角色权限
-3. **Refresh Token**: 当前 JWT 24h 过期无刷新机制，可增加 refresh token
-4. **操作日志**: 增加 API 操作审计日志中间件
-5. **数据权限**: 在 Role 上增加 DataScope 字段实现数据级别权限控制
+1. **数据权限** — 在 Role 上增加 DataScope 字段实现行级数据隔离
+2. **Redis 权限缓存** — RBAC 中间件每次请求查库，高并发场景应引入缓存
+3. **Refresh Token** — 当前 JWT 过期后无刷新机制
+4. **路由懒加载预取** — 在侧边栏 hover 时预加载对应 chunk
