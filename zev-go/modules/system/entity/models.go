@@ -9,5 +9,7 @@ func AllModels() []any {
 		&Menu{},
 		&DictType{},
 		&DictData{},
+		&SysNotice{},
+		&SysOperLog{},
 	}
 }

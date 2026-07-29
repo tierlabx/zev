@@ -42,6 +42,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 	dictTypeService := service.NewDictTypeService(db)
 	dictDataService := service.NewDictDataService(db)
 	dashboardService := service.NewDashboardService(db)
+	noticeService := service.NewNoticeService(db)
 
 	// 4. 初始化 Controller 层
 	openController := controller.NewOpenController(db)
@@ -51,6 +52,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 	dictTypeController := controller.NewDictTypeController(dictTypeService)
 	dictDataController := controller.NewDictDataController(dictDataService)
 	dashboardController := controller.NewDashboardController(dashboardService)
+	noticeController := controller.NewNoticeController(noticeService)
 
 
 
@@ -66,6 +68,8 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 		protected := api.Group("")
 		// 认证中间件
 		protected.Use(middleware.AuthMiddleware())
+		// 操作日志中间件 (拦截修改/删除操作)
+		protected.Use(middleware.OperLogMiddleware(db))
 		// 跨域处理中间件
 		protected.Use(middleware.Cors())
 		{
@@ -129,6 +133,13 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 				dictDataGroup.PUT("/update", middleware.RequirePermission(db, "system:dict:update"), dictDataController.Update)
 				dictDataGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:dict:delete"), dictDataController.Delete)
 				dictDataGroup.GET("/get/:id", middleware.RequirePermission(db, "system:dict:list"), dictDataController.Get)
+			}
+
+			// 系统通知路由
+			noticeGroup := protected.Group("/notice")
+			{
+				noticeGroup.GET("/list", noticeController.GetUnreadList)
+				noticeGroup.PUT("/read/:id", noticeController.MarkAsRead)
 			}
 		}
 	}

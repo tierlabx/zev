@@ -9,6 +9,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@zev/ui/components/popo
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@zev/ui/components/dropdown-menu";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@zev/ui/components/command";
 import { useNavigate } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getNoticeList, markNoticeAsRead, type SysNotice } from "@/api/system/notice";
 
 export function Header() {
 	const toggleSidebar = useLayoutStore((state) => state.toggleSidebar);
@@ -16,6 +18,20 @@ export function Header() {
 	const [isFullscreen, setIsFullscreen] = useState(false);
 	const [openCommand, setOpenCommand] = useState(false);
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
+
+	const { data: notices = [] } = useQuery({
+		queryKey: ["notices"],
+		queryFn: getNoticeList,
+		refetchInterval: 30000,
+	});
+
+	const { mutate: markAsRead } = useMutation({
+		mutationFn: markNoticeAsRead,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["notices"] });
+		},
+	});
 
 	useEffect(() => {
 		const down = (e: KeyboardEvent) => {
@@ -132,13 +148,33 @@ export function Header() {
 							>
 								<Bell className="size-4" />
 							</motion.div>
-							<span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full border border-white dark:border-zinc-950"></span>
+							{notices.length > 0 && (
+								<span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full border border-white dark:border-zinc-950"></span>
+							)}
 						</button>
 					</PopoverTrigger>
-					<PopoverContent align="end" className="w-80">
-						<div className="flex flex-col space-y-2">
-							<h4 className="font-semibold text-sm">通知</h4>
-							<div className="text-sm text-muted-foreground">暂无新通知。</div>
+					<PopoverContent align="end" className="w-80 p-0">
+						<div className="flex flex-col">
+							<div className="flex items-center justify-between p-4 border-b">
+								<h4 className="font-semibold text-sm">通知 ({notices.length})</h4>
+							</div>
+							<div className="max-h-80 overflow-y-auto">
+								{notices.length > 0 ? (
+									<div className="flex flex-col">
+										{notices.map((notice: SysNotice) => (
+											<div key={notice.id} className="flex flex-col gap-1 p-4 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => markAsRead(notice.id)}>
+												<div className="flex items-center justify-between">
+													<span className="font-medium text-sm">{notice.title}</span>
+													<span className="text-[10px] text-muted-foreground">{new Date(notice.CreatedAt).toLocaleDateString()}</span>
+												</div>
+												<p className="text-xs text-muted-foreground line-clamp-2">{notice.content}</p>
+											</div>
+										))}
+									</div>
+								) : (
+									<div className="p-4 text-sm text-muted-foreground text-center">暂无新通知。</div>
+								)}
+							</div>
 						</div>
 					</PopoverContent>
 				</Popover>
