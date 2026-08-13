@@ -4,7 +4,7 @@
 	"scripts": {
 		"dev": "pnpm -F admin dev",
 		"build": "pnpm -F admin build",
-		"lint": "biome check  --write .",
+		"lint": "biome check --write . && pnpm run typecheck",
 		"format": "biome format --write .",
 		"typecheck": "pnpm -F admin exec tsc -b",
 		"shadcn:add": "pnpm dlx shadcn@latest add -c apps/admin"

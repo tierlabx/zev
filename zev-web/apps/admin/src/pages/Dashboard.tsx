@@ -58,15 +58,6 @@ export default function Dashboard() {
 
 	return (
 		<div className="space-y-6 overflow-hidden pb-4">
-			<motion.div
-				initial={{ opacity: 0, y: -10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.4, delay: 0.1 }}
-			>
-				<h2 className="text-2xl font-bold tracking-tight">数据概览</h2>
-				<p className="text-muted-foreground">欢迎回来，这里是系统的实时数据统计。</p>
-			</motion.div>
-
 			{/* 区块 1：统计卡片 */}
 			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 				{statCards.map((card, index) => (

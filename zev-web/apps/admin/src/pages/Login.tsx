@@ -80,7 +80,7 @@ export default function Login() {
 	};
 
 	return (
-		<div className="flex min-h-screen items-center justify-center md:justify-end md:px-[10vw] relative overflow-hidden">
+		<div className="flex min-h-screen items-center justify-center md:justify-end md:px-[10vw] relative overflow-hidden bg-slate-900">
 			<ThreeKoiBackground />
 			<motion.div
 				initial={{ opacity: 0, y: 40, scale: 0.95, rotateX: 10 }}

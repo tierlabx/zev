@@ -17,6 +17,7 @@ import { useUserStore } from "@/store";
  */
 export function usePermission() {
 	const permissions = useUserStore((state) => state.permissions);
+	const userInfo = useUserStore((state) => state.userInfo);
 
 	const hasPermission = (perm: string): boolean => {
 		if (permissions.includes("*")) return true;
@@ -33,10 +34,16 @@ export function usePermission() {
 		return perms.every((p) => permissions.includes(p));
 	};
 
+	const hasRole = (role: string): boolean => {
+		if (userInfo?.role_code === "super_admin" || userInfo?.role_code === "admin") return true;
+		return userInfo?.role_code === role;
+	};
+
 	return {
 		permissions,
 		hasPermission,
 		hasAnyPermission,
 		hasAllPermissions,
+		hasRole,
 	};
 }

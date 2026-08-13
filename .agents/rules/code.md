@@ -33,20 +33,21 @@ trigger: always_on
 - **UI 及视觉规范**：
   - 强制采用 Tailwind CSS 和 **shadcn/ui** 原生组件库及其细粒度的控制方式组合业务界面。组件包从 `@zev/ui` 导入。
   - 极简黑白灰美学 (Black & White Minimalist)：主色调使用黑、白、灰色阶，避免高饱和度彩色（仅警示色例外）。减少冗余装饰。
-  - 动画与交互过渡基于 **Framer-motion v12** 进行设计。
+  - **页面禁止主副标题**：所有业务视图组件（右侧主内容区）内**绝对禁止**包含任何无意义的顶部正副标题（如“数据概览”、“欢迎回来”等），进入页面后应直接呈现核心数据区域（如表格、表单或卡片）。
+  - 动画与交互过渡基于 **Framer-motion v12** 进行设计，但在涉及到虚拟滚动的表格中禁止使用以保证极致性能。
 - **目录与模块约定 (`apps/admin/src`)**：
   - `api/`：Axios 请求封装及具体接口定义。
     - **`api/interface/`**：存放所有的实体结构定义（Entities/Models）。
     - **`api/dto/`**：存放所有的请求参数和响应数据结构定义（Data Transfer Objects）。
   - `components/`：高阶及自定义业务组件。
-  - `pages/`：业务视图组件。右侧页面内不要包含无意义的顶部正副标题，直接呈现表格或表单。
+  - `pages/`：业务视图组件。**页面内禁止包含任何顶部标题或副标题，必须直接展示功能。**
   - `store/`：Zustand 状态文件。
   - `utils/`：全局工具类封装。**前端工具函数必须统一放在此目录，严禁散落在业务组件中**。
 - **表单与交互规范**：
   - 必须使用 `react-hook-form` 配合 `zod` 进行表单状态管理与数据校验。
   - 界面提示必须使用 `sonner` 提供的 `toast`，禁止使用原生 `alert`。
 - **多语言约束**：页面默认全中文（如“登录”、“用户名”）。
- ** 页面内不需要标题
+
 # UI Interactions
 
 - Do NOT use native browser popups such as `window.confirm`, `window.alert`, or `window.prompt`.

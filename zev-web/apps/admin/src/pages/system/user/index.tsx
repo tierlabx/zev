@@ -103,11 +103,7 @@ export default function UserManagement() {
 				enableSorting: false,
 				enableHiding: false,
 			},
-			{
-				accessorKey: "ID",
-				header: "用户 ID",
-				cell: ({ row }) => `#${row.original.ID}`,
-			},
+
 			{
 				accessorKey: "username",
 				header: "用户名",
@@ -148,7 +144,9 @@ export default function UserManagement() {
 			},
 			{
 				id: "actions",
-				header: () => <div className="text-right">操作</div>,
+				header: "操作",
+				size: 100,
+				meta: { fixed: "right" },
 				cell: ({ row }) => (
 					<div className="flex justify-end space-x-2">
 						<Auth permission="system:user:assign">
@@ -174,9 +172,9 @@ export default function UserManagement() {
 	);
 
 	return (
-		<div className="space-y-6">
-			<Card className="rounded-md shadow-sm border p-4">
-				<div className="flex items-center justify-between mb-4">
+		<div className="flex-1 flex flex-col space-y-4 min-h-0">
+			<Card className="flex-1 flex flex-col rounded-md shadow-sm border p-4 min-h-0">
+				<div className="flex items-center justify-between mb-4 shrink-0">
 					<Input
 						placeholder="搜索用户名、昵称或邮箱..."
 						className="w-[300px]"
@@ -198,7 +196,7 @@ export default function UserManagement() {
 					columns={columns}
 					data={users}
 					isLoading={isLoading}
-					containerHeight="calc(100vh - 390px)"
+					className="flex-1 min-h-0"
 					pagination={true}
 					page={page}
 					pageSize={pageSize}

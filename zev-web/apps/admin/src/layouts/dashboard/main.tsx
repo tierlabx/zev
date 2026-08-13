@@ -6,13 +6,13 @@ export function Main() {
 
 	return (
 		<main className="flex-1 flex flex-col relative overflow-hidden bg-transparent">
-			<div className="flex-1 p-4 overflow-auto">
+			<div className="flex-1 flex flex-col p-4 overflow-auto min-h-0">
 				<motion.div
 					key={pathname}
 					initial={{ opacity: 0, y: 15 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.3, ease: "easeOut" }}
-					className="min-h-full flex flex-col pb-4"
+					className="flex-1 flex flex-col pb-4 min-h-0"
 				>
 					<Outlet />
 				</motion.div>

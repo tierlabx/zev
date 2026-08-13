@@ -28,7 +28,7 @@ const DialogOverlay = React.forwardRef<
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
-import { AnimatePresence, motion } from "framer-motion"
+import { motion } from "framer-motion"
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,

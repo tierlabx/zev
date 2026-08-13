@@ -9,53 +9,15 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Skeleton } from "@zev/ui/components/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@zev/ui/components/table";
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@zev/ui/components/table";
 import { cn } from "@zev/ui/lib/utils";
-import { motion, type Variants } from "framer-motion";
 import * as React from "react";
 
 import { Pagination } from "./pagination";
+import { ZevTableSkeleton } from "./table-skeleton";
 import { TableToolbar } from "./table-toolbar";
-
-const MotionTableRow = motion.create(TableRow);
-
-const rowVariants: Variants = {
-	hidden: { opacity: 0, y: 15 },
-	visible: (idx: number) => ({
-		opacity: 1,
-		y: 0,
-		transition: {
-			delay: idx * 0.04,
-			duration: 0.3,
-			ease: "easeOut",
-		},
-	}),
-};
-
-export interface ZevTableProps<TData, TValue> {
-	columns: ColumnDef<TData, TValue>[];
-	data: TData[];
-	isLoading?: boolean;
-
-	// 分页相关
-	pagination?: boolean;
-	page?: number;
-	pageSize?: number;
-	total?: number;
-	onPageChange?: (page: number) => void;
-	onPageSizeChange?: (pageSize: number) => void;
-
-	// 行选择相关
-	enableRowSelection?: boolean;
-	onSelectionChange?: (selectedRows: TData[]) => void;
-
-	// 样式与配置
-	className?: string;
-	containerHeight?: string | number;
-	showToolbar?: boolean;
-	onRowClick?: (row: TData) => void;
-}
+import type { ZevTableProps } from "./types";
+import { getPinningStyles } from "./utils";
 
 export function ZevTable<TData, TValue>({
 	columns,
@@ -70,13 +32,32 @@ export function ZevTable<TData, TValue>({
 	enableRowSelection = false,
 	onSelectionChange,
 	className,
-	containerHeight = "500px",
+	containerHeight,
 	showToolbar = true,
 	onRowClick,
 }: ZevTableProps<TData, TValue>) {
 	const [sorting, setSorting] = React.useState<SortingState>([]);
 	const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
 	const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
+
+	const pinnedLeft = React.useMemo(
+		() =>
+			columns
+				// biome-ignore lint/suspicious/noExplicitAny: Accessor key is only available on AccessorColumnDef
+				.filter((c: ColumnDef<TData, TValue>) => (c.meta as any)?.fixed === "left")
+				// biome-ignore lint/suspicious/noExplicitAny: Accessor key is only available on AccessorColumnDef
+				.map((c: any) => c.accessorKey || c.id) as string[],
+		[columns],
+	);
+	const pinnedRight = React.useMemo(
+		() =>
+			columns
+				// biome-ignore lint/suspicious/noExplicitAny: Accessor key is only available on AccessorColumnDef
+				.filter((c: ColumnDef<TData, TValue>) => (c.meta as any)?.fixed === "right")
+				// biome-ignore lint/suspicious/noExplicitAny: Accessor key is only available on AccessorColumnDef
+				.map((c: any) => c.accessorKey || c.id) as string[],
+		[columns],
+	);
 
 	const table = useReactTable({
 		data,
@@ -85,8 +66,12 @@ export function ZevTable<TData, TValue>({
 			sorting,
 			columnVisibility,
 			rowSelection,
+			columnPinning: { left: pinnedLeft, right: pinnedRight },
 		},
 		enableRowSelection,
+		enablePinning: true,
+		enableColumnResizing: true,
+		columnResizeMode: "onChange",
 		onRowSelectionChange: setRowSelection,
 		onSortingChange: setSorting,
 		onColumnVisibilityChange: setColumnVisibility,
@@ -122,38 +107,18 @@ export function ZevTable<TData, TValue>({
 	return (
 		<div
 			className={cn("relative w-full rounded-xl border border-gray-200 bg-white shadow-sm flex flex-col", className)}
+			style={containerHeight ? { height: containerHeight } : undefined}
 		>
 			{showToolbar && <TableToolbar table={table} />}
 
-			<div ref={tableContainerRef} className="w-full overflow-auto relative" style={{ height: containerHeight }}>
+			<div ref={tableContainerRef} className="w-full overflow-auto relative flex-1 min-h-0">
 				{isLoading && data.length === 0 ? (
-					<Table className="relative w-full">
-						<TableHeader className="sticky top-0 z-20">
-							<TableRow className="bg-gray-50/90 backdrop-blur-md border-b-gray-200">
-								{columns.map((_, idx) => (
-									// biome-ignore lint/suspicious/noArrayIndexKey: Static array for skeleton loading
-									<TableHead key={idx} className="font-medium text-gray-600">
-										<Skeleton className="h-4 w-20" />
-									</TableHead>
-								))}
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{Array.from({ length: pageSize || 10 }).map((_, idx) => (
-								// biome-ignore lint/suspicious/noArrayIndexKey: Static array for skeleton loading
-								<TableRow key={idx} className="border-b-gray-100">
-									{columns.map((_, colIdx) => (
-										// biome-ignore lint/suspicious/noArrayIndexKey: Static array for skeleton loading
-										<TableCell key={colIdx} className="py-4">
-											<Skeleton className="h-4 w-full max-w-[120px]" />
-										</TableCell>
-									))}
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
+					<ZevTableSkeleton table={table} columns={columns} pageSize={pageSize} />
 				) : (
-					<Table className="relative w-full">
+					<table
+						className="min-w-full caption-bottom text-sm relative"
+						style={{ tableLayout: "fixed", width: table.getTotalSize() }}
+					>
 						<TableHeader className="sticky top-0 z-20">
 							{table.getHeaderGroups().map((headerGroup) => (
 								<TableRow key={headerGroup.id} className="bg-gray-50/90 backdrop-blur-md border-b-gray-200">
@@ -162,21 +127,40 @@ export function ZevTable<TData, TValue>({
 											<TableHead
 												key={header.id}
 												colSpan={header.colSpan}
-												style={{ width: header.getSize() }}
-												onClick={header.column.getToggleSortingHandler()}
+												style={{ ...getPinningStyles(header.column) }}
 												className={cn(
-													header.column.getCanSort() ? "cursor-pointer select-none" : "",
-													"transition-colors hover:text-gray-900 text-gray-600 font-medium",
+													"transition-colors text-gray-600 font-medium group bg-gray-50/90 backdrop-blur-md",
 												)}
 											>
-												{header.isPlaceholder ? null : (
-													<div className="flex items-center space-x-2">
-														{flexRender(header.column.columnDef.header, header.getContext())}
-														{{
-															asc: <span className="text-[10px] text-black">▲</span>,
-															desc: <span className="text-[10px] text-black">▼</span>,
-														}[header.column.getIsSorted() as string] ?? null}
-													</div>
+												{/* biome-ignore lint/a11y/useKeyWithClickEvents: Click is bound to column sorting */}
+												{/* biome-ignore lint/a11y/noStaticElementInteractions: Click is bound to column sorting */}
+												<div
+													className={cn(
+														"flex items-center space-x-2 h-full w-full",
+														header.column.getCanSort() ? "cursor-pointer select-none hover:text-gray-900" : "",
+													)}
+													onClick={header.column.getToggleSortingHandler()}
+												>
+													{header.isPlaceholder ? null : (
+														<>
+															{flexRender(header.column.columnDef.header, header.getContext())}
+															{{
+																asc: <span className="text-[10px] text-black">▲</span>,
+																desc: <span className="text-[10px] text-black">▼</span>,
+															}[header.column.getIsSorted() as string] ?? null}
+														</>
+													)}
+												</div>
+												{header.column.getCanResize() && (
+													// biome-ignore lint/a11y/noStaticElementInteractions: Resizer is handled by table library
+													<div
+														onMouseDown={header.getResizeHandler()}
+														onTouchStart={header.getResizeHandler()}
+														className={cn(
+															"absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none hover:bg-gray-300 opacity-0 group-hover:opacity-100 transition-opacity",
+															header.column.getIsResizing() ? "bg-blue-500 opacity-100" : "",
+														)}
+													/>
 												)}
 											</TableHead>
 										);
@@ -191,19 +175,15 @@ export function ZevTable<TData, TValue>({
 								</tr>
 							)}
 
-							{virtualItems.map((virtualRow, idx) => {
+							{virtualItems.map((virtualRow) => {
 								const row = rows[virtualRow.index];
 								// 尝试获取唯一标识作为 key，如果没有则回退到 row.id
 								// biome-ignore lint/suspicious/noExplicitAny: Generic row mapping fallback
 								const rowKey = (row.original as any).ID || (row.original as any).id || row.id;
 
 								return (
-									<MotionTableRow
+									<TableRow
 										key={rowKey}
-										custom={idx}
-										initial="hidden"
-										animate="visible"
-										variants={rowVariants}
 										data-index={virtualRow.index}
 										ref={rowVirtualizer.measureElement}
 										onClick={() => onRowClick?.(row.original)}
@@ -215,11 +195,11 @@ export function ZevTable<TData, TValue>({
 										)}
 									>
 										{row.getVisibleCells().map((cell) => (
-											<TableCell key={cell.id} style={{ width: cell.column.getSize() }} className="py-3">
+											<TableCell key={cell.id} style={{ ...getPinningStyles(cell.column) }} className="py-3 bg-white">
 												{flexRender(cell.column.columnDef.cell, cell.getContext())}
 											</TableCell>
 										))}
-									</MotionTableRow>
+									</TableRow>
 								);
 							})}
 
@@ -237,7 +217,7 @@ export function ZevTable<TData, TValue>({
 								</TableRow>
 							)}
 						</TableBody>
-					</Table>
+					</table>
 				)}
 			</div>
 
