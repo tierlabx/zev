@@ -29,6 +29,7 @@ const dictTypeSchema = z.object({
 export function DictTypeFormDialog({ open, onOpenChange, editingDictType, onSuccess }: DictTypeFormDialogProps) {
 	const controls = useAnimation();
 	const form = useForm<z.infer<typeof dictTypeSchema>>({
+		// biome-ignore lint/suspicious/noExplicitAny: third-party type mismatch
 		resolver: zodResolver(dictTypeSchema) as any,
 		defaultValues: {
 			name: "",

@@ -8,9 +8,9 @@ import {
 import { cn } from "@zev/ui/lib/utils";
 import { ChevronDown, ChevronLeft, ChevronRight, RotateCw, X } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { findFirstPagePath } from "@/lib/menu-utils";
 import { useUserStore } from "@/store";
 import { useTagsStore } from "@/store/tags";
+import { findFirstPagePath } from "@/utils/menu-utils";
 
 export function TagsView() {
 	const location = useLocation();

@@ -23,3 +23,5 @@ zev-go/docs/swagger.json
 zev-go/docs/swagger.yaml
 *.exe
 zev-go/tmp/
+.pnpm-store
+.pnpm-store/

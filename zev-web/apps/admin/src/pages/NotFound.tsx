@@ -1,8 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ArrowLeft, Home } from "lucide-react";
-import { findFirstPagePath } from "@/lib/menu-utils";
 import { useUserStore } from "@/store";
+import { findFirstPagePath } from "@/utils/menu-utils";
 
 export default function NotFound() {
 	const navigate = useNavigate();

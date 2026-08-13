@@ -13,8 +13,8 @@ import { z } from "zod";
 import { getUserInfoApi, useLoginMutation } from "@/api/system/auth";
 import logoUrl from "@/assets/logo-animated.svg";
 import ThreeKoiBackground from "@/components/ThreeKoiBackground/index";
-import { findFirstPagePath } from "@/lib/menu-utils";
 import { useUserStore } from "@/store";
+import { findFirstPagePath } from "@/utils/menu-utils";
 
 const loginSchema = z.object({
 	username: z.string().min(1, { message: "请输入用户名或邮箱" }),
@@ -86,7 +86,7 @@ export default function Login() {
 				initial={{ opacity: 0, y: 40, scale: 0.95, rotateX: 10 }}
 				animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
 				transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-				className="z-10"
+				className="z-10 w-full max-w-[420px] px-4 md:px-0"
 				style={{ perspective: 1200 }}
 			>
 				<motion.div
@@ -96,7 +96,7 @@ export default function Login() {
 						transformStyle: "preserve-3d",
 					}}
 				>
-					<Card className="w-[420px] p-8 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/40 bg-white/60 backdrop-blur-xl rounded-2xl relative overflow-hidden">
+					<Card className="w-full p-6 md:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/40 bg-white/60 backdrop-blur-xl rounded-2xl relative overflow-hidden">
 						{/* Decorative blur elements inside the card */}
 						<div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 						<div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />

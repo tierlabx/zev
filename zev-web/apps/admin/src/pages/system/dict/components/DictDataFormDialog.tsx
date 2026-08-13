@@ -37,6 +37,7 @@ export function DictDataFormDialog({
 }: DictDataFormDialogProps) {
 	const controls = useAnimation();
 	const form = useForm<z.infer<typeof dictDataSchema>>({
+		// biome-ignore lint/suspicious/noExplicitAny: third-party type mismatch
 		resolver: zodResolver(dictDataSchema) as any,
 		defaultValues: {
 			label: "",

@@ -1,9 +1,8 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { MotionConfig } from "framer-motion";
+import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import { queryClient } from "@/api/queryClient";
-
-import { ThemeProvider } from "next-themes";
 
 function App({ children }: { children: React.ReactNode }) {
 	return (

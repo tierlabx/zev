@@ -127,21 +127,20 @@ export default function MenuManagement() {
 
 	return (
 		<div className="space-y-6">
-			<div className="flex items-center justify-end">
-				{hasPermission("system:menu:create") && (
-					<Button onClick={() => handleAdd(0)}>
-						<Plus className="mr-2 h-4 w-4" />
-						添加菜单
-					</Button>
-				)}
-			</div>
-
 			<Card className="rounded-md shadow-sm border p-4">
+				<div className="flex items-center justify-end mb-4">
+					{hasPermission("system:menu:create") && (
+						<Button onClick={() => handleAdd(0)}>
+							<Plus className="mr-2 h-4 w-4" />
+							添加菜单
+						</Button>
+					)}
+				</div>
 				<ZevTable
 					columns={columns}
 					data={flattenedMenus}
 					isLoading={isLoading}
-					containerHeight="calc(100vh - 200px)"
+					containerHeight="calc(100vh - 330px)"
 					pagination={false}
 				/>
 			</Card>

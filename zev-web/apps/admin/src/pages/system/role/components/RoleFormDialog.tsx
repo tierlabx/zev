@@ -38,6 +38,7 @@ type RoleFormData = {
 export function RoleFormDialog({ open, onOpenChange, editingRole, onSuccess }: RoleFormDialogProps) {
 	const controls = useAnimation();
 	const form = useForm<RoleFormData>({
+		// biome-ignore lint/suspicious/noExplicitAny: third-party type mismatch
 		resolver: zodResolver(roleSchema) as any,
 		defaultValues: {
 			name: "",

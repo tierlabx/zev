@@ -2,6 +2,7 @@ import { Navigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getUserInfoApi } from "@/api/system/auth";
 import { useUserStore } from "@/store";
+import { Footer } from "./footer";
 import { Header } from "./header";
 import { Main } from "./main";
 import { Sidebar } from "./sidebar";
@@ -63,6 +64,7 @@ export default function DashboardLayout() {
 				<Header />
 				<TagsView />
 				<Main />
+				<Footer />
 			</div>
 		</div>
 	);

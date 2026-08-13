@@ -76,6 +76,8 @@ zev-go/
 └── .air.toml           # Air 热重载配置文件
 ```
 
+注意seed.json 仅在 项目初始化时使用
+
 ## 接口文档 (Swagger)
 
 本项目使用 `swaggo/swag` 和 `swaggo/gin-swagger` 自动生成接口文档。

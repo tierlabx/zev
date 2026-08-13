@@ -36,9 +36,9 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 	seed.Run(db, "modules/system/seed/seed.json")
 
 	// 3. 初始化 Service 层
-	userService := service.NewUserService(db)
 	roleService := service.NewRoleService(db)
 	menuService := service.NewMenuService(db)
+	userService := service.NewUserService(db, roleService, menuService)
 	dictTypeService := service.NewDictTypeService(db)
 	dictDataService := service.NewDictDataService(db)
 	dashboardService := service.NewDashboardService(db)

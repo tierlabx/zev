@@ -10,10 +10,10 @@ import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 import { getRoleList } from "@/api/system/role";
 import { deleteUser, getUserList, type User } from "@/api/system/user";
+import { Auth } from "@/components/auth";
 import { ZevTable } from "@/components/zev-table";
 import { Checkbox } from "@/components/zev-table/checkbox";
 import { useConfirm } from "@/hooks/use-confirm";
-import { usePermission } from "@/hooks/use-permission";
 import { AssignUserRoleDialog } from "./components/AssignUserRoleDialog";
 import { UserFormDialog } from "./components/UserFormDialog";
 
@@ -21,7 +21,6 @@ export default function UserManagement() {
 	const queryClient = useQueryClient();
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
-	const { hasPermission } = usePermission();
 
 	const { confirm, ConfirmDialog } = useConfirm();
 	const [search, setSearch] = useState("");
@@ -152,39 +151,30 @@ export default function UserManagement() {
 				header: () => <div className="text-right">操作</div>,
 				cell: ({ row }) => (
 					<div className="flex justify-end space-x-2">
-						{hasPermission("system:user:assign") && (
+						<Auth permission="system:user:assign">
 							<Button variant="outline" size="icon" onClick={() => handleAssignRole(row.original)} title="分配角色">
 								<ShieldCheck className="h-4 w-4" />
 							</Button>
-						)}
-						{hasPermission("system:user:update") && (
+						</Auth>
+						<Auth permission="system:user:update">
 							<Button variant="outline" size="icon" onClick={() => handleEdit(row.original)} title="编辑">
 								<Edit className="h-4 w-4" />
 							</Button>
-						)}
-						{hasPermission("system:user:delete") && (
+						</Auth>
+						<Auth permission="system:user:delete">
 							<Button variant="destructive" size="icon" onClick={() => handleDelete(row.original.ID)}>
 								<Trash2 className="h-4 w-4" />
 							</Button>
-						)}
+						</Auth>
 					</div>
 				),
 			},
 		],
-		[handleEdit, handleDelete, roles, hasPermission, handleAssignRole],
+		[handleEdit, handleDelete, roles, handleAssignRole],
 	);
 
 	return (
 		<div className="space-y-6">
-			<div className="flex items-center justify-end">
-				{hasPermission("system:user:create") && (
-					<Button onClick={handleAdd}>
-						<Plus className="mr-2 h-4 w-4" />
-						添加用户
-					</Button>
-				)}
-			</div>
-
 			<Card className="rounded-md shadow-sm border p-4">
 				<div className="flex items-center justify-between mb-4">
 					<Input
@@ -196,13 +186,19 @@ export default function UserManagement() {
 							setPage(1);
 						}}
 					/>
+					<Auth permission="system:user:create">
+						<Button onClick={handleAdd}>
+							<Plus className="mr-2 h-4 w-4" />
+							添加用户
+						</Button>
+					</Auth>
 				</div>
 
 				<ZevTable
 					columns={columns}
 					data={users}
 					isLoading={isLoading}
-					containerHeight="calc(100vh - 330px)"
+					containerHeight="calc(100vh - 390px)"
 					pagination={true}
 					page={page}
 					pageSize={pageSize}

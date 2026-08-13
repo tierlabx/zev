@@ -42,6 +42,7 @@ type UserFormData = {
 export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: UserFormDialogProps) {
 	const controls = useAnimation();
 	const form = useForm<UserFormData>({
+		// biome-ignore lint/suspicious/noExplicitAny: third-party type mismatch
 		resolver: zodResolver(getUserSchema(!!editingUser)) as any,
 		defaultValues: {
 			username: "",

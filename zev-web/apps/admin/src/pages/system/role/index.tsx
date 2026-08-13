@@ -8,10 +8,10 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 import { deleteRole, getRoleList, type Role } from "@/api/system/role";
+import { Auth } from "@/components/auth";
 import { ZevTable } from "@/components/zev-table";
 import { Checkbox } from "@/components/zev-table/checkbox";
 import { useConfirm } from "@/hooks/use-confirm";
-import { usePermission } from "@/hooks/use-permission";
 import { AssignMenuDialog } from "./components/AssignMenuDialog";
 import { RoleFormDialog } from "./components/RoleFormDialog";
 
@@ -21,8 +21,6 @@ export default function RoleManagement() {
 	const [pageSize, setPageSize] = useState(10);
 	const [searchKeyword, setSearchKeyword] = useState("");
 	const [debouncedKeyword] = useDebounce(searchKeyword, 300);
-
-	const { hasPermission } = usePermission();
 
 	const { confirm, ConfirmDialog } = useConfirm();
 
@@ -133,55 +131,54 @@ export default function RoleManagement() {
 				header: () => <div className="text-right">操作</div>,
 				cell: ({ row }) => (
 					<div className="flex justify-end space-x-2">
-						{hasPermission("system:role:assign") && (
+						<Auth permission="system:role:assign">
 							<Button variant="outline" size="icon" onClick={() => handleAssignMenu(row.original.ID)} title="分配菜单">
 								<MenuIcon className="h-4 w-4" />
 							</Button>
-						)}
-						{hasPermission("system:role:update") && (
+						</Auth>
+						<Auth permission="system:role:update">
 							<Button variant="outline" size="icon" onClick={() => handleEdit(row.original)} title="编辑">
 								<Edit className="h-4 w-4" />
 							</Button>
-						)}
-						{hasPermission("system:role:delete") && (
+						</Auth>
+						<Auth permission="system:role:delete">
 							<Button variant="destructive" size="icon" onClick={() => handleDelete(row.original.ID)} title="删除">
 								<Trash2 className="h-4 w-4" />
 							</Button>
-						)}
+						</Auth>
 					</div>
 				),
 			},
 		],
-		[handleEdit, handleDelete, handleAssignMenu, hasPermission],
+		[handleEdit, handleDelete, handleAssignMenu],
 	);
 
 	return (
 		<div className="space-y-6">
-			<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-				<div className="w-full sm:w-72">
+			<Card className="rounded-md shadow-sm border p-4">
+				<div className="flex items-center justify-between mb-4">
 					<Input
 						placeholder="搜索角色名称或编码..."
+						className="w-[300px]"
 						value={searchKeyword}
 						onChange={(e) => {
 							setSearchKeyword(e.target.value);
 							setPage(1);
 						}}
 					/>
+					<Auth permission="system:role:create">
+						<Button onClick={handleAdd}>
+							<Plus className="mr-2 h-4 w-4" />
+							添加角色
+						</Button>
+					</Auth>
 				</div>
-				{hasPermission("system:role:create") && (
-					<Button onClick={handleAdd}>
-						<Plus className="mr-2 h-4 w-4" />
-						添加角色
-					</Button>
-				)}
-			</div>
 
-			<Card className="rounded-md shadow-sm border p-4">
 				<ZevTable
 					columns={columns}
 					data={roles}
 					isLoading={isLoading}
-					containerHeight="calc(100vh - 250px)"
+					containerHeight="calc(100vh - 390px)"
 					pagination={true}
 					page={page}
 					pageSize={pageSize}

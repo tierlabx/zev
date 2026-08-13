@@ -14,11 +14,15 @@ import (
 
 type UserService struct {
 	*crud.BaseService[entity.User]
+	roleService *RoleService
+	menuService *MenuService
 }
 
-func NewUserService(db *gorm.DB) *UserService {
+func NewUserService(db *gorm.DB, roleService *RoleService, menuService *MenuService) *UserService {
 	return &UserService{
 		BaseService: crud.NewBaseService[entity.User](db),
+		roleService: roleService,
+		menuService: menuService,
 	}
 }
 
@@ -79,4 +83,84 @@ func (s *UserService) ListWithKeyword(page, pageSize int, keyword string) ([]ent
 	err := db.Offset((page - 1) * pageSize).Limit(pageSize).Find(&entities).Error
 
 	return entities, total, err
+}
+
+func (s *UserService) CreateUser(req dto.UserCreateUpdateReq) error {
+	user := entity.User{
+		Username: req.Username,
+		Nickname: req.Nickname,
+		Email:    req.Email,
+		Avatar:   req.Avatar,
+		RoleID:   req.RoleID,
+		Status:   req.Status,
+	}
+
+	if req.Password != "" {
+		hashed, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		user.Password = string(hashed)
+	}
+
+	return s.Create(&user)
+}
+
+func (s *UserService) UpdateUser(req dto.UserCreateUpdateReq) error {
+	existingUser, err := s.GetByID(req.ID)
+	if err != nil {
+		return errors.New("用户不存在")
+	}
+
+	existingUser.Username = req.Username
+	existingUser.Nickname = req.Nickname
+	existingUser.Email = req.Email
+	existingUser.Avatar = req.Avatar
+	existingUser.RoleID = req.RoleID
+	existingUser.Status = req.Status
+
+	if req.Password != "" {
+		hashed, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		existingUser.Password = string(hashed)
+	}
+
+	return s.Update(existingUser)
+}
+
+func (s *UserService) GetUserInfo(userID uint) (*dto.UserInfoRes, error) {
+	user, err := s.GetByID(userID)
+	if err != nil {
+		return nil, errors.New("用户不存在")
+	}
+
+	var role entity.Role
+	roleName := ""
+	roleCode := ""
+	if err := s.roleService.DB.First(&role, user.RoleID).Error; err == nil {
+		roleName = role.Name
+		roleCode = role.Code
+	}
+
+	perms, _ := s.roleService.GetRolePerms(user.RoleID)
+	menuTree, _ := s.menuService.GetMenuTreeByRole(user.RoleID)
+
+	var menus []any
+	if menuTree != nil {
+		menus = make([]any, len(menuTree))
+		for i, m := range menuTree {
+			menus[i] = m
+		}
+	} else {
+		menus = []any{}
+	}
+
+	return &dto.UserInfoRes{
+		ID:          user.ID,
+		Username:    user.Username,
+		Nickname:    user.Nickname,
+		Avatar:      user.Avatar,
+		Email:       user.Email,
+		RoleID:      user.RoleID,
+		RoleName:    roleName,
+		RoleCode:    roleCode,
+		Permissions: perms,
+		Menus:       menus,
+	}, nil
 }

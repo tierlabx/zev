@@ -1,145 +1,10 @@
-import { Link, useLocation } from "@tanstack/react-router";
-import { cn } from "@zev/ui/lib/utils";
-import { ChevronDown, ChevronsLeft, ChevronsRight, type LucideIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import type { MenuItem } from "@/api/interface/system/user";
+import { useLocation } from "@tanstack/react-router";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronsLeft, ChevronsRight } from "lucide-react";
 import logoUrl from "@/assets/logo-animated.svg";
-import { getMenuIcon } from "@/lib/menu-icons";
 import { useUserStore } from "@/store";
 import { useLayoutStore } from "@/store/layout";
-
-type NavItemType = {
-	name: string;
-	path: string;
-	icon: LucideIcon;
-	children?: NavItemType[];
-};
-
-/**
- * 将后端菜单树转换为侧边栏导航项
- * 仅保留目录(M)和菜单(C)类型，过滤掉按钮(F)
- * 拼接父子路径生成完整路由
- */
-function buildNavItems(menus: MenuItem[], parentPath = ""): NavItemType[] {
-	return menus
-		.filter((m) => m.type === "M" || m.type === "C")
-		.map((m) => {
-			const fullPath = m.path.startsWith("/") ? m.path : `${parentPath}/${m.path}`.replace(/\/+/g, "/");
-
-			const item: NavItemType = {
-				name: m.name,
-				path: fullPath,
-				icon: getMenuIcon(m.icon),
-			};
-
-			if (m.children && m.children.length > 0) {
-				item.children = buildNavItems(m.children, fullPath);
-			}
-
-			return item;
-		});
-}
-
-function NavItem({
-	item,
-	activePath,
-	sidebarCollapsed,
-	toggleSidebar,
-}: {
-	item: NavItemType;
-	activePath: string;
-	sidebarCollapsed: boolean;
-	toggleSidebar: () => void;
-}) {
-	const hasChildren = item.children && item.children.length > 0;
-
-	// A parent is active if any of its children match the current route path
-	const isChildActive = hasChildren && item.children?.some((child) => activePath.startsWith(child.path));
-	const [expanded, setExpanded] = useState(isChildActive);
-
-	useEffect(() => {
-		if (isChildActive && !sidebarCollapsed) {
-			setExpanded(true);
-		}
-	}, [isChildActive, sidebarCollapsed]);
-
-	if (hasChildren) {
-		return (
-			<div className="space-y-1">
-				<button
-					type="button"
-					onClick={() => {
-						if (sidebarCollapsed) {
-							toggleSidebar();
-							setExpanded(true);
-						} else {
-							setExpanded(!expanded);
-						}
-					}}
-					title={sidebarCollapsed ? item.name : undefined}
-					className={cn(
-						"w-full flex items-center justify-between px-3 py-2.5 rounded-md cursor-pointer transition-colors font-medium relative group",
-						sidebarCollapsed ? "justify-center" : "",
-						isChildActive ? "text-[#2563EB]" : "text-[#666666] hover:bg-[#F5F5F5] hover:text-black",
-					)}
-				>
-					<div className={cn("flex items-center", sidebarCollapsed ? "justify-center" : "space-x-3")}>
-						<item.icon
-							className={cn(
-								"h-[18px] w-[18px] shrink-0",
-								isChildActive ? "text-[#2563EB]" : "text-[#666666] group-hover:text-black",
-							)}
-						/>
-						{!sidebarCollapsed && <span className="text-sm truncate">{item.name}</span>}
-					</div>
-					{!sidebarCollapsed && (
-						<ChevronDown
-							className={cn(
-								"h-4 w-4 transition-transform",
-								isChildActive ? "text-[#2563EB]" : "text-[#666666]",
-								expanded ? "rotate-180" : "",
-							)}
-						/>
-					)}
-				</button>
-				{expanded && !sidebarCollapsed && (
-					<div className="pl-6 space-y-1 mt-1">
-						{item.children?.map((child) => (
-							<NavItem
-								key={child.path}
-								item={child}
-								activePath={activePath}
-								sidebarCollapsed={sidebarCollapsed}
-								toggleSidebar={toggleSidebar}
-							/>
-						))}
-					</div>
-				)}
-			</div>
-		);
-	}
-
-	const active = activePath === item.path;
-	return (
-		<Link
-			to={item.path as never}
-			title={sidebarCollapsed ? item.name : undefined}
-			className={cn(
-				"flex items-center px-3 py-2.5 rounded-md cursor-pointer transition-colors font-medium relative group",
-				sidebarCollapsed ? "justify-center" : "space-x-3",
-				active ? "bg-[#EFF6FF] text-[#2563EB]" : "text-[#666666] hover:bg-[#F5F5F5] hover:text-black",
-			)}
-		>
-			<item.icon
-				className={cn(
-					"h-[18px] w-[18px] shrink-0",
-					active ? "text-[#2563EB]" : "text-[#666666] group-hover:text-black",
-				)}
-			/>
-			{!sidebarCollapsed && <span className="text-sm truncate">{item.name}</span>}
-		</Link>
-	);
-}
+import { buildNavItems, NavItem } from "./components/nav-item";
 
 export function Sidebar() {
 	const location = useLocation();
@@ -150,19 +15,28 @@ export function Sidebar() {
 	const navItems = buildNavItems(menus);
 
 	return (
-		<aside
-			className={cn(
-				"bg-white border-r border-[#E5E5E5] flex flex-col z-20 transition-all duration-300 shadow-sm relative",
-				sidebarCollapsed ? "w-[64px]" : "w-[240px]",
-			)}
+		<motion.aside
+			initial={false}
+			animate={{ width: sidebarCollapsed ? 64 : 240 }}
+			transition={{ type: "spring", stiffness: 400, damping: 40 }}
+			className="bg-card border-r border-border flex flex-col z-20 shadow-sm relative overflow-hidden hidden md:flex"
 		>
-			<div className="h-16 px-4 flex items-center justify-center space-x-3 border-b border-[#E5E5E5] overflow-hidden">
+			<div className="h-16 px-4 flex items-center justify-center space-x-3 border-b border-border overflow-hidden shrink-0">
 				<div className="flex aspect-square size-8 items-center justify-center shrink-0">
 					<img src={logoUrl} alt="Logo" className="size-8" />
 				</div>
-				{!sidebarCollapsed && (
-					<span className="text-base font-semibold truncate transition-opacity duration-300">Zev Admin</span>
-				)}
+				<AnimatePresence>
+					{!sidebarCollapsed && (
+						<motion.span
+							initial={{ opacity: 0, width: 0 }}
+							animate={{ opacity: 1, width: "auto" }}
+							exit={{ opacity: 0, width: 0 }}
+							className="text-base font-semibold truncate whitespace-nowrap"
+						>
+							Zev Admin
+						</motion.span>
+					)}
+				</AnimatePresence>
 			</div>
 			<nav className="flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden mb-12">
 				{navItems.map((item) => (
@@ -177,11 +51,13 @@ export function Sidebar() {
 			</nav>
 			<button
 				type="button"
-				className="absolute bottom-0 left-0 right-0 h-12 border-t border-[#E5E5E5] flex items-center justify-center cursor-pointer hover:bg-[#F5F5F5] text-muted-foreground transition-colors bg-white z-10 w-full"
+				className="absolute bottom-0 left-0 right-0 h-12 border-t border-border flex items-center justify-center cursor-pointer hover:bg-muted text-muted-foreground transition-colors bg-card z-10 w-full"
 				onClick={toggleSidebar}
 			>
 				{sidebarCollapsed ? <ChevronsRight className="h-5 w-5" /> : <ChevronsLeft className="h-5 w-5" />}
 			</button>
-		</aside>
+		</motion.aside>
 	);
 }
+
+export { MobileSidebar } from "./components/mobile-sidebar";

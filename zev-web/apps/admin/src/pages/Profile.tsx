@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@zev/ui/components/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@zev/ui/components/card";
+import { Card, CardContent } from "@zev/ui/components/card";
 import { Separator } from "@zev/ui/components/separator";
 import { Clock, Mail, Shield, User as UserIcon } from "lucide-react";
 import { useUserStore } from "@/store";
@@ -21,59 +21,63 @@ export default function Profile() {
 	];
 
 	return (
-		<div className="p-6 max-w-3xl mx-auto">
-			<Card className="border border-[#E5E5E5] shadow-sm">
-				<CardHeader className="pb-4">
-					<CardTitle className="text-lg">个人中心</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-6">
+		<div className="p-6 max-w-3xl mx-auto space-y-6">
+			<div>
+				<h2 className="text-2xl font-bold tracking-tight text-foreground">个人中心</h2>
+				<p className="text-muted-foreground">管理您的个人资料和账户设置。</p>
+			</div>
+
+			<Card className="border-border shadow-sm">
+				<CardContent className="p-6 space-y-6">
 					{/* 头像和基本信息 */}
-					<div className="flex items-center gap-4">
-						<Avatar className="h-20 w-20 border-2 border-[#E5E5E5]">
+					<div className="flex items-center gap-6">
+						<Avatar className="h-24 w-24 border-2 border-border shadow-sm">
 							<AvatarImage src={userInfo.avatar} alt={userInfo.nickname} />
-							<AvatarFallback className="text-2xl font-semibold bg-[#EFF6FF] text-[#2563EB]">{initials}</AvatarFallback>
+							<AvatarFallback className="text-3xl font-semibold bg-[var(--color-primary-light)] text-primary">
+								{initials}
+							</AvatarFallback>
 						</Avatar>
 						<div>
-							<h3 className="text-xl font-semibold text-gray-900">{userInfo.nickname}</h3>
+							<h3 className="text-2xl font-semibold text-foreground">{userInfo.nickname}</h3>
 							<p className="text-sm text-muted-foreground mt-1">@{userInfo.username}</p>
-							<span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-xs font-medium bg-[#EFF6FF] text-[#2563EB]">
-								<Shield className="h-3 w-3" />
+							<span className="inline-flex items-center gap-1.5 mt-3 px-2.5 py-1 rounded-md text-xs font-medium bg-[var(--color-primary-light)] text-primary">
+								<Shield className="h-3.5 w-3.5" />
 								{userInfo.role_name}
 							</span>
 						</div>
 					</div>
 
-					<Separator />
+					<Separator className="bg-border" />
 
 					{/* 详细信息列表 */}
 					<div className="space-y-4">
 						{infoItems.map((item) => (
-							<div key={item.label} className="flex items-center gap-3">
-								<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-50 text-gray-500">
+							<div key={item.label} className="flex items-center gap-4 group">
+								<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/50 text-muted-foreground group-hover:bg-muted group-hover:text-foreground transition-colors">
 									<item.icon className="h-4 w-4" />
 								</div>
 								<div className="flex-1 flex items-center justify-between">
 									<span className="text-sm text-muted-foreground">{item.label}</span>
-									<span className="text-sm font-medium text-gray-900">{item.value}</span>
+									<span className="text-sm font-medium text-foreground">{item.value}</span>
 								</div>
 							</div>
 						))}
 					</div>
 
-					<Separator />
+					<Separator className="bg-border" />
 
 					{/* 权限信息 */}
 					<div>
-						<div className="flex items-center gap-2 mb-3">
+						<div className="flex items-center gap-2 mb-4">
 							<Clock className="h-4 w-4 text-muted-foreground" />
-							<span className="text-sm font-medium text-gray-700">权限标识</span>
+							<span className="text-sm font-medium text-foreground">权限标识</span>
 						</div>
 						<div className="flex flex-wrap gap-2">
 							{userInfo.permissions.length > 0 ? (
 								userInfo.permissions.map((perm) => (
 									<span
 										key={perm}
-										className="px-2.5 py-1 rounded-md text-xs font-mono bg-gray-50 text-gray-600 border border-gray-200"
+										className="px-2.5 py-1 rounded-md text-xs font-mono bg-muted/50 text-muted-foreground border border-border"
 									>
 										{perm}
 									</span>

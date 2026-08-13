@@ -41,7 +41,7 @@ trigger: always_on
   - `components/`：高阶及自定义业务组件。
   - `pages/`：业务视图组件。右侧页面内不要包含无意义的顶部正副标题，直接呈现表格或表单。
   - `store/`：Zustand 状态文件。
-  - `utils/`：全局工具类封装。
+  - `utils/`：全局工具类封装。**前端工具函数必须统一放在此目录，严禁散落在业务组件中**。
 - **表单与交互规范**：
   - 必须使用 `react-hook-form` 配合 `zod` 进行表单状态管理与数据校验。
   - 界面提示必须使用 `sonner` 提供的 `toast`，禁止使用原生 `alert`。
@@ -76,10 +76,10 @@ trigger: always_on
 - **技术栈锁定**：Go 1.25 + Gin v1.12 + Gorm v1.31 + PostgreSQL + Swagger。本地开发使用 `air`。
 - **模块化结构**：按照功能对系统进行拆分，代码存放在 `modules/{module_name}` 下（例如 `modules/system`）。
 - **严格的分层架构**：
-  - `controller/`: **极度轻量化**。仅负责请求接收、参数校验 (DTO绑定) 与响应格式化。**严禁混入任何业务逻辑**。
-  - `service/`: 负责所有核心业务逻辑实现与数据库操作调度。
+  - `controller/`: **极度轻量化**。仅负责请求接收、参数校验 (DTO绑定) 与响应格式化。**严禁混入任何业务逻辑（如密码加密、数据拼装），严禁直接调用 DB（即便是通过 `service.DB`）**。
+  - `service/`: 负责所有核心业务逻辑实现与数据库操作调度。复杂的数据拼装、鉴权计算必须在这里完成。
   - `entity/`: GORM 数据库映射结构体。
-  - `dto/`: 请求参数验证 (Req) 及响应数据结构 (Resp)。
+  - `dto/`: 请求参数验证 (Req) 及响应数据结构 (Resp)。**所有 DTO 必须集中在此目录，严禁在 controller 内就地定义结构体**。
   - `init.go`: 模块路由与事件注册的唯一入口。
 - **API 响应规范**：所有接口必须统一通过 `pkg/response` 返回标准化 JSON：`{ "code": 200, "data": ..., "msg": "..." }`。
 - **核心基类复用 (pkg)**：
@@ -88,7 +88,7 @@ trigger: always_on
   - `pkg/crud`：利用泛型实现的通用 Service 和 Controller 快速增删改查基类，必须优先继承使用以减少样板代码。
   - `pkg/swagger`：自动生成 Swagger API 接口文档。
 - **Swagger 接口文档**：所有的 API Handler 上方必须编写符合规范的 Swagger 注释。后台 `air` 会自动触发 `swag init`。
-
+注意seed.json 仅在 项目初始化时使用
 ## 4. AI 协作与工作流
 1. **理解上下文**：在动手修改代码前，先了解相关模块的现有实现，保证代码风格和架构思想一致。
 2. **循序渐进**：每当开始新模块时，明确划分各层职责。

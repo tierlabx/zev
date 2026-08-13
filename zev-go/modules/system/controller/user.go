@@ -10,7 +10,6 @@ import (
 	"zev-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserController struct {
@@ -29,51 +28,25 @@ func NewUserController(userService *service.UserService, roleService *service.Ro
 	}
 }
 
-type UserCreateUpdateReq struct {
-	ID       uint   `json:"ID"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Nickname string `json:"nickname"`
-	Email    string `json:"email"`
-	Avatar   string `json:"avatar"`
-	RoleID   uint   `json:"role_id"`
-	Status   int    `json:"status"`
-}
+
 
 // Create 重写创建用户，支持密码加密
 // @Summary 创建用户
 // @Tags 系统管理-用户
 // @Accept json
 // @Produce json
-// @Param req body UserCreateUpdateReq true "用户信息"
-// @Success 200 {object} response.Response "成功"
-// @Router /api/system/user/create [post]
 func (c *UserController) Create(ctx *gin.Context) {
-	var req UserCreateUpdateReq
+	var req dto.UserCreateUpdateReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		response.FailMessage("参数错误", ctx)
 		return
 	}
 
-	user := entity.User{
-		Username: req.Username,
-		Nickname: req.Nickname,
-		Email:    req.Email,
-		Avatar:   req.Avatar,
-		RoleID:   req.RoleID,
-		Status:   req.Status,
-	}
-
-	if req.Password != "" {
-		hashed, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-		user.Password = string(hashed)
-	}
-
-	if err := c.userService.Create(&user); err != nil {
-		response.FailMessage("创建失败", ctx)
+	if err := c.userService.CreateUser(req); err != nil {
+		response.FailMessage("创建失败: "+err.Error(), ctx)
 		return
 	}
-	response.SuccessData(user, ctx)
+	response.Success(ctx)
 }
 
 // Update 重写更新用户，支持密码不修改
@@ -81,36 +54,18 @@ func (c *UserController) Create(ctx *gin.Context) {
 // @Tags 系统管理-用户
 // @Accept json
 // @Produce json
-// @Param req body UserCreateUpdateReq true "用户信息"
+// @Param req body dto.UserCreateUpdateReq true "用户信息"
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/user/update [put]
 func (c *UserController) Update(ctx *gin.Context) {
-	var req UserCreateUpdateReq
+	var req dto.UserCreateUpdateReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		response.FailMessage("参数错误", ctx)
 		return
 	}
 
-	existingUser, err := c.userService.GetByID(req.ID)
-	if err != nil {
-		response.FailMessage("用户不存在", ctx)
-		return
-	}
-
-	existingUser.Username = req.Username
-	existingUser.Nickname = req.Nickname
-	existingUser.Email = req.Email
-	existingUser.Avatar = req.Avatar
-	existingUser.RoleID = req.RoleID
-	existingUser.Status = req.Status
-
-	if req.Password != "" {
-		hashed, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-		existingUser.Password = string(hashed)
-	}
-
-	if err := c.userService.Update(existingUser); err != nil {
-		response.FailMessage("更新失败", ctx)
+	if err := c.userService.UpdateUser(req); err != nil {
+		response.FailMessage("更新失败: "+err.Error(), ctx)
 		return
 	}
 	response.Success(ctx)
@@ -206,47 +161,10 @@ func (c *UserController) UserInfo(ctx *gin.Context) {
 		return
 	}
 
-	user, err := c.userService.GetByID(userID)
+	res, err := c.userService.GetUserInfo(userID)
 	if err != nil {
-		response.FailMessage("用户不存在", ctx)
+		response.FailMessage(err.Error(), ctx)
 		return
-	}
-
-	// 查询角色信息
-	var role entity.Role
-	roleName := ""
-	roleCode := ""
-	if err := c.roleService.DB.First(&role, user.RoleID).Error; err == nil {
-		roleName = role.Name
-		roleCode = role.Code
-	}
-
-	// 获取权限标识列表
-	perms, _ := c.roleService.GetRolePerms(user.RoleID)
-
-	// 获取菜单树
-	menuTree, _ := c.menuService.GetMenuTreeByRole(user.RoleID)
-
-	res := dto.UserInfoRes{
-		ID:          user.ID,
-		Username:    user.Username,
-		Nickname:    user.Nickname,
-		Avatar:      user.Avatar,
-		Email:       user.Email,
-		RoleID:      user.RoleID,
-		RoleName:    roleName,
-		RoleCode:    roleCode,
-		Permissions: perms,
-		Menus: func() []any {
-			if menuTree == nil {
-				return []any{}
-			}
-			result := make([]any, len(menuTree))
-			for i, m := range menuTree {
-				result[i] = m
-			}
-			return result
-		}(),
 	}
 
 	response.SuccessData(res, ctx)

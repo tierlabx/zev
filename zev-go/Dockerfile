@@ -1,12 +1,12 @@
 # Base stage for Go
-FROM golang:1.22-alpine AS base
+FROM golang:1.25-alpine AS base
 WORKDIR /app
 # 必须安装 git 用于下载依赖
 RUN apk add --no-cache git tzdata
 
 # Dev stage for hot reloading
 FROM base AS dev
-RUN go install github.com/air-verse/air@latest
+RUN go install github.com/air-verse/air@v1.52.3
 COPY go.mod go.sum* ./
 RUN go mod download || true
 COPY . .

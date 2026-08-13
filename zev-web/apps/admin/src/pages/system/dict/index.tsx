@@ -238,7 +238,7 @@ export default function DictManagement() {
 							columns={typeColumns}
 							data={dictTypes}
 							isLoading={isTypeLoading}
-							containerHeight="calc(100vh - 200px)"
+							containerHeight="calc(100vh - 330px)"
 							onRowClick={(row) => setSelectedDictType(row)}
 							className="border-gray-200"
 							pagination={false}
@@ -267,13 +267,13 @@ export default function DictManagement() {
 								columns={dataColumns}
 								data={dictDataList}
 								isLoading={isDataLoading}
-								containerHeight="calc(100vh - 200px)"
+								containerHeight="calc(100vh - 280px)"
 								className="border-gray-200"
 								pagination={false}
 								showToolbar={false}
 							/>
 						) : (
-							<div className="h-[calc(100vh-200px)] flex items-center justify-center border border-dashed rounded-md text-gray-400">
+							<div className="h-[calc(100vh-280px)] flex items-center justify-center border border-dashed rounded-md text-gray-400">
 								请在左侧选择一个字典类型
 							</div>
 						)}

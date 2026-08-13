@@ -58,6 +58,7 @@ const menuSchema = z
 export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSuccess }: MenuFormDialogProps) {
 	const controls = useAnimation();
 	const form = useForm<z.infer<typeof menuSchema>>({
+		// biome-ignore lint/suspicious/noExplicitAny: third-party type mismatch
 		resolver: zodResolver(menuSchema) as any,
 		defaultValues: {
 			parent_id: 0,

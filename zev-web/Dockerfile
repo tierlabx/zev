@@ -2,24 +2,19 @@
 FROM node:20-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+RUN npm install -g pnpm@9.15.4
 WORKDIR /app
 
-# Dependency resolution
-FROM base AS deps
+# Dev stage
+FROM base AS dev
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY apps/admin/package.json ./apps/admin/
 COPY packages/ui/package.json ./packages/ui/
 RUN pnpm install
-
-# Dev stage
-FROM base AS dev
-COPY --from=deps /app/node_modules /app/node_modules
-# 为 workspace 内部的包链接做些准备
 COPY . .
 # React Vite 开发端口
 EXPOSE 5173
-CMD ["pnpm", "dev", "--host"]
+CMD ["sh", "-c", "pnpm install && pnpm dev --host"]
 
 # Build stage
 FROM base AS builder

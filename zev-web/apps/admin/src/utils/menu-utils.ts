@@ -3,7 +3,7 @@ import type { MenuItem } from "@/api/interface/system/user";
 /**
  * 规范化路由路径：确保以 / 开头
  */
-function normalizePath(path: string): string {
+export function normalizePath(path: string): string {
 	if (!path) return "/";
 	return path.startsWith("/") ? path : `/${path}`;
 }
@@ -11,7 +11,7 @@ function normalizePath(path: string): string {
 /**
  * 拼接父子路径
  */
-function joinPath(parent: string, child: string): string {
+export function joinPath(parent: string, child: string): string {
 	return `${parent}${normalizePath(child)}`.replace(/\/+/g, "/");
 }
 
@@ -38,4 +38,21 @@ export function findFirstPagePath(menus: MenuItem[], parentPath = ""): string | 
 		}
 	}
 	return null;
+}
+
+/**
+ * 递归扁平化菜单树，只提取类型为 C（页面组件）的菜单项用于搜索
+ */
+export function flattenMenus(menus: MenuItem[], parentPath = ""): { name: string; path: string }[] {
+	let result: { name: string; path: string }[] = [];
+	for (const menu of menus) {
+		const fullPath = menu.path.startsWith("/") ? menu.path : `${parentPath}/${menu.path}`.replace(/\/+/g, "/");
+		if (menu.type === "C") {
+			result.push({ name: menu.name, path: fullPath });
+		}
+		if (menu.children && menu.children.length > 0) {
+			result = result.concat(flattenMenus(menu.children, fullPath));
+		}
+	}
+	return result;
 }
