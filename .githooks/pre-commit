@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# 获取暂存区的文件列表 (Added, Copied, Modified)
+staged_files=$(git diff --cached --name-only --diff-filter=ACM)
+
+if [ -z "$staged_files" ]; then
+  exit 0
+fi
+
+# 1. 过滤并处理 zev-go 下的后端代码
+go_files=$(echo "$staged_files" | grep '^zev-go/.*\.go$' || true)
+if [ -n "$go_files" ]; then
+  echo "🚀 Formatting Go files..."
+  echo "$go_files" | xargs gofmt -w
+  echo "$go_files" | xargs git add
+fi
+
+# 2. 过滤并处理 zev-web 下的前端代码
+js_files=$(echo "$staged_files" | grep -E '^zev-web/.*\.(js|ts|jsx|tsx|json|jsonc)$' || true)
+if [ -n "$js_files" ]; then
+  echo "🚀 Formatting Frontend files..."
+  cd zev-web || exit
+  for f in $js_files; do
+    # 相对 zev-web 的路径，文件列表带前缀 zev-web/，所以需要回到上一层来指向文件
+    # 其实直接使用绝对或者带 ../ 前缀更好
+    pnpm exec biome check --write "../$f"
+  done
+  cd ..
+  echo "$js_files" | xargs git add
+fi
+
+exit 0

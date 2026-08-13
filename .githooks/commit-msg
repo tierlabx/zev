@@ -1,0 +1,15 @@
+#!/bin/sh
+
+commit_msg_file=$1
+commit_msg=$(cat "$commit_msg_file")
+
+# 严格校验业界标准的 Conventional Commits 格式
+regex="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_-]+\))?: .+"
+
+if ! echo "$commit_msg" | grep -Eq "$regex"; then
+  echo "❌ Error: 提交信息格式不规范!"
+  echo "正确格式: <类型>(<范围>): <简要描述>"
+  echo "支持的类型: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
+  echo "示例: feat(user): 增加用户登录功能"
+  exit 1
+fi
