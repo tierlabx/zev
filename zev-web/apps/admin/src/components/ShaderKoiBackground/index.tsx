@@ -4,40 +4,39 @@ import {
 	useTempoTransition,
 } from "@animate-ui/react/utils/motion";
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
-import { CustomShader, ImageTexture, isWebGPUSupported, Shader } from "shaders/react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { rasterizeSvgToPngBlobUrl } from "@/utils/svg-texture";
 import bgOnlyStatic from "../../assets/bg-only.svg";
 import blackFishStatic from "../../assets/black-fish.svg";
 import whiteFishStatic from "../../assets/white-fish.svg";
+import type { KoiTextures } from "./ShaderCanvasLayer";
 import { StaticKoiFallback } from "./StaticKoiFallback";
-import { koiFishShader, koiWaterBgShader } from "./shaders";
 
-interface KoiTextures {
-	bg: string;
-	whiteFish: string;
-	blackFish: string;
-}
-
-const STATIC_CENTER = { x: 0.5, y: 0.5 };
-const MOUSE_RIPPLE_DRIVER = { type: "mouse-position" as const, smoothing: 0.72, momentum: 0 };
-const CAMERA_PARALLAX_DRIVER = { type: "mouse-position" as const, smoothing: 0.86, momentum: 0 };
+const ShaderCanvasLayer = lazy(() => import("./ShaderCanvasLayer"));
 
 /**
  * 基于 WebGPU（shaders@4.0.7 + 自定义 WGSL）的太极双鱼动态登录页背景。
- * 不支持 WebGPU、设备初始化失败或用户开启“减弱动态效果”时，无缝展示 StaticKoiFallback 静态背景。
+ * 仅在支持 WebGPU 且未开启“减弱动态效果”时按需异步加载着色器画布，其余场景无感降级为 StaticKoiFallback。
  */
 export default function ShaderKoiBackground() {
 	const reduce = useShouldReduceMotion();
 	const fadeTransition = useTempoTransition(motionTransition.overlay);
 
-	const [webGpuCapable] = useState(() => (typeof window !== "undefined" ? isWebGPUSupported() : false));
+	const [webGpuCapable] = useState(() => typeof navigator !== "undefined" && "gpu" in navigator);
 	const [gpuUnavailable, setGpuUnavailable] = useState(false);
 	const [isReady, setIsReady] = useState(false);
 	const [hasMovedPointer, setHasMovedPointer] = useState(false);
 	const [textures, setTextures] = useState<KoiTextures | null>(null);
 
 	const shouldUseShader = !reduce && webGpuCapable && !gpuUnavailable;
+
+	const handleReady = useCallback(() => {
+		setIsReady(true);
+	}, []);
+
+	const handleUnavailable = useCallback(() => {
+		setGpuUnavailable(true);
+	}, []);
 
 	useEffect(() => {
 		if (!shouldUseShader) {
@@ -90,9 +89,6 @@ export default function ShaderKoiBackground() {
 		};
 	}, [shouldUseShader]);
 
-	const mouseProp = hasMovedPointer ? MOUSE_RIPPLE_DRIVER : STATIC_CENTER;
-	const cameraProp = hasMovedPointer ? CAMERA_PARALLAX_DRIVER : STATIC_CENTER;
-
 	return (
 		<motion.div
 			initial={reduce ? false : { opacity: 0 }}
@@ -102,42 +98,15 @@ export default function ShaderKoiBackground() {
 		>
 			<StaticKoiFallback />
 			{shouldUseShader && textures ? (
-				<Shader
-					disableTelemetry
-					colorSpace="srgb"
-					toneMapping="linear"
-					onReady={() => setIsReady(true)}
-					onUnavailable={() => setGpuUnavailable(true)}
-					className={`absolute inset-0 w-full h-full transition-opacity duration-300 ${isReady ? "opacity-100" : "opacity-0"}`}
-				>
-					<CustomShader src={koiWaterBgShader} mouse={mouseProp} cameraMouse={cameraProp}>
-						<ImageTexture url={textures.bg} objectFit="fill" />
-					</CustomShader>
-
-					<CustomShader
-						src={koiFishShader}
-						blendMode="normal"
-						mouse={mouseProp}
-						cameraMouse={cameraProp}
-						layerZ={0.1}
-						pivotX={0.41}
-						pivotY={0.65}
-					>
-						<ImageTexture url={textures.whiteFish} objectFit="fill" />
-					</CustomShader>
-
-					<CustomShader
-						src={koiFishShader}
-						blendMode="normal"
-						mouse={mouseProp}
-						cameraMouse={cameraProp}
-						layerZ={0.2}
-						pivotX={0.57}
-						pivotY={0.34}
-					>
-						<ImageTexture url={textures.blackFish} objectFit="fill" />
-					</CustomShader>
-				</Shader>
+				<Suspense fallback={null}>
+					<ShaderCanvasLayer
+						textures={textures}
+						hasMovedPointer={hasMovedPointer}
+						isReady={isReady}
+						onReady={handleReady}
+						onUnavailable={handleUnavailable}
+					/>
+				</Suspense>
 			) : null}
 		</motion.div>
 	);

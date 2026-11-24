@@ -80,7 +80,9 @@ export const koiWaterBgShader = defineShader<KoiWaterBgProps>({
 
 			let baseRgb = raw.rgb / raw.a;
 			let light = sin(bgUv.x * 10.0 + time) * cos(bgUv.y * 10.0 + time) * 0.03;
-			let finalRgb = clamp(baseRgb + vec3f(light), vec3f(0.0), vec3f(1.0));
+			let srgb = pow(clamp(baseRgb, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2));
+			let litSrgb = clamp(srgb + vec3f(light), vec3f(0.0), vec3f(1.0));
+			let finalRgb = pow(litSrgb, vec3f(2.2));
 			return vec4f(finalRgb, raw.a);
 		`,
 	}),
@@ -172,7 +174,9 @@ export const koiFishShader = defineShader<KoiFishProps>({
 
 			let baseRgb = raw.rgb / raw.a;
 			let light = sin(waggedUv.x * 10.0 + time) * cos(waggedUv.y * 10.0 + time) * 0.02;
-			let finalRgb = clamp(baseRgb + vec3f(light), vec3f(0.0), vec3f(1.0));
+			let srgb = pow(clamp(baseRgb, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2));
+			let litSrgb = clamp(srgb + vec3f(light), vec3f(0.0), vec3f(1.0));
+			let finalRgb = pow(litSrgb, vec3f(2.2));
 			return vec4f(finalRgb, raw.a);
 		`,
 	}),
