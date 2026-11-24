@@ -1,45 +1,64 @@
 package middleware
 
 import (
+	"zev-go/pkg/datascope"
 	"zev-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-// @function: RequirePermission
-// @description: 权限控制中间件
-// @param: db *gorm.DB
-// @param: perm string
-// @return: gin.HandlerFunc
+// RequirePermission 校验当前用户任一启用角色是否具备指定权限标识
 func RequirePermission(db *gorm.DB, perm string) gin.HandlerFunc {
+	return RequireAnyPermission(db, perm)
+}
+
+// RequireAnyPermission 校验当前用户任一启用角色是否具备候选权限标识中的至少一个
+func RequireAnyPermission(db *gorm.DB, perms ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		roleIDAny, exists := c.Get("roleID")
+		userIDAny, exists := c.Get("userID")
 		if !exists {
-			response.FailMessage("无法获取角色信息", c)
+			response.FailUnauthorized("无法获取当前用户信息", c)
 			c.Abort()
 			return
 		}
 
-		roleID, ok := roleIDAny.(uint)
-		if !ok {
-			response.FailMessage("角色信息格式错误", c)
+		userID, ok := userIDAny.(uint)
+		if !ok || userID == 0 {
+			response.FailUnauthorized("用户信息格式错误", c)
+			c.Abort()
+			return
+		}
+
+		_, activeRoles, isSuperAdmin, err := datascope.LoadUserActiveRoles(db, userID)
+		if err != nil {
+			response.FailUnauthorized(err.Error(), c)
 			c.Abort()
 			return
 		}
 
 		// 超级管理员直接放行
-		if roleID == 1 {
+		if isSuperAdmin {
 			c.Next()
 			return
 		}
 
-		var count int64
-		err := db.Table("sys_role_menus").
-			Joins("JOIN menus ON menus.id = sys_role_menus.menu_id AND menus.deleted_at IS NULL").
-			Where("sys_role_menus.role_id = ? AND menus.perms = ?", roleID, perm).
-			Count(&count).Error
+		if len(activeRoles) == 0 || len(perms) == 0 {
+			response.FailMessage("权限不足，拒绝访问", c)
+			c.Abort()
+			return
+		}
 
+		roleIDs := make([]uint, 0, len(activeRoles))
+		for _, r := range activeRoles {
+			roleIDs = append(roleIDs, r.ID)
+		}
+
+		var count int64
+		err = db.Table("sys_role_menus").
+			Joins("JOIN menus ON menus.id = sys_role_menus.menu_id AND menus.deleted_at IS NULL").
+			Where("sys_role_menus.role_id IN ? AND menus.perms IN ?", roleIDs, perms).
+			Count(&count).Error
 		if err != nil || count == 0 {
 			response.FailMessage("权限不足，拒绝访问", c)
 			c.Abort()

@@ -4,14 +4,17 @@ import Modal from "@zev/ui/components/animate/overlay/modal";
 import { Button } from "@zev/ui/components/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@zev/ui/components/form";
 import { Input } from "@zev/ui/components/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zev/ui/components/select";
 import { Switch } from "@zev/ui/components/switch";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
-import { createRole, type Role, updateRole } from "@/api/system/role";
+import { createRole, type DataScopeValue, type Role, updateRole } from "@/api/system/role";
+import { usePermission } from "@/hooks/use-permission";
 import { useShake } from "@/hooks/use-shake";
 import { useI18n } from "@/i18n";
+import { DATA_SCOPE_OPTIONS } from "@/utils/data-scope";
 
 interface RoleFormDialogProps {
 	open: boolean;
@@ -20,54 +23,54 @@ interface RoleFormDialogProps {
 	onSuccess: () => void;
 }
 
-type RoleFormData = {
-	name: string;
-	code: string;
-	status: number;
-	sort: number;
-	desc?: string;
-};
-
 export function RoleFormDialog({ open, onOpenChange, editingRole, onSuccess }: RoleFormDialogProps) {
 	const { t } = useI18n();
+	const { hasAllDataScope } = usePermission();
 	const { scope: formRef, shake } = useShake();
+
 	const roleSchema = useMemo(
 		() =>
 			z.object({
 				name: z.string().min(2, t("role.nameMin")).max(32, t("role.nameMax")),
 				code: z.string().min(2, t("role.codeMin")),
-				status: z.number().default(0),
-				sort: z.number().default(0),
-				desc: z.string().optional(),
+				status: z.number(),
+				sort: z.number(),
+				desc: z.string(),
+				data_scope: z.number(),
 			}),
 		[t],
 	);
 
+	type RoleFormData = z.infer<typeof roleSchema>;
+
 	const form = useForm<RoleFormData>({
-		// biome-ignore lint/suspicious/noExplicitAny: third-party type mismatch
-		resolver: zodResolver(roleSchema) as any,
+		resolver: zodResolver(roleSchema),
 		defaultValues: {
 			name: "",
 			code: "",
 			status: 0,
 			sort: 0,
 			desc: "",
+			data_scope: 5,
 		},
 	});
 
+	const isSuperRole = Boolean(editingRole && (editingRole.ID === 1 || editingRole.code === "admin"));
+	const selectableScopes = DATA_SCOPE_OPTIONS.filter((opt) => hasAllDataScope || opt.value !== 1);
+
 	useEffect(() => {
-		if (open) {
-			if (editingRole) {
-				form.reset({
-					name: editingRole.name,
-					code: editingRole.code,
-					status: editingRole.status,
-					sort: editingRole.sort,
-					desc: editingRole.desc || "",
-				});
-			} else {
-				form.reset({ name: "", code: "", status: 0, sort: 0, desc: "" });
-			}
+		if (!open) return;
+		if (editingRole) {
+			form.reset({
+				name: editingRole.name,
+				code: editingRole.code,
+				status: editingRole.status,
+				sort: editingRole.sort,
+				desc: editingRole.desc || "",
+				data_scope: editingRole.data_scope || 5,
+			});
+		} else {
+			form.reset({ name: "", code: "", status: 0, sort: 0, desc: "", data_scope: 5 });
 		}
 	}, [open, editingRole, form]);
 
@@ -96,13 +99,17 @@ export function RoleFormDialog({ open, onOpenChange, editingRole, onSuccess }: R
 	});
 
 	const onSubmit = (values: RoleFormData) => {
+		const payload: Partial<Role> = {
+			...values,
+			data_scope: values.data_scope as DataScopeValue,
+		};
 		if (editingRole) {
 			updateMutation.mutate({
 				ID: editingRole.ID,
-				...values,
-			} as Partial<Role>);
+				...payload,
+			});
 		} else {
-			createMutation.mutate(values as Partial<Role>);
+			createMutation.mutate(payload);
 		}
 	};
 
@@ -137,25 +144,55 @@ export function RoleFormDialog({ open, onOpenChange, editingRole, onSuccess }: R
 							<FormItem>
 								<FormLabel>{t("role.code")}</FormLabel>
 								<FormControl>
-									<Input placeholder={t("role.codePlaceholder")} {...field} />
+									<Input placeholder={t("role.codePlaceholder")} disabled={isSuperRole} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
 						)}
 					/>
-					<FormField
-						control={form.control}
-						name="sort"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>{t("common.sort")}</FormLabel>
-								<FormControl>
-									<Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+						<FormField
+							control={form.control}
+							name="data_scope"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>{t("dataScope.scopeLabel")}</FormLabel>
+									<Select
+										disabled={isSuperRole}
+										value={String(field.value)}
+										onValueChange={(val) => field.onChange(Number(val))}
+									>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue />
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											{selectableScopes.map((opt) => (
+												<SelectItem key={opt.value} value={String(opt.value)}>
+													{t(opt.labelKey)}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="sort"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>{t("common.sort")}</FormLabel>
+									<FormControl>
+										<Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					</div>
 					<FormField
 						control={form.control}
 						name="desc"
@@ -178,7 +215,11 @@ export function RoleFormDialog({ open, onOpenChange, editingRole, onSuccess }: R
 									<FormLabel>{field.value === 0 ? t("common.normal") : t("common.stopped")}</FormLabel>
 								</div>
 								<FormControl>
-									<Switch checked={field.value === 0} onCheckedChange={(checked) => field.onChange(checked ? 0 : 1)} />
+									<Switch
+										disabled={isSuperRole}
+										checked={field.value === 0}
+										onCheckedChange={(checked) => field.onChange(checked ? 0 : 1)}
+									/>
 								</FormControl>
 							</FormItem>
 						)}

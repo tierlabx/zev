@@ -2,12 +2,13 @@
 package swagger
 
 import (
-	response "zev-go/pkg/response"
 	pkg0 "zev-go/modules/system/entity"
+	response "zev-go/pkg/response"
 )
 
 var (
 	_ response.Response
+	_ pkg0.Dept
 	_ pkg0.DictData
 	_ pkg0.DictType
 	_ pkg0.Menu
@@ -15,8 +16,66 @@ var (
 	_ pkg0.User
 )
 
-
 // DummyCreate0
+// @Summary 创建系统管理-部门
+// @Description 创建记录
+// @Tags 系统管理-部门
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param req body pkg0.Dept true "请求体"
+// @Success 200 {object} response.Response{data=pkg0.Dept} "成功"
+// @Router /api/system/dept/create [post]
+func DummyCreate0() {}
+
+// DummyUpdate0
+// @Summary 更新系统管理-部门
+// @Description 更新记录
+// @Tags 系统管理-部门
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param req body pkg0.Dept true "请求体"
+// @Success 200 {object} response.Response "成功"
+// @Router /api/system/dept/update [put]
+func DummyUpdate0() {}
+
+// DummyDelete0
+// @Summary 删除系统管理-部门
+// @Description 根据ID删除记录
+// @Tags 系统管理-部门
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID"
+// @Success 200 {object} response.Response "成功"
+// @Router /api/system/dept/delete/{id} [delete]
+func DummyDelete0() {}
+
+// DummyGet0
+// @Summary 获取系统管理-部门详情
+// @Description 获取单条记录详情
+// @Tags 系统管理-部门
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param id path string true "ID"
+// @Success 200 {object} response.Response{data=pkg0.Dept} "成功"
+// @Router /api/system/dept/get/{id} [get]
+func DummyGet0() {}
+
+// DummyList0
+// @Summary 获取系统管理-部门列表
+// @Description 获取分页列表
+// @Tags 系统管理-部门
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.Dept}} "成功"
+// @Router /api/system/dept/list [get]
+func DummyList0() {}
+
+// DummyCreate1
 // @Summary 创建系统管理-字典数据
 // @Description 创建记录
 // @Tags 系统管理-字典数据
@@ -26,9 +85,9 @@ var (
 // @Param req body pkg0.DictData true "请求体"
 // @Success 200 {object} response.Response{data=pkg0.DictData} "成功"
 // @Router /api/system/dict/data/create [post]
-func DummyCreate0() {}
+func DummyCreate1() {}
 
-// DummyUpdate0
+// DummyUpdate1
 // @Summary 更新系统管理-字典数据
 // @Description 更新记录
 // @Tags 系统管理-字典数据
@@ -38,9 +97,9 @@ func DummyCreate0() {}
 // @Param req body pkg0.DictData true "请求体"
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/dict/data/update [put]
-func DummyUpdate0() {}
+func DummyUpdate1() {}
 
-// DummyDelete0
+// DummyDelete1
 // @Summary 删除系统管理-字典数据
 // @Description 根据ID删除记录
 // @Tags 系统管理-字典数据
@@ -50,9 +109,9 @@ func DummyUpdate0() {}
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/dict/data/delete/{id} [delete]
-func DummyDelete0() {}
+func DummyDelete1() {}
 
-// DummyGet0
+// DummyGet1
 // @Summary 获取系统管理-字典数据详情
 // @Description 获取单条记录详情
 // @Tags 系统管理-字典数据
@@ -62,9 +121,9 @@ func DummyDelete0() {}
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response{data=pkg0.DictData} "成功"
 // @Router /api/system/dict/data/get/{id} [get]
-func DummyGet0() {}
+func DummyGet1() {}
 
-// DummyList0
+// DummyList1
 // @Summary 获取系统管理-字典数据列表
 // @Description 获取分页列表
 // @Tags 系统管理-字典数据
@@ -73,9 +132,9 @@ func DummyGet0() {}
 // @Security Bearer
 // @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.DictData}} "成功"
 // @Router /api/system/dict/data/list [get]
-func DummyList0() {}
+func DummyList1() {}
 
-// DummyCreate1
+// DummyCreate2
 // @Summary 创建系统管理-字典类型
 // @Description 创建记录
 // @Tags 系统管理-字典类型
@@ -85,9 +144,9 @@ func DummyList0() {}
 // @Param req body pkg0.DictType true "请求体"
 // @Success 200 {object} response.Response{data=pkg0.DictType} "成功"
 // @Router /api/system/dict/type/create [post]
-func DummyCreate1() {}
+func DummyCreate2() {}
 
-// DummyUpdate1
+// DummyUpdate2
 // @Summary 更新系统管理-字典类型
 // @Description 更新记录
 // @Tags 系统管理-字典类型
@@ -97,9 +156,9 @@ func DummyCreate1() {}
 // @Param req body pkg0.DictType true "请求体"
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/dict/type/update [put]
-func DummyUpdate1() {}
+func DummyUpdate2() {}
 
-// DummyDelete1
+// DummyDelete2
 // @Summary 删除系统管理-字典类型
 // @Description 根据ID删除记录
 // @Tags 系统管理-字典类型
@@ -109,9 +168,9 @@ func DummyUpdate1() {}
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/dict/type/delete/{id} [delete]
-func DummyDelete1() {}
+func DummyDelete2() {}
 
-// DummyGet1
+// DummyGet2
 // @Summary 获取系统管理-字典类型详情
 // @Description 获取单条记录详情
 // @Tags 系统管理-字典类型
@@ -121,9 +180,9 @@ func DummyDelete1() {}
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response{data=pkg0.DictType} "成功"
 // @Router /api/system/dict/type/get/{id} [get]
-func DummyGet1() {}
+func DummyGet2() {}
 
-// DummyList1
+// DummyList2
 // @Summary 获取系统管理-字典类型列表
 // @Description 获取分页列表
 // @Tags 系统管理-字典类型
@@ -132,9 +191,9 @@ func DummyGet1() {}
 // @Security Bearer
 // @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.DictType}} "成功"
 // @Router /api/system/dict/type/list [get]
-func DummyList1() {}
+func DummyList2() {}
 
-// DummyCreate2
+// DummyCreate3
 // @Summary 创建系统管理-菜单
 // @Description 创建记录
 // @Tags 系统管理-菜单
@@ -144,9 +203,9 @@ func DummyList1() {}
 // @Param req body pkg0.Menu true "请求体"
 // @Success 200 {object} response.Response{data=pkg0.Menu} "成功"
 // @Router /api/system/menu/create [post]
-func DummyCreate2() {}
+func DummyCreate3() {}
 
-// DummyUpdate2
+// DummyUpdate3
 // @Summary 更新系统管理-菜单
 // @Description 更新记录
 // @Tags 系统管理-菜单
@@ -156,9 +215,9 @@ func DummyCreate2() {}
 // @Param req body pkg0.Menu true "请求体"
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/menu/update [put]
-func DummyUpdate2() {}
+func DummyUpdate3() {}
 
-// DummyDelete2
+// DummyDelete3
 // @Summary 删除系统管理-菜单
 // @Description 根据ID删除记录
 // @Tags 系统管理-菜单
@@ -168,9 +227,9 @@ func DummyUpdate2() {}
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/menu/delete/{id} [delete]
-func DummyDelete2() {}
+func DummyDelete3() {}
 
-// DummyGet2
+// DummyGet3
 // @Summary 获取系统管理-菜单详情
 // @Description 获取单条记录详情
 // @Tags 系统管理-菜单
@@ -180,9 +239,9 @@ func DummyDelete2() {}
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response{data=pkg0.Menu} "成功"
 // @Router /api/system/menu/get/{id} [get]
-func DummyGet2() {}
+func DummyGet3() {}
 
-// DummyList2
+// DummyList3
 // @Summary 获取系统管理-菜单列表
 // @Description 获取分页列表
 // @Tags 系统管理-菜单
@@ -191,9 +250,9 @@ func DummyGet2() {}
 // @Security Bearer
 // @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.Menu}} "成功"
 // @Router /api/system/menu/list [get]
-func DummyList2() {}
+func DummyList3() {}
 
-// DummyCreate3
+// DummyCreate4
 // @Summary 创建系统管理-角色
 // @Description 创建记录
 // @Tags 系统管理-角色
@@ -203,9 +262,9 @@ func DummyList2() {}
 // @Param req body pkg0.Role true "请求体"
 // @Success 200 {object} response.Response{data=pkg0.Role} "成功"
 // @Router /api/system/role/create [post]
-func DummyCreate3() {}
+func DummyCreate4() {}
 
-// DummyUpdate3
+// DummyUpdate4
 // @Summary 更新系统管理-角色
 // @Description 更新记录
 // @Tags 系统管理-角色
@@ -215,9 +274,9 @@ func DummyCreate3() {}
 // @Param req body pkg0.Role true "请求体"
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/role/update [put]
-func DummyUpdate3() {}
+func DummyUpdate4() {}
 
-// DummyDelete3
+// DummyDelete4
 // @Summary 删除系统管理-角色
 // @Description 根据ID删除记录
 // @Tags 系统管理-角色
@@ -227,9 +286,9 @@ func DummyUpdate3() {}
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/role/delete/{id} [delete]
-func DummyDelete3() {}
+func DummyDelete4() {}
 
-// DummyGet3
+// DummyGet4
 // @Summary 获取系统管理-角色详情
 // @Description 获取单条记录详情
 // @Tags 系统管理-角色
@@ -239,9 +298,9 @@ func DummyDelete3() {}
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response{data=pkg0.Role} "成功"
 // @Router /api/system/role/get/{id} [get]
-func DummyGet3() {}
+func DummyGet4() {}
 
-// DummyList3
+// DummyList4
 // @Summary 获取系统管理-角色列表
 // @Description 获取分页列表
 // @Tags 系统管理-角色
@@ -250,9 +309,9 @@ func DummyGet3() {}
 // @Security Bearer
 // @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.Role}} "成功"
 // @Router /api/system/role/list [get]
-func DummyList3() {}
+func DummyList4() {}
 
-// DummyCreate4
+// DummyCreate5
 // @Summary 创建系统管理-用户
 // @Description 创建记录
 // @Tags 系统管理-用户
@@ -262,9 +321,9 @@ func DummyList3() {}
 // @Param req body pkg0.User true "请求体"
 // @Success 200 {object} response.Response{data=pkg0.User} "成功"
 // @Router /api/system/user/create [post]
-func DummyCreate4() {}
+func DummyCreate5() {}
 
-// DummyUpdate4
+// DummyUpdate5
 // @Summary 更新系统管理-用户
 // @Description 更新记录
 // @Tags 系统管理-用户
@@ -274,9 +333,9 @@ func DummyCreate4() {}
 // @Param req body pkg0.User true "请求体"
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/user/update [put]
-func DummyUpdate4() {}
+func DummyUpdate5() {}
 
-// DummyDelete4
+// DummyDelete5
 // @Summary 删除系统管理-用户
 // @Description 根据ID删除记录
 // @Tags 系统管理-用户
@@ -286,9 +345,9 @@ func DummyUpdate4() {}
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/user/delete/{id} [delete]
-func DummyDelete4() {}
+func DummyDelete5() {}
 
-// DummyGet4
+// DummyGet5
 // @Summary 获取系统管理-用户详情
 // @Description 获取单条记录详情
 // @Tags 系统管理-用户
@@ -298,9 +357,9 @@ func DummyDelete4() {}
 // @Param id path string true "ID"
 // @Success 200 {object} response.Response{data=pkg0.User} "成功"
 // @Router /api/system/user/get/{id} [get]
-func DummyGet4() {}
+func DummyGet5() {}
 
-// DummyList4
+// DummyList5
 // @Summary 获取系统管理-用户列表
 // @Description 获取分页列表
 // @Tags 系统管理-用户
@@ -309,4 +368,4 @@ func DummyGet4() {}
 // @Security Bearer
 // @Success 200 {object} response.Response{data=response.PageData{list=[]pkg0.User}} "成功"
 // @Router /api/system/user/list [get]
-func DummyList4() {}
+func DummyList5() {}

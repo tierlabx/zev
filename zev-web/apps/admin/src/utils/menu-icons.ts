@@ -1,5 +1,7 @@
 import {
 	Book,
+	Building2,
+	Database,
 	FileText,
 	LayoutDashboard,
 	type LucideIcon,
@@ -20,6 +22,8 @@ const iconMap: Record<string, LucideIcon> = {
 	users: Users,
 	peoples: Users,
 	"tree-table": TreeDeciduous,
+	building: Building2,
+	database: Database,
 	dict: Book,
 	dashboard: LayoutDashboard,
 	home: LayoutDashboard,

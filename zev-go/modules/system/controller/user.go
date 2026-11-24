@@ -7,6 +7,7 @@ import (
 	"zev-go/modules/system/entity"
 	"zev-go/modules/system/service"
 	"zev-go/pkg/crud"
+	"zev-go/pkg/middleware"
 	"zev-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -40,7 +41,7 @@ func (c *UserController) Create(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.userService.CreateUser(req); err != nil {
+	if err := c.userService.CreateUser(middleware.GetDataScope(ctx), req); err != nil {
 		response.FailMessage("创建失败: "+err.Error(), ctx)
 		return
 	}
@@ -62,11 +63,56 @@ func (c *UserController) Update(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.userService.UpdateUser(req); err != nil {
+	if err := c.userService.UpdateUser(middleware.GetDataScope(ctx), req); err != nil {
 		response.FailMessage("更新失败: "+err.Error(), ctx)
 		return
 	}
 	response.Success(ctx)
+}
+
+// Delete 删除用户（校验数据权限与超管保护）
+// @Summary 删除用户
+// @Tags 系统管理-用户
+// @Produce json
+// @Param id path int true "用户ID"
+// @Security Bearer
+// @Success 200 {object} response.Response "成功"
+// @Router /api/system/user/delete/{id} [delete]
+func (c *UserController) Delete(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil || id <= 0 {
+		response.FailMessage("无效的用户ID", ctx)
+		return
+	}
+
+	if err := c.userService.DeleteUser(middleware.GetDataScope(ctx), uint(id)); err != nil {
+		response.FailMessage(err.Error(), ctx)
+		return
+	}
+	response.Success(ctx)
+}
+
+// Get 获取单条用户详情（校验数据权限）
+// @Summary 获取用户详情
+// @Tags 系统管理-用户
+// @Produce json
+// @Param id path int true "用户ID"
+// @Security Bearer
+// @Success 200 {object} response.Response{data=entity.User} "成功"
+// @Router /api/system/user/get/{id} [get]
+func (c *UserController) Get(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil || id <= 0 {
+		response.FailMessage("无效的用户ID", ctx)
+		return
+	}
+
+	user, err := c.userService.GetUserByID(middleware.GetDataScope(ctx), uint(id))
+	if err != nil {
+		response.FailMessage(err.Error(), ctx)
+		return
+	}
+	response.SuccessData(user, ctx)
 }
 
 // Login 用户登录
@@ -121,8 +167,11 @@ func (c *UserController) Logout(ctx *gin.Context) {
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/user/role/{id} [post]
 func (c *UserController) AssignRole(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-	id, _ := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil || id <= 0 {
+		response.FailMessage("无效的用户ID", ctx)
+		return
+	}
 
 	var req dto.AssignUserRoleReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -130,8 +179,13 @@ func (c *UserController) AssignRole(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.userService.AssignRole(uint(id), req.RoleID); err != nil {
-		response.FailMessage("分配角色失败", ctx)
+	roleIDs := req.RoleIDs
+	if len(roleIDs) == 0 && req.RoleID > 0 {
+		roleIDs = []uint{req.RoleID}
+	}
+
+	if err := c.userService.AssignRoles(middleware.GetDataScope(ctx), uint(id), roleIDs); err != nil {
+		response.FailMessage("分配角色失败: "+err.Error(), ctx)
 		return
 	}
 
@@ -237,23 +291,32 @@ func (c *UserController) ChangePassword(ctx *gin.Context) {
 	response.Success(ctx)
 }
 
-// List 重写获取用户列表，支持 keyword 模糊搜索
+// List 重写获取用户列表，支持 keyword、deptId、status 搜索并自动应用数据范围过滤
 // @Summary 获取用户列表
-// @Description 获取分页用户列表，支持按用户名、昵称、邮箱进行 keyword 模糊搜索
+// @Description 获取分页用户列表，支持按关键词、部门子树与状态筛选，受角色数据权限约束
 // @Tags 系统管理-用户
 // @Produce json
 // @Security Bearer
 // @Param page query int false "页码"
 // @Param pageSize query int false "每页数量"
 // @Param keyword query string false "搜索关键词"
+// @Param deptId query int false "部门ID"
+// @Param status query int false "状态(0正常 1禁用)"
 // @Success 200 {object} response.Response "成功"
 // @Router /api/system/user/list [get]
 func (c *UserController) List(ctx *gin.Context) {
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("pageSize", "10"))
 	keyword := ctx.Query("keyword")
+	deptID, _ := strconv.Atoi(ctx.DefaultQuery("deptId", "0"))
+	var statusPtr *int
+	if statusStr := ctx.Query("status"); statusStr != "" {
+		if sVal, err := strconv.Atoi(statusStr); err == nil {
+			statusPtr = &sVal
+		}
+	}
 
-	list, total, err := c.userService.ListWithKeyword(page, pageSize, keyword)
+	list, total, err := c.userService.ListWithFilter(middleware.GetDataScope(ctx), page, pageSize, keyword, uint(deptID), statusPtr)
 	if err != nil {
 		response.FailMessage("获取列表失败", ctx)
 		return

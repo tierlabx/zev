@@ -20,12 +20,16 @@ type UserCreateUpdateReq struct {
 	Nickname string `json:"nickname"`
 	Email    string `json:"email"`
 	Avatar   string `json:"avatar"`
+	DeptID   uint   `json:"dept_id"`
 	RoleID   uint   `json:"role_id"`
+	RoleIDs  []uint `json:"role_ids"`
 	Status   int    `json:"status"`
 }
 
+// AssignUserRoleReq 为用户分配单个或多个角色请求（保留 RoleID 以兼容旧调用方）
 type AssignUserRoleReq struct {
-	RoleID uint `json:"role_id" binding:"required"`
+	RoleID  uint   `json:"role_id"`
+	RoleIDs []uint `json:"role_ids"`
 }
 
 // UserInfoRes 当前登录用户信息响应
@@ -35,9 +39,14 @@ type UserInfoRes struct {
 	Nickname    string   `json:"nickname"`
 	Avatar      string   `json:"avatar"`
 	Email       string   `json:"email"`
+	DeptID      uint     `json:"dept_id"`
+	DeptName    string   `json:"dept_name"`
 	RoleID      uint     `json:"role_id"`
+	RoleIDs     []uint   `json:"role_ids"`
+	Roles       []string `json:"roles"`
 	RoleName    string   `json:"role_name"`
 	RoleCode    string   `json:"role_code"`
+	DataScope   int      `json:"data_scope"`
 	Permissions []string `json:"permissions"`
 	Menus       []any    `json:"menus"`
 }

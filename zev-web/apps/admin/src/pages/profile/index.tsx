@@ -5,11 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@zev/
 import { Separator } from "@zev/ui/components/separator";
 import { Skeleton } from "@zev/ui/components/skeleton";
 import { Tabs, TabsContent, TabsContents, TabsList, TabsTrigger } from "@zev/ui/components/tabs";
-import { AtSign, KeyRound, Lock, Mail, RefreshCw, Shield, User as UserIcon } from "lucide-react";
+import { AtSign, Building2, Database, KeyRound, Lock, Mail, RefreshCw, Shield, User as UserIcon } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { getUserInfoApi } from "@/api/system/auth";
 import { useI18n } from "@/i18n";
 import { useUserStore } from "@/store";
+import { getDataScopeMeta } from "@/utils/data-scope";
 import { ChangePasswordForm } from "./components/ChangePasswordForm";
 import { ProfileInfoForm } from "./components/ProfileInfoForm";
 
@@ -97,17 +98,23 @@ export default function Profile() {
 	const initials = (displayNickname || "U").slice(0, 2).toUpperCase();
 	const displayAvatar = avatarPreview !== null ? avatarPreview : userInfo.avatar;
 	const permissions = userInfo.permissions ?? [];
-	const roleDisplay = userInfo.role_name
-		? userInfo.role_code
-			? `${userInfo.role_name} (${userInfo.role_code})`
+	const roleDisplay =
+		userInfo.roles && userInfo.roles.length > 0
+			? userInfo.roles.join(" / ")
 			: userInfo.role_name
-		: t("profile.noRole");
+				? userInfo.role_code
+					? `${userInfo.role_name} (${userInfo.role_code})`
+					: userInfo.role_name
+				: t("profile.noRole");
+	const dataScopeMeta = getDataScopeMeta(userInfo.role_id === 1 ? 1 : userInfo.data_scope);
 
 	const infoItems = [
 		{ icon: AtSign, label: t("profile.username"), value: userInfo.username },
 		{ icon: UserIcon, label: t("profile.nickname"), value: userInfo.nickname || t("profile.unset") },
 		{ icon: Mail, label: t("profile.email"), value: userInfo.email || t("profile.unset") },
+		{ icon: Building2, label: t("profile.dept"), value: userInfo.dept_name || t("profile.noDept") },
 		{ icon: Shield, label: t("profile.role"), value: roleDisplay },
+		{ icon: Database, label: t("profile.dataScope"), value: t(dataScopeMeta.labelKey) },
 	];
 
 	return (

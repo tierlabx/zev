@@ -6,7 +6,11 @@ export interface User {
 	nickname: string;
 	email: string;
 	avatar: string;
+	dept_id: number;
+	dept_name?: string;
 	role_id: number;
+	role_ids?: number[];
+	created_by?: number;
 	status: number;
 }
 
@@ -29,9 +33,14 @@ export interface UserInfo {
 	nickname: string;
 	avatar: string;
 	email: string;
+	dept_id: number;
+	dept_name: string;
 	role_id: number;
+	role_ids: number[];
+	roles: string[];
 	role_name: string;
 	role_code: string;
+	data_scope: number;
 	permissions: string[];
 	menus: MenuItem[];
 }

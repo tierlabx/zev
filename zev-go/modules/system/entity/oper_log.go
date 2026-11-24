@@ -6,6 +6,8 @@ import (
 
 type SysOperLog struct {
 	ID        uint      `gorm:"primarykey" json:"id"`
+	UserID    uint      `gorm:"default:0;index;comment:'操作人用户ID'" json:"user_id"`
+	DeptID    uint      `gorm:"default:0;index;comment:'操作人所属部门ID'" json:"dept_id"`
 	Operator  string    `gorm:"type:varchar(50);not null;comment:'操作人'" json:"operator"`
 	Action    string    `gorm:"type:varchar(50);not null;comment:'操作类型(新增/修改/删除)'" json:"action"`
 	Module    string    `gorm:"type:varchar(50);comment:'操作模块'" json:"module"`

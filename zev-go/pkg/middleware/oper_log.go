@@ -36,10 +36,22 @@ func OperLogMiddleware(db *gorm.DB) gin.HandlerFunc {
 		c.Next()
 
 		latency := time.Since(startTime).Milliseconds()
-		
+
 		operator := c.GetString("username")
 		if operator == "" {
 			operator = "Unknown"
+		}
+		var userID, deptID uint
+		if uidVal, exists := c.Get("userID"); exists {
+			if uid, ok := uidVal.(uint); ok {
+				userID = uid
+			}
+		}
+		if scope := GetDataScope(c); scope != nil {
+			deptID = scope.DeptID
+			if userID == 0 {
+				userID = scope.UserID
+			}
 		}
 
 		status := 1
@@ -57,6 +69,8 @@ func OperLogMiddleware(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		logEntry := entity.SysOperLog{
+			UserID:   userID,
+			DeptID:   deptID,
 			Operator: operator,
 			Action:   action,
 			Module:   "System",
@@ -66,7 +80,7 @@ func OperLogMiddleware(db *gorm.DB) gin.HandlerFunc {
 			Status:   status,
 			Latency:  latency,
 		}
-		
+
 		go func(l entity.SysOperLog) {
 			db.Create(&l)
 		}(logEntry)

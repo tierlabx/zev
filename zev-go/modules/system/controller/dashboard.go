@@ -2,6 +2,7 @@ package controller
 
 import (
 	"zev-go/modules/system/service"
+	"zev-go/pkg/middleware"
 	"zev-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +27,7 @@ func NewDashboardController(dashboardService *service.DashboardService) *Dashboa
 // @Success 200 {object} response.Response{data=dto.DashboardRes} "成功"
 // @Router /api/system/dashboard/stats [get]
 func (c *DashboardController) GetStats(ctx *gin.Context) {
-	data, err := c.dashboardService.GetDashboardData()
+	data, err := c.dashboardService.GetDashboardData(middleware.GetDataScope(ctx))
 	if err != nil {
 		response.FailMessage("获取仪表盘数据失败", ctx)
 		return

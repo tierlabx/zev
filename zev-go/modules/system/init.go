@@ -33,13 +33,14 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 		os.Exit(1)
 	}
 
-	// 2. 使用 seed.json 初始化基础数据
+	// 2. 使用 seed.json 初始化基础数据与幂等升级回填
 	seed.Run(db, "modules/system/seed/seed.json")
 
 	// 3. 初始化 Service 层
+	deptService := service.NewDeptService(db)
 	roleService := service.NewRoleService(db)
 	menuService := service.NewMenuService(db)
-	userService := service.NewUserService(db, roleService, menuService)
+	userService := service.NewUserService(db, roleService, menuService, deptService)
 	dictTypeService := service.NewDictTypeService(db)
 	dictDataService := service.NewDictDataService(db)
 	dashboardService := service.NewDashboardService(db)
@@ -47,6 +48,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 
 	// 4. 初始化 Controller 层
 	openController := controller.NewOpenController(db)
+	deptController := controller.NewDeptController(deptService)
 	userController := controller.NewUserController(userService, roleService, menuService)
 	roleController := controller.NewRoleController(roleService)
 	menuController := controller.NewMenuController(menuService)
@@ -59,6 +61,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 		r.GET("/api/ping", openController.PingHandler)
 		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
+
 	// 6. 注册 HTTP API 路由
 	api := r.Group("/api/system")
 	{
@@ -67,6 +70,8 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 		protected := api.Group("")
 		// 认证中间件
 		protected.Use(middleware.AuthMiddleware())
+		// 数据权限上下文注入中间件（拦截被禁用或无效账号）
+		protected.Use(middleware.DataScopeMiddleware(db))
 		// 操作日志中间件 (拦截修改/删除操作)
 		protected.Use(middleware.OperLogMiddleware(db))
 		// 跨域处理中间件
@@ -76,6 +81,18 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 			dashboardGroup := protected.Group("/dashboard")
 			{
 				dashboardGroup.GET("/stats", dashboardController.GetStats)
+			}
+
+			// 部门路由
+			deptGroup := protected.Group("/dept")
+			{
+				deptGroup.GET("/tree", middleware.RequireAnyPermission(db, "system:dept:list", "system:user:list"), deptController.Tree)
+				deptGroup.GET("/options", middleware.RequireAnyPermission(db, "system:dept:list", "system:role:list", "system:role:datascope", "system:user:list"), deptController.OptionsTree)
+				deptGroup.GET("/list", middleware.RequirePermission(db, "system:dept:list"), deptController.List)
+				deptGroup.POST("/create", middleware.RequirePermission(db, "system:dept:create"), deptController.Create)
+				deptGroup.PUT("/update", middleware.RequirePermission(db, "system:dept:update"), deptController.Update)
+				deptGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:dept:delete"), deptController.Delete)
+				deptGroup.GET("/get/:id", middleware.RequirePermission(db, "system:dept:list"), deptController.Get)
 			}
 
 			// 用户路由
@@ -96,13 +113,15 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 			// 角色路由
 			roleGroup := protected.Group("/role")
 			{
-				roleGroup.GET("/list", middleware.RequirePermission(db, "system:role:list"), roleController.List)
+				roleGroup.GET("/list", middleware.RequireAnyPermission(db, "system:role:list", "system:user:list", "system:user:assign"), roleController.List)
 				roleGroup.POST("/create", middleware.RequirePermission(db, "system:role:create"), roleController.Create)
 				roleGroup.PUT("/update", middleware.RequirePermission(db, "system:role:update"), roleController.Update)
 				roleGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:role:delete"), roleController.Delete)
 				roleGroup.GET("/get/:id", middleware.RequirePermission(db, "system:role:list"), roleController.Get)
 				roleGroup.POST("/menus/:id", middleware.RequirePermission(db, "system:role:assign"), roleController.AssignMenus)
 				roleGroup.GET("/menus/:id", middleware.RequirePermission(db, "system:role:list"), roleController.GetRoleMenus)
+				roleGroup.GET("/datascope/:id", middleware.RequireAnyPermission(db, "system:role:list", "system:role:datascope"), roleController.GetDataScope)
+				roleGroup.PUT("/datascope/:id", middleware.RequirePermission(db, "system:role:datascope"), roleController.AssignDataScope)
 			}
 
 			// 菜单路由
@@ -113,7 +132,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 				menuGroup.PUT("/update", middleware.RequirePermission(db, "system:menu:update"), menuController.Update)
 				menuGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:menu:delete"), menuController.Delete)
 				menuGroup.GET("/get/:id", middleware.RequirePermission(db, "system:menu:list"), menuController.Get)
-				menuGroup.GET("/tree", middleware.RequirePermission(db, "system:menu:list"), menuController.Tree)
+				menuGroup.GET("/tree", middleware.RequireAnyPermission(db, "system:menu:list", "system:role:assign"), menuController.Tree)
 			}
 
 			// 字典类型路由

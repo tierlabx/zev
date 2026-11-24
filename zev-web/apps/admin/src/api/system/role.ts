@@ -1,26 +1,8 @@
+import type { AssignRoleDataScopeParams, RoleListParams, RoleListResponse } from "../dto/system/role";
+import type { DataScopeValue, Role, RoleDataScope } from "../interface/system/role";
 import request from "../request";
 
-export interface Role {
-	ID: number;
-	CreatedAt: string;
-	UpdatedAt: string;
-	name: string;
-	code: string;
-	status: number;
-	sort: number;
-	desc: string;
-}
-
-export interface RoleListParams {
-	page: number;
-	pageSize: number;
-	keyword?: string;
-}
-
-export interface RoleListResponse {
-	list: Role[];
-	total: number;
-}
+export type { AssignRoleDataScopeParams, DataScopeValue, Role, RoleDataScope, RoleListParams, RoleListResponse };
 
 export const getRoleList = (params: RoleListParams) => {
 	return request.get<RoleListResponse>("/system/role/list", { params });
@@ -44,4 +26,12 @@ export const getRoleMenus = (id: number) => {
 
 export const assignRoleMenus = (id: number, menuIDs: number[]) => {
 	return request.post(`/system/role/menus/${id}`, { menu_ids: menuIDs });
+};
+
+export const getRoleDataScope = (id: number) => {
+	return request.get<RoleDataScope>(`/system/role/datascope/${id}`);
+};
+
+export const assignRoleDataScope = (id: number, data: AssignRoleDataScopeParams) => {
+	return request.put(`/system/role/datascope/${id}`, data);
 };

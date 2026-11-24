@@ -75,6 +75,331 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/dept/create": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "创建记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理-部门"
+                ],
+                "summary": "创建系统管理-部门",
+                "parameters": [
+                    {
+                        "description": "请求体",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.Dept"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entity.Dept"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/dept/delete/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "根据ID删除记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理-部门"
+                ],
+                "summary": "删除系统管理-部门",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/dept/get/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "获取单条记录详情",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理-部门"
+                ],
+                "summary": "获取系统管理-部门详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entity.Dept"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/dept/list": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "获取分页列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理-部门"
+                ],
+                "summary": "获取系统管理-部门列表",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/response.PageData"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "list": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/definitions/entity.Dept"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/dept/options": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "获取未按个人数据范围裁剪的启用部门树选项",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理-部门"
+                ],
+                "summary": "获取完整部门选项树",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.DeptTreeRes"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/dept/tree": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "获取按当前用户数据权限过滤后的部门树，支持关键词和状态筛选",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理-部门"
+                ],
+                "summary": "获取部门树",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "关键词(名称/编码/负责人)",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "状态(0正常 1停用)",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.DeptTreeRes"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/dept/update": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "更新记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理-部门"
+                ],
+                "summary": "更新系统管理-部门",
+                "parameters": [
+                    {
+                        "description": "请求体",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.Dept"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/dict/data/create": {
             "post": {
                 "security": [
@@ -992,6 +1317,96 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/role/datascope/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "获取角色的数据权限范围及自定义部门列表",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理-角色"
+                ],
+                "summary": "获取角色数据权限",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "角色ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.RoleDataScopeRes"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "设置角色的数据权限范围(1~5)及自定义授权部门列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理-角色"
+                ],
+                "summary": "配置角色数据权限",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "角色ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "数据权限配置",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AssignRoleDataScopeReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/role/delete/{id}": {
             "delete": {
                 "security": [
@@ -1674,6 +2089,23 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.AssignRoleDataScopeReq": {
+            "type": "object",
+            "required": [
+                "data_scope"
+            ],
+            "properties": {
+                "data_scope": {
+                    "type": "integer"
+                },
+                "dept_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "dto.AssignRoleMenusReq": {
             "type": "object",
             "properties": {
@@ -1687,12 +2119,15 @@ const docTemplate = `{
         },
         "dto.AssignUserRoleReq": {
             "type": "object",
-            "required": [
-                "role_id"
-            ],
             "properties": {
                 "role_id": {
                     "type": "integer"
+                },
+                "role_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },
@@ -1798,6 +2233,99 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.DeptCreateUpdateReq": {
+            "type": "object",
+            "required": [
+                "code",
+                "name"
+            ],
+            "properties": {
+                "ID": {
+                    "type": "integer"
+                },
+                "code": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 1
+                },
+                "email": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "leader": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 1
+                },
+                "parent_id": {
+                    "type": "integer"
+                },
+                "phone": {
+                    "type": "string",
+                    "maxLength": 20
+                },
+                "sort": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.DeptTreeRes": {
+            "type": "object",
+            "properties": {
+                "ancestors": {
+                    "type": "string"
+                },
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.DeptTreeRes"
+                    }
+                },
+                "code": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "leader": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parent_id": {
+                    "type": "integer"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "sort": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.LoginReq": {
             "type": "object",
             "required": [
@@ -1833,6 +2361,57 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.RoleCreateUpdateReq": {
+            "type": "object",
+            "required": [
+                "code",
+                "name"
+            ],
+            "properties": {
+                "ID": {
+                    "type": "integer"
+                },
+                "code": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
+                },
+                "data_scope": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
+                },
+                "sort": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.RoleDataScopeRes": {
+            "type": "object",
+            "properties": {
+                "data_scope": {
+                    "type": "integer"
+                },
+                "dept_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "role_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.UpdateProfileReq": {
             "type": "object",
             "required": [
@@ -1863,6 +2442,9 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string"
                 },
+                "dept_id": {
+                    "type": "integer"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -1874,6 +2456,12 @@ const docTemplate = `{
                 },
                 "role_id": {
                     "type": "integer"
+                },
+                "role_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "status": {
                     "type": "integer"
@@ -1887,6 +2475,15 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
+                    "type": "string"
+                },
+                "data_scope": {
+                    "type": "integer"
+                },
+                "dept_id": {
+                    "type": "integer"
+                },
+                "dept_name": {
                     "type": "string"
                 },
                 "email": {
@@ -1914,10 +2511,66 @@ const docTemplate = `{
                 "role_id": {
                     "type": "integer"
                 },
+                "role_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "role_name": {
                     "type": "string"
                 },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.Dept": {
+            "type": "object",
+            "properties": {
+                "ancestors": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "leader": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parent_id": {
+                    "type": "integer"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "sort": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "updatedAt": {
                     "type": "string"
                 }
             }
@@ -2039,8 +2692,17 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "data_scope": {
+                    "type": "integer"
+                },
                 "deletedAt": {
                     "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "depts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Dept"
+                    }
                 },
                 "desc": {
                     "type": "string"
@@ -2112,8 +2774,17 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "created_by": {
+                    "type": "integer"
+                },
                 "deletedAt": {
                     "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "dept_id": {
+                    "type": "integer"
+                },
+                "dept_name": {
+                    "type": "string"
                 },
                 "email": {
                     "type": "string"
@@ -2126,6 +2797,18 @@ const docTemplate = `{
                 },
                 "role_id": {
                     "type": "integer"
+                },
+                "role_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Role"
+                    }
                 },
                 "status": {
                     "description": "0-正常 1-禁用",

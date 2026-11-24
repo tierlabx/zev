@@ -4,6 +4,7 @@ package entity
 // 注意：数组的顺序即为建表和外键依赖的迁移顺序，请谨慎调整。
 func AllModels() []any {
 	return []any{
+		&Dept{},
 		&User{},
 		&Role{},
 		&Menu{},
