@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { getUserInfoApi, useLoginMutation } from "@/api/system/auth";
 import logoUrl from "@/assets/logo-animated.svg";
-import ThreeKoiBackground from "@/components/ThreeKoiBackground/index";
+import ShaderKoiBackground from "@/components/ShaderKoiBackground";
 import { useI18n } from "@/i18n";
 import { useUserStore } from "@/store";
 import { findFirstPagePath } from "@/utils/menu-utils";
@@ -107,7 +107,7 @@ export default function Login() {
 
 	return (
 		<div className="flex min-h-screen items-center justify-center md:justify-end md:px-[10vw] relative overflow-hidden bg-slate-900">
-			<ThreeKoiBackground />
+			<ShaderKoiBackground />
 			<motion.div
 				initial={reduce ? { opacity: 0 } : { opacity: 0, y: 12, scale: motionScale.toast, filter: motionBlur.surface }}
 				animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
