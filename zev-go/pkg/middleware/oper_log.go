@@ -206,11 +206,22 @@ func resolveModuleAndAction(method, path string) (module, action string) {
 		module = "字典类型"
 	case strings.Contains(path, "/system/dict/data"):
 		module = "字典数据"
+	case strings.Contains(path, "/system/notice/read-all"):
+		return "消息中心", "全部已读"
+	case strings.Contains(path, "/system/notice/unread"):
+		return "消息中心", "标为未读"
+	case strings.Contains(path, "/system/notice/read"):
+		return "消息中心", "标记已读"
+	case strings.Contains(path, "/system/notice/my"):
+		return "消息中心", "删除消息"
+	case strings.Contains(path, "/system/notice/direct"):
+		return "消息中心", "发送私信"
+	case strings.Contains(path, "/system/notice/publish"):
+		return "消息管理", "发布消息"
+	case strings.Contains(path, "/system/notice/revoke"):
+		return "消息管理", "撤回消息"
 	case strings.Contains(path, "/system/notice"):
-		if strings.Contains(path, "/read") {
-			return "系统通知", "标记已读"
-		}
-		module = "系统通知"
+		module = "消息管理"
 	case strings.Contains(path, "/system/log/oper"):
 		module = "操作日志"
 	case strings.Contains(path, "/system/log/login"):

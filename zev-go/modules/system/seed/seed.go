@@ -7,7 +7,9 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"time"
 
+	"zev-go/modules/system/dto"
 	"zev-go/modules/system/entity"
 	"zev-go/pkg/datascope"
 
@@ -275,6 +277,11 @@ func Run(db *gorm.DB, seedPath string) {
 			return err
 		}
 
+		// 3.5 当消息主表为空时幂等初始化欢迎公告，避免覆盖已有运营消息
+		if err := seedInitialNotices(tx); err != nil {
+			return err
+		}
+
 		// 4. 重置 PostgreSQL 主键自增序列
 		tables := []string{"depts", "roles", "users", "menus", "dict_types", "dict_data"}
 		for _, table := range tables {
@@ -350,6 +357,75 @@ func backfillLegacyPermissions(tx *gorm.DB, seed SeedData) error {
 						return err
 					}
 				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// seedInitialNotices 当消息主表为空时幂等创建系统欢迎与安全审计提醒公告，并投递给全部启用用户
+func seedInitialNotices(tx *gorm.DB) error {
+	var count int64
+	if err := tx.Unscoped().Model(&entity.SysNotice{}).Count(&count).Error; err != nil {
+		return err
+	}
+	if count > 0 {
+		return nil
+	}
+
+	var userIDs []uint
+	if err := tx.Table("users").Where("status = ? AND deleted_at IS NULL", 0).Pluck("id", &userIDs).Error; err != nil {
+		return err
+	}
+
+	now := time.Now()
+	welcomeNotices := []entity.SysNotice{
+		{
+			Title:       "欢迎使用 ZEV 企业级后台管理系统",
+			Content:     "消息中心已上线：支持系统公告广播、按部门/角色/个人定向通知、站内私信互动及实时推送提醒。",
+			Type:        dto.NoticeTypeSystem,
+			Level:       dto.NoticeLevelImportant,
+			TargetType:  dto.NoticeTargetAll,
+			TargetIDs:   "[]",
+			Link:        "/messages",
+			Status:      dto.NoticeStatusPublished,
+			SenderID:    1,
+			DeptID:      1,
+			Sender:      "admin",
+			PublishedAt: &now,
+		},
+		{
+			Title:       "安全与操作审计提醒",
+			Content:     "系统已全面开启操作与登录审计追踪，建议定期前往审计日志核查高危变更与异常登录事件。",
+			Type:        dto.NoticeTypeReminder,
+			Level:       dto.NoticeLevelNormal,
+			TargetType:  dto.NoticeTargetAll,
+			TargetIDs:   "[]",
+			Link:        "/system/oper-log",
+			Status:      dto.NoticeStatusPublished,
+			SenderID:    1,
+			DeptID:      1,
+			Sender:      "admin",
+			PublishedAt: &now,
+		},
+	}
+
+	for i := range welcomeNotices {
+		if err := tx.Create(&welcomeNotices[i]).Error; err != nil {
+			return fmt.Errorf("创建初始化系统公告失败: %w", err)
+		}
+		if len(userIDs) > 0 {
+			recipients := make([]entity.SysNoticeRecipient, 0, len(userIDs))
+			for _, uid := range userIDs {
+				recipients = append(recipients, entity.SysNoticeRecipient{
+					NoticeID: welcomeNotices[i].ID,
+					UserID:   uid,
+					IsRead:   false,
+				})
+			}
+			if err := tx.CreateInBatches(&recipients, 200).Error; err != nil {
+				return fmt.Errorf("创建初始化公告投递记录失败: %w", err)
 			}
 		}
 	}

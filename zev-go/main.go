@@ -19,6 +19,7 @@ import (
 	"zev-go/pkg/jwtx"
 	"zev-go/pkg/logger"
 	"zev-go/pkg/middleware"
+	"zev-go/pkg/noticehub"
 	"zev-go/pkg/swagger"
 
 	"github.com/gin-gonic/gin"
@@ -98,6 +99,8 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	slog.Info("正在关闭服务...")
+	// 先主动关闭 SSE 消息推送 Hub，使长连接立即断开不拖延 HTTP 停机
+	noticehub.Close()
 
 	// 设定 5 秒超时时间，给正在处理的请求和异步审计队列一个排空收尾的机会
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

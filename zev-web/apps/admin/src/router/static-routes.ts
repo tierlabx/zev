@@ -30,6 +30,18 @@ export function buildStaticRoutes(parent: AnyRoute, menus: MenuItem[] = []): Any
 		routes.push(profileRoute);
 	}
 
+	// 消息中心静态路由：即使未分配菜单权限，顶部铃铛与全局搜索也能直达站内收件箱
+	const hasMessages = flatMenusStr.includes('"path":"/messages"') || flatMenusStr.includes('"path":"messages"');
+	if (!hasMessages) {
+		const messagesRoute = createRoute({
+			getParentRoute: () => parent,
+			path: "/messages",
+			component: componentMap["messages/index"] as never,
+			staticData: { title: "消息中心" },
+		});
+		routes.push(messagesRoute);
+	}
+
 	// ==========================================
 	// 2. 其它静态路由可在此处继续追加...
 	// ==========================================

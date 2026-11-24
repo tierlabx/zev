@@ -157,11 +157,31 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 				dictDataGroup.GET("/get/:id", middleware.RequirePermission(db, "system:dict:list"), dictDataController.Get)
 			}
 
-			// 系统通知路由
+			// 系统通知与消息中心路由
 			noticeGroup := protected.Group("/notice")
 			{
+				// 全员个人收件箱与实时推送接口
+				noticeGroup.GET("/stream", noticeController.Stream)
+				noticeGroup.GET("/unread-count", noticeController.GetUnreadCount)
 				noticeGroup.GET("/list", noticeController.GetUnreadList)
+				noticeGroup.GET("/my", noticeController.ListMyNotices)
+				noticeGroup.GET("/my/:id", noticeController.GetMyNoticeDetail)
 				noticeGroup.PUT("/read/:id", noticeController.MarkAsRead)
+				noticeGroup.PUT("/unread/:id", noticeController.MarkAsUnread)
+				noticeGroup.PUT("/read-all", noticeController.MarkAllAsRead)
+				noticeGroup.DELETE("/my/delete", noticeController.DeleteMyNotices)
+				noticeGroup.DELETE("/my/clear-read", noticeController.ClearReadNotices)
+				noticeGroup.GET("/receivers", noticeController.ListReceivers)
+				noticeGroup.POST("/direct", noticeController.SendDirectMessage)
+
+				// 消息管理控制台接口 (RBAC + DataScope)
+				noticeGroup.GET("/manage/list", middleware.RequirePermission(db, "system:notice:list"), noticeController.ListManageNotices)
+				noticeGroup.GET("/manage/get/:id", middleware.RequirePermission(db, "system:notice:list"), noticeController.GetManageNotice)
+				noticeGroup.POST("/create", middleware.RequireAnyPermission(db, "system:notice:create", "system:notice:send"), noticeController.CreateNotice)
+				noticeGroup.PUT("/update", middleware.RequirePermission(db, "system:notice:update"), noticeController.UpdateNotice)
+				noticeGroup.POST("/publish/:id", middleware.RequireAnyPermission(db, "system:notice:send", "system:notice:update"), noticeController.PublishNotice)
+				noticeGroup.POST("/revoke/:id", middleware.RequireAnyPermission(db, "system:notice:update", "system:notice:send"), noticeController.RevokeNotice)
+				noticeGroup.DELETE("/delete", middleware.RequirePermission(db, "system:notice:delete"), noticeController.DeleteNotices)
 			}
 
 			// 日志审计路由

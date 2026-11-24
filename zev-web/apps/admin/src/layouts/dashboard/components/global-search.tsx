@@ -62,6 +62,16 @@ export function GlobalSearch() {
 								{translateMenu(menu.path, menu.name)}
 							</CommandItem>
 						))}
+						{[
+							{ path: "/messages", name: "消息中心" },
+							{ path: "/profile", name: "个人中心" },
+						]
+							.filter((item) => !searchableMenus.some((menu) => menu.path === item.path))
+							.map((item) => (
+								<CommandItem key={item.path} onSelect={() => runCommand(() => navigate({ to: item.path as never }))}>
+									{translateMenu(item.path, item.name)}
+								</CommandItem>
+							))}
 					</CommandGroup>
 				</CommandList>
 			</CommandDialog>
