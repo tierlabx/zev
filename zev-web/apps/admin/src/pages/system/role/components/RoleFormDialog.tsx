@@ -6,11 +6,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@zev/ui/components/input";
 import { Switch } from "@zev/ui/components/switch";
 import { motion, useAnimation } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { createRole, type Role, updateRole } from "@/api/system/role";
+import { useI18n } from "@/i18n";
 
 interface RoleFormDialogProps {
 	open: boolean;
@@ -18,14 +19,6 @@ interface RoleFormDialogProps {
 	editingRole: Role | null;
 	onSuccess: () => void;
 }
-
-const roleSchema = z.object({
-	name: z.string().min(2, "角色名称至少需要2个字符").max(32, "角色名称不能超过32个字符"),
-	code: z.string().min(2, "角色编码至少需要2个字符"),
-	status: z.number().default(0),
-	sort: z.number().default(0),
-	desc: z.string().optional(),
-});
 
 type RoleFormData = {
 	name: string;
@@ -36,7 +29,20 @@ type RoleFormData = {
 };
 
 export function RoleFormDialog({ open, onOpenChange, editingRole, onSuccess }: RoleFormDialogProps) {
+	const { t } = useI18n();
 	const controls = useAnimation();
+	const roleSchema = useMemo(
+		() =>
+			z.object({
+				name: z.string().min(2, t("role.nameMin")).max(32, t("role.nameMax")),
+				code: z.string().min(2, t("role.codeMin")),
+				status: z.number().default(0),
+				sort: z.number().default(0),
+				desc: z.string().optional(),
+			}),
+		[t],
+	);
+
 	const form = useForm<RoleFormData>({
 		// biome-ignore lint/suspicious/noExplicitAny: third-party type mismatch
 		resolver: zodResolver(roleSchema) as any,
@@ -68,24 +74,24 @@ export function RoleFormDialog({ open, onOpenChange, editingRole, onSuccess }: R
 	const createMutation = useMutation({
 		mutationFn: createRole,
 		onSuccess: () => {
-			toast.success("角色创建成功");
+			toast.success(t("role.createSuccess"));
 			onSuccess();
 			onOpenChange(false);
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "创建角色失败");
+			toast.error(error.message || t("role.createFailed"));
 		},
 	});
 
 	const updateMutation = useMutation({
 		mutationFn: updateRole,
 		onSuccess: () => {
-			toast.success("角色更新成功");
+			toast.success(t("role.updateSuccess"));
 			onSuccess();
 			onOpenChange(false);
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "更新角色失败");
+			toast.error(error.message || t("role.updateFailed"));
 		},
 	});
 
@@ -110,10 +116,10 @@ export function RoleFormDialog({ open, onOpenChange, editingRole, onSuccess }: R
 	return (
 		<Modal isOpen={open} onClose={() => onOpenChange(false)}>
 			<div className="flex flex-col space-y-1.5 text-center sm:text-left mb-4">
-				<h2 className="text-lg font-semibold leading-none tracking-tight">{editingRole ? "编辑角色" : "添加角色"}</h2>
-				<p className="text-sm text-muted-foreground">
-					{editingRole ? "更新角色的详细信息。" : "填写详细信息以创建新角色。"}
-				</p>
+				<h2 className="text-lg font-semibold leading-none tracking-tight">
+					{editingRole ? t("role.editRole") : t("role.addRole")}
+				</h2>
+				<p className="text-sm text-muted-foreground">{editingRole ? t("role.editDesc") : t("role.addDesc")}</p>
 			</div>
 
 			<Form {...form}>
@@ -123,9 +129,9 @@ export function RoleFormDialog({ open, onOpenChange, editingRole, onSuccess }: R
 						name="name"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>角色名称</FormLabel>
+								<FormLabel>{t("role.name")}</FormLabel>
 								<FormControl>
-									<Input placeholder="输入角色名称" {...field} />
+									<Input placeholder={t("role.namePlaceholder")} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -136,9 +142,9 @@ export function RoleFormDialog({ open, onOpenChange, editingRole, onSuccess }: R
 						name="code"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>角色编码</FormLabel>
+								<FormLabel>{t("role.code")}</FormLabel>
 								<FormControl>
-									<Input placeholder="输入角色编码" {...field} />
+									<Input placeholder={t("role.codePlaceholder")} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -149,7 +155,7 @@ export function RoleFormDialog({ open, onOpenChange, editingRole, onSuccess }: R
 						name="sort"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>排序</FormLabel>
+								<FormLabel>{t("common.sort")}</FormLabel>
 								<FormControl>
 									<Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
 								</FormControl>
@@ -162,9 +168,9 @@ export function RoleFormDialog({ open, onOpenChange, editingRole, onSuccess }: R
 						name="desc"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>描述</FormLabel>
+								<FormLabel>{t("common.description")}</FormLabel>
 								<FormControl>
-									<Input placeholder="输入描述" {...field} />
+									<Input placeholder={t("role.descPlaceholder")} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -176,7 +182,7 @@ export function RoleFormDialog({ open, onOpenChange, editingRole, onSuccess }: R
 						render={({ field }) => (
 							<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
 								<div className="space-y-0.5">
-									<FormLabel>{field.value === 0 ? "正常" : "停用"}</FormLabel>
+									<FormLabel>{field.value === 0 ? t("common.normal") : t("common.stopped")}</FormLabel>
 								</div>
 								<FormControl>
 									<Switch checked={field.value === 0} onCheckedChange={(checked) => field.onChange(checked ? 0 : 1)} />
@@ -187,10 +193,10 @@ export function RoleFormDialog({ open, onOpenChange, editingRole, onSuccess }: R
 
 					<div className="pt-4 flex justify-end">
 						<Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
-							取消
+							{t("common.cancel")}
 						</Button>
 						<Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-							{createMutation.isPending || updateMutation.isPending ? "保存中..." : "保存"}
+							{createMutation.isPending || updateMutation.isPending ? t("common.saving") : t("common.save")}
 						</Button>
 					</div>
 				</motion.form>

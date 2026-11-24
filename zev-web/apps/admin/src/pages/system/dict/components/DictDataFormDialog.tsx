@@ -6,11 +6,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@zev/ui/components/input";
 import { Switch } from "@zev/ui/components/switch";
 import { motion, useAnimation } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { createDictData, type DictData, updateDictData } from "@/api/system/dict";
+import { useI18n } from "@/i18n";
 
 interface DictDataFormDialogProps {
 	open: boolean;
@@ -20,13 +21,13 @@ interface DictDataFormDialogProps {
 	onSuccess: () => void;
 }
 
-const dictDataSchema = z.object({
-	label: z.string().min(1, "数据标签不能为空").max(32, "数据标签不能超过32个字符"),
-	value: z.string().min(1, "数据键值不能为空"),
-	sort: z.number().default(0),
-	status: z.number().default(0),
-	remark: z.string().optional(),
-});
+type DictDataFormData = {
+	label: string;
+	value: string;
+	sort: number;
+	status: number;
+	remark?: string;
+};
 
 export function DictDataFormDialog({
 	open,
@@ -35,8 +36,21 @@ export function DictDataFormDialog({
 	dictType,
 	onSuccess,
 }: DictDataFormDialogProps) {
+	const { t } = useI18n();
 	const controls = useAnimation();
-	const form = useForm<z.infer<typeof dictDataSchema>>({
+	const dictDataSchema = useMemo(
+		() =>
+			z.object({
+				label: z.string().min(1, t("dict.dataLabelRequired")).max(32, t("dict.dataLabelMax")),
+				value: z.string().min(1, t("dict.dataValueRequired")),
+				sort: z.number().default(0),
+				status: z.number().default(0),
+				remark: z.string().optional(),
+			}),
+		[t],
+	);
+
+	const form = useForm<DictDataFormData>({
 		// biome-ignore lint/suspicious/noExplicitAny: third-party type mismatch
 		resolver: zodResolver(dictDataSchema) as any,
 		defaultValues: {
@@ -67,28 +81,28 @@ export function DictDataFormDialog({
 	const createMutation = useMutation({
 		mutationFn: createDictData,
 		onSuccess: () => {
-			toast.success("字典数据创建成功");
+			toast.success(t("dict.createDataSuccess"));
 			onSuccess();
 			onOpenChange(false);
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "创建字典数据失败");
+			toast.error(error.message || t("dict.createDataFailed"));
 		},
 	});
 
 	const updateMutation = useMutation({
 		mutationFn: updateDictData,
 		onSuccess: () => {
-			toast.success("字典数据更新成功");
+			toast.success(t("dict.updateDataSuccess"));
 			onSuccess();
 			onOpenChange(false);
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "更新字典数据失败");
+			toast.error(error.message || t("dict.updateDataFailed"));
 		},
 	});
 
-	const onSubmit = (values: z.infer<typeof dictDataSchema>) => {
+	const onSubmit = (values: DictDataFormData) => {
 		if (editingDictData) {
 			updateMutation.mutate({
 				ID: editingDictData.ID,
@@ -114,10 +128,10 @@ export function DictDataFormDialog({
 		<Modal isOpen={open} onClose={() => onOpenChange(false)}>
 			<div className="flex flex-col space-y-1.5 text-center sm:text-left mb-4">
 				<h2 className="text-lg font-semibold leading-none tracking-tight">
-					{editingDictData ? "编辑字典数据" : "添加字典数据"}
+					{editingDictData ? t("dict.editData") : t("dict.addDataTitle")}
 				</h2>
 				<p className="text-sm text-muted-foreground">
-					{editingDictData ? "更新字典数据的详细信息。" : `在字典类型 "${dictType}" 下创建新数据。`}
+					{editingDictData ? t("dict.editDataDesc") : t("dict.addDataDesc", { dictType })}
 				</p>
 			</div>
 
@@ -128,9 +142,9 @@ export function DictDataFormDialog({
 						name="label"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>数据标签</FormLabel>
+								<FormLabel>{t("dict.label")}</FormLabel>
 								<FormControl>
-									<Input placeholder="输入数据标签" {...field} />
+									<Input placeholder={t("dict.labelPlaceholder")} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -141,9 +155,9 @@ export function DictDataFormDialog({
 						name="value"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>数据键值</FormLabel>
+								<FormLabel>{t("dict.value")}</FormLabel>
 								<FormControl>
-									<Input placeholder="输入数据键值" {...field} />
+									<Input placeholder={t("dict.valuePlaceholder")} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -154,7 +168,7 @@ export function DictDataFormDialog({
 						name="sort"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>排序</FormLabel>
+								<FormLabel>{t("common.sort")}</FormLabel>
 								<FormControl>
 									<Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
 								</FormControl>
@@ -167,9 +181,9 @@ export function DictDataFormDialog({
 						name="remark"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>备注</FormLabel>
+								<FormLabel>{t("common.remark")}</FormLabel>
 								<FormControl>
-									<Input placeholder="输入备注" {...field} />
+									<Input placeholder={t("dict.remarkPlaceholder")} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -181,7 +195,7 @@ export function DictDataFormDialog({
 						render={({ field }) => (
 							<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
 								<div className="space-y-0.5">
-									<FormLabel>{field.value === 0 ? "正常" : "停用"}</FormLabel>
+									<FormLabel>{field.value === 0 ? t("common.normal") : t("common.stopped")}</FormLabel>
 								</div>
 								<FormControl>
 									<Switch checked={field.value === 0} onCheckedChange={(checked) => field.onChange(checked ? 0 : 1)} />
@@ -192,10 +206,10 @@ export function DictDataFormDialog({
 
 					<div className="pt-4 flex justify-end">
 						<Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
-							取消
+							{t("common.cancel")}
 						</Button>
 						<Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-							{createMutation.isPending || updateMutation.isPending ? "保存中..." : "保存"}
+							{createMutation.isPending || updateMutation.isPending ? t("common.saving") : t("common.save")}
 						</Button>
 					</div>
 				</motion.form>

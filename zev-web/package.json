@@ -8,7 +8,7 @@
 		"format": "biome format --write .",
 		"typecheck": "pnpm -F admin exec tsc -b",
 		"shadcn:add": "pnpm dlx shadcn@latest add -c apps/admin",
-		"prepare": "git config core.hooksPath ../.githooks"
+		"prepare": "node -e \"try { require('child_process').execSync('git config core.hooksPath .githooks', { stdio: 'ignore' }); } catch {}\""
 	},
 	"devDependencies": {
 		"@biomejs/biome": "latest",

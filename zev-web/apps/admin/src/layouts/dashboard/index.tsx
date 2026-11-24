@@ -1,6 +1,7 @@
 import { Navigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getUserInfoApi } from "@/api/system/auth";
+import { useI18n } from "@/i18n";
 import { useUserStore } from "@/store";
 import { Footer } from "./footer";
 import { Header } from "./header";
@@ -9,6 +10,7 @@ import { Sidebar } from "./sidebar";
 import { TagsView } from "./tags-view";
 
 export default function DashboardLayout() {
+	const { t } = useI18n();
 	const token = useUserStore((state) => state.token);
 	const userInfo = useUserStore((state) => state.userInfo);
 	const setUserInfo = useUserStore((state) => state.setUserInfo);
@@ -48,19 +50,19 @@ export default function DashboardLayout() {
 	// 正在获取用户信息时显示加载状态
 	if (!userInfo) {
 		return (
-			<div className="flex h-screen w-full items-center justify-center bg-[#F0F2F5]">
+			<div className="flex h-screen w-full items-center justify-center bg-background">
 				<div className="flex flex-col items-center gap-3">
-					<div className="h-8 w-8 animate-spin rounded-full border-2 border-[#2563EB] border-t-transparent" />
-					<span className="text-sm text-muted-foreground">加载中...</span>
+					<div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+					<span className="text-sm text-muted-foreground">{t("common.loading")}</span>
 				</div>
 			</div>
 		);
 	}
 
 	return (
-		<div className="flex h-screen w-full overflow-hidden bg-white">
+		<div className="flex h-screen w-full overflow-hidden bg-background">
 			<Sidebar />
-			<div className="flex-1 flex flex-col min-w-0 bg-[#F0F2F5]">
+			<div className="flex-1 flex flex-col min-w-0 bg-background">
 				<Header />
 				<TagsView />
 				<Main />

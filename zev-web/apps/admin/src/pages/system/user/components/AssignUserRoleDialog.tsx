@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { Role } from "@/api/system/role";
 import { assignUserRole } from "@/api/system/user";
+import { useI18n } from "@/i18n";
 
 interface AssignUserRoleDialogProps {
 	open: boolean;
@@ -25,6 +26,7 @@ export function AssignUserRoleDialog({
 	roles,
 	onSuccess,
 }: AssignUserRoleDialogProps) {
+	const { t } = useI18n();
 	const [selectedRoleId, setSelectedRoleId] = useState<string>("");
 
 	useEffect(() => {
@@ -38,19 +40,19 @@ export function AssignUserRoleDialog({
 	const mutation = useMutation({
 		mutationFn: (data: { userId: number; roleId: number }) => assignUserRole(data.userId, data.roleId),
 		onSuccess: () => {
-			toast.success("分配角色成功");
+			toast.success(t("user.assignSuccess"));
 			onSuccess();
 			onOpenChange(false);
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "分配角色失败");
+			toast.error(error.message || t("user.assignFailed"));
 		},
 	});
 
 	const handleSubmit = () => {
 		if (!userId) return;
 		if (!selectedRoleId) {
-			toast.error("请选择一个角色");
+			toast.error(t("user.selectRoleRequired"));
 			return;
 		}
 		mutation.mutate({ userId, roleId: Number(selectedRoleId) });
@@ -60,15 +62,15 @@ export function AssignUserRoleDialog({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
-					<DialogTitle>分配角色</DialogTitle>
+					<DialogTitle>{t("user.assignRole")}</DialogTitle>
 				</DialogHeader>
 
 				<div className="py-4 space-y-4">
 					<div className="space-y-2">
-						<Label>选择角色</Label>
+						<Label>{t("user.selectRoleLabel")}</Label>
 						<Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
 							<SelectTrigger>
-								<SelectValue placeholder="请选择角色" />
+								<SelectValue placeholder={t("user.selectRolePlaceholder")} />
 							</SelectTrigger>
 							<SelectContent>
 								{roles.map((r) => (
@@ -83,10 +85,10 @@ export function AssignUserRoleDialog({
 
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)} disabled={mutation.isPending}>
-						取消
+						{t("common.cancel")}
 					</Button>
 					<Button onClick={handleSubmit} disabled={mutation.isPending || !selectedRoleId}>
-						{mutation.isPending ? "提交中..." : "确认分配"}
+						{mutation.isPending ? t("common.submitting") : t("user.confirmAssign")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

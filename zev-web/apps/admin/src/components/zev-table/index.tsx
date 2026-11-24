@@ -12,6 +12,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@zev/ui/components/table";
 import { cn } from "@zev/ui/lib/utils";
 import * as React from "react";
+import { useI18n } from "@/i18n";
 
 import { Pagination } from "./pagination";
 import { ZevTableSkeleton } from "./table-skeleton";
@@ -36,6 +37,7 @@ export function ZevTable<TData, TValue>({
 	showToolbar = true,
 	onRowClick,
 }: ZevTableProps<TData, TValue>) {
+	const { t } = useI18n();
 	const [sorting, setSorting] = React.useState<SortingState>([]);
 	const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
 	const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
@@ -106,7 +108,10 @@ export function ZevTable<TData, TValue>({
 
 	return (
 		<div
-			className={cn("relative w-full rounded-xl border border-gray-200 bg-white shadow-sm flex flex-col", className)}
+			className={cn(
+				"relative w-full rounded-xl border border-border bg-card text-card-foreground shadow-sm flex flex-col",
+				className,
+			)}
 			style={containerHeight ? { height: containerHeight } : undefined}
 		>
 			{showToolbar && <TableToolbar table={table} />}
@@ -121,7 +126,7 @@ export function ZevTable<TData, TValue>({
 					>
 						<TableHeader className="sticky top-0 z-20">
 							{table.getHeaderGroups().map((headerGroup) => (
-								<TableRow key={headerGroup.id} className="bg-gray-50/90 backdrop-blur-md border-b-gray-200">
+								<TableRow key={headerGroup.id} className="bg-muted border-b border-border hover:bg-muted">
 									{headerGroup.headers.map((header) => {
 										return (
 											<TableHead
@@ -129,7 +134,8 @@ export function ZevTable<TData, TValue>({
 												colSpan={header.colSpan}
 												style={{ ...getPinningStyles(header.column) }}
 												className={cn(
-													"transition-colors text-gray-600 font-medium group bg-gray-50/90 backdrop-blur-md",
+													// 固定表头保持不透明背景，避免横向滚动时底层表头文字透出
+													"transition-colors text-muted-foreground font-medium group bg-muted",
 												)}
 											>
 												{/* biome-ignore lint/a11y/useKeyWithClickEvents: Click is bound to column sorting */}
@@ -137,7 +143,7 @@ export function ZevTable<TData, TValue>({
 												<div
 													className={cn(
 														"flex items-center space-x-2 h-full w-full",
-														header.column.getCanSort() ? "cursor-pointer select-none hover:text-gray-900" : "",
+														header.column.getCanSort() ? "cursor-pointer select-none hover:text-foreground" : "",
 													)}
 													onClick={header.column.getToggleSortingHandler()}
 												>
@@ -145,8 +151,8 @@ export function ZevTable<TData, TValue>({
 														<>
 															{flexRender(header.column.columnDef.header, header.getContext())}
 															{{
-																asc: <span className="text-[10px] text-black">▲</span>,
-																desc: <span className="text-[10px] text-black">▼</span>,
+																asc: <span className="text-[10px] text-foreground">▲</span>,
+																desc: <span className="text-[10px] text-foreground">▼</span>,
 															}[header.column.getIsSorted() as string] ?? null}
 														</>
 													)}
@@ -157,8 +163,8 @@ export function ZevTable<TData, TValue>({
 														onMouseDown={header.getResizeHandler()}
 														onTouchStart={header.getResizeHandler()}
 														className={cn(
-															"absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none hover:bg-gray-300 opacity-0 group-hover:opacity-100 transition-opacity",
-															header.column.getIsResizing() ? "bg-blue-500 opacity-100" : "",
+															"absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none hover:bg-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity",
+															header.column.getIsResizing() ? "bg-primary opacity-100" : "",
 														)}
 													/>
 												)}
@@ -190,12 +196,21 @@ export function ZevTable<TData, TValue>({
 										data-state={row.getIsSelected() && "selected"}
 										className={cn(
 											onRowClick && "cursor-pointer",
-											"transition-colors hover:bg-gray-50 border-b-gray-100",
-											row.getIsSelected() && "bg-gray-50/50",
+											"group/row bg-card transition-colors hover:bg-muted/50 border-border",
+											row.getIsSelected() && "bg-muted/70",
 										)}
 									>
 										{row.getVisibleCells().map((cell) => (
-											<TableCell key={cell.id} style={{ ...getPinningStyles(cell.column) }} className="py-3 bg-white">
+											<TableCell
+												key={cell.id}
+												style={{ ...getPinningStyles(cell.column) }}
+												className={cn(
+													"py-3 text-card-foreground transition-colors",
+													// 固定列使用不透明背景，避免横向滚动时底层单元格穿透
+													cell.column.getIsPinned() &&
+														(row.getIsSelected() ? "bg-muted" : "bg-card group-hover/row:bg-muted"),
+												)}
+											>
 												{flexRender(cell.column.columnDef.cell, cell.getContext())}
 											</TableCell>
 										))}
@@ -211,8 +226,8 @@ export function ZevTable<TData, TValue>({
 
 							{!isLoading && rows.length === 0 && (
 								<TableRow>
-									<TableCell colSpan={columns.length} className="h-32 text-center text-gray-500">
-										暂无数据
+									<TableCell colSpan={columns.length} className="h-32 text-center text-muted-foreground">
+										{t("table.noData")}
 									</TableCell>
 								</TableRow>
 							)}
@@ -222,7 +237,7 @@ export function ZevTable<TData, TValue>({
 			</div>
 
 			{pagination && onPageChange && onPageSizeChange && (
-				<div className="border-t border-gray-100 bg-gray-50/30 rounded-b-xl">
+				<div className="border-t border-border bg-muted/30 rounded-b-xl">
 					<Pagination
 						page={page}
 						pageSize={pageSize}

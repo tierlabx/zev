@@ -7,9 +7,11 @@ import {
 	BreadcrumbSeparator,
 } from "@zev/ui/components/breadcrumb";
 import { Fragment } from "react";
+import { useI18n } from "@/i18n";
 
 export function Breadcrumb() {
 	const matches = useMatches();
+	const { t, translateMenu } = useI18n();
 
 	// 过滤出所有包含 title 的有效路由节点
 	const breadcrumbs = matches
@@ -28,7 +30,7 @@ export function Breadcrumb() {
 			<BreadcrumbRoot>
 				<BreadcrumbList>
 					<BreadcrumbItem>
-						<BreadcrumbPage>页面</BreadcrumbPage>
+						<BreadcrumbPage>{t("common.page")}</BreadcrumbPage>
 					</BreadcrumbItem>
 				</BreadcrumbList>
 			</BreadcrumbRoot>
@@ -40,15 +42,16 @@ export function Breadcrumb() {
 			<BreadcrumbList>
 				{uniqueBreadcrumbs.map((crumb, index) => {
 					const isLast = index === uniqueBreadcrumbs.length - 1;
+					const label = translateMenu(crumb.path, crumb.title);
 
 					return (
 						<Fragment key={crumb.path}>
 							<BreadcrumbItem>
 								{isLast ? (
-									<BreadcrumbPage>{crumb.title}</BreadcrumbPage>
+									<BreadcrumbPage>{label}</BreadcrumbPage>
 								) : (
 									<Link to={crumb.path} className="transition-colors hover:text-foreground">
-										{crumb.title}
+										{label}
 									</Link>
 								)}
 							</BreadcrumbItem>

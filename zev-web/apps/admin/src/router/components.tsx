@@ -1,14 +1,17 @@
 import { type ComponentType, lazy, Suspense } from "react";
+import { useI18n } from "@/i18n";
 
 /**
  * 页面加载占位组件
  */
 function PageLoading() {
+	const { t } = useI18n();
+
 	return (
 		<div className="flex h-full min-h-[400px] items-center justify-center">
 			<div className="flex flex-col items-center gap-3">
-				<div className="h-8 w-8 animate-spin rounded-full border-2 border-[#2563EB] border-t-transparent" />
-				<span className="text-sm text-muted-foreground">页面加载中...</span>
+				<div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+				<span className="text-sm text-muted-foreground">{t("common.pageLoading")}</span>
 			</div>
 		</div>
 	);

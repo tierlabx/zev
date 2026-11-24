@@ -9,6 +9,7 @@ import { deleteMenu, getMenuTree, type Menu } from "@/api/system/menu";
 import { ZevTable } from "@/components/zev-table";
 import { useConfirm } from "@/hooks/use-confirm";
 import { usePermission } from "@/hooks/use-permission";
+import { useI18n } from "@/i18n";
 import { MenuFormDialog } from "./components/MenuFormDialog";
 
 interface FlattenedMenu extends Menu {
@@ -27,6 +28,7 @@ const flattenTree = (menus: Menu[], expandedRowKeys: Set<number>, level: number 
 };
 
 export default function MenuManagement() {
+	const { t } = useI18n();
 	const queryClient = useQueryClient();
 	const { confirm, ConfirmDialog } = useConfirm();
 	const { hasPermission } = usePermission();
@@ -68,11 +70,11 @@ export default function MenuManagement() {
 	const deleteMutation = useMutation({
 		mutationFn: deleteMenu,
 		onSuccess: () => {
-			toast.success("菜单删除成功");
+			toast.success(t("menuPage.deleteSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["menus"] });
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "删除菜单失败");
+			toast.error(error.message || t("menuPage.deleteFailed"));
 		},
 	});
 
@@ -89,11 +91,11 @@ export default function MenuManagement() {
 
 	const handleDelete = useCallback(
 		(id: number) => {
-			confirm("确定要删除此菜单吗？", () => {
+			confirm(t("menuPage.deleteConfirm"), () => {
 				deleteMutation.mutate(id);
 			});
 		},
-		[deleteMutation, confirm],
+		[deleteMutation, confirm, t],
 	);
 
 	const flattenedMenus = useMemo(() => {
@@ -105,7 +107,7 @@ export default function MenuManagement() {
 		() => [
 			{
 				accessorKey: "name",
-				header: "菜单名称",
+				header: t("menuPage.name"),
 				cell: ({ row }) => {
 					const hasChildren = row.original.children && row.original.children.length > 0;
 					const isExpanded = expandedRowKeys.has(row.original.ID);
@@ -118,7 +120,7 @@ export default function MenuManagement() {
 										e.stopPropagation();
 										toggleExpand(row.original.ID);
 									}}
-									className="p-0.5 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded text-gray-500 hover:text-gray-900 dark:hover:text-gray-300 transition-colors"
+									className="p-0.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
 								>
 									{isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
 								</button>
@@ -130,30 +132,45 @@ export default function MenuManagement() {
 					);
 				},
 			},
-			{ accessorKey: "icon", header: "图标" },
-			{ accessorKey: "path", header: "路由路径" },
-			{ accessorKey: "component", header: "组件路径" },
-			{ accessorKey: "perms", header: "权限标识" },
-			{ accessorKey: "sort", header: "排序" },
+			{ accessorKey: "icon", header: t("menuPage.icon") },
+			{ accessorKey: "path", header: t("menuPage.path") },
+			{ accessorKey: "component", header: t("menuPage.component") },
+			{ accessorKey: "perms", header: t("menuPage.perms") },
+			{ accessorKey: "sort", header: t("common.sort") },
 			{
 				id: "actions",
-				header: "操作",
+				header: t("common.actions"),
 				size: 150,
 				meta: { fixed: "right" },
 				cell: ({ row }) => (
 					<div className="flex justify-end space-x-2">
 						{hasPermission("system:menu:create") && (
-							<Button variant="outline" size="icon" onClick={() => handleAdd(row.original.ID)} title="添加子菜单">
+							<Button
+								variant="outline"
+								size="icon"
+								onClick={() => handleAdd(row.original.ID)}
+								title={t("menuPage.addChildMenu")}
+							>
 								<Plus className="h-4 w-4" />
 							</Button>
 						)}
 						{hasPermission("system:menu:update") && (
-							<Button variant="outline" size="icon" onClick={() => handleEdit(row.original as Menu)} title="编辑">
+							<Button
+								variant="outline"
+								size="icon"
+								onClick={() => handleEdit(row.original as Menu)}
+								title={t("common.edit")}
+							>
 								<Edit className="h-4 w-4" />
 							</Button>
 						)}
 						{hasPermission("system:menu:delete") && (
-							<Button variant="destructive" size="icon" onClick={() => handleDelete(row.original.ID)} title="删除">
+							<Button
+								variant="destructive"
+								size="icon"
+								onClick={() => handleDelete(row.original.ID)}
+								title={t("common.delete")}
+							>
 								<Trash2 className="h-4 w-4" />
 							</Button>
 						)}
@@ -161,7 +178,7 @@ export default function MenuManagement() {
 				),
 			},
 		],
-		[handleAdd, handleEdit, handleDelete, hasPermission, expandedRowKeys, toggleExpand],
+		[handleAdd, handleEdit, handleDelete, hasPermission, expandedRowKeys, toggleExpand, t],
 	);
 
 	return (
@@ -172,7 +189,7 @@ export default function MenuManagement() {
 					{hasPermission("system:menu:create") && (
 						<Button onClick={() => handleAdd(0)}>
 							<Plus className="mr-2 h-4 w-4" />
-							添加菜单
+							{t("menuPage.addMenu")}
 						</Button>
 					)}
 				</div>

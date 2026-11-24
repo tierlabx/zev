@@ -1,5 +1,6 @@
 import axios, { type AxiosRequestConfig } from "axios";
 import { toast } from "sonner";
+import { t } from "@/i18n";
 import { useUserStore } from "@/store";
 
 const service = axios.create({
@@ -28,11 +29,11 @@ service.interceptors.response.use(
 				// 确保路由树从清空后的 store 重建
 				window.location.href = "/login";
 			} else if (res.code === 403) {
-				toast.error("权限不足，无法执行此操作");
+				toast.error(t("request.forbidden"));
 			} else {
-				toast.error(res.msg || "Error");
+				toast.error(res.msg || t("request.errorFallback"));
 			}
-			return Promise.reject(new Error(res.msg || "Error"));
+			return Promise.reject(new Error(res.msg || t("request.errorFallback")));
 		}
 		return res.data;
 	},
@@ -43,19 +44,19 @@ service.interceptors.response.use(
 			useUserStore.getState().logout();
 			window.location.href = "/login";
 		} else if (status === 403) {
-			toast.error("权限不足，无法执行此操作");
+			toast.error(t("request.forbidden"));
 		} else if (status === 400) {
-			toast.error(error.response?.data?.msg || "参数错误");
+			toast.error(error.response?.data?.msg || t("request.badRequest"));
 		} else if (status === 404) {
-			toast.error("请求的资源不存在");
+			toast.error(t("request.notFound"));
 		} else if (status === 500) {
-			toast.error("服务器异常，请稍后重试");
+			toast.error(t("request.serverError"));
 		} else if (error.code === "ECONNABORTED") {
-			toast.error("请求超时，请重试");
+			toast.error(t("request.timeout"));
 		} else if (error.message === "Network Error" || !error.response) {
-			toast.error("网络连接异常，请检查网络");
+			toast.error(t("request.networkError"));
 		} else {
-			toast.error(error.message || "请求失败");
+			toast.error(error.message || t("request.requestFailed"));
 		}
 
 		return Promise.reject(error);

@@ -2,29 +2,31 @@ import { Avatar, AvatarFallback, AvatarImage } from "@zev/ui/components/avatar";
 import { Card, CardContent } from "@zev/ui/components/card";
 import { Separator } from "@zev/ui/components/separator";
 import { Clock, Mail, Shield, User as UserIcon } from "lucide-react";
+import { useI18n } from "@/i18n";
 import { useUserStore } from "@/store";
 
 export default function Profile() {
+	const { t } = useI18n();
 	const userInfo = useUserStore((state) => state.userInfo);
 
 	if (!userInfo) {
-		return <div className="flex h-full items-center justify-center text-muted-foreground">加载中...</div>;
+		return <div className="flex h-full items-center justify-center text-muted-foreground">{t("common.loading")}</div>;
 	}
 
 	const initials = (userInfo.nickname || userInfo.username || "U").slice(0, 2).toUpperCase();
 
 	const infoItems = [
-		{ icon: UserIcon, label: "用户名", value: userInfo.username },
-		{ icon: UserIcon, label: "昵称", value: userInfo.nickname },
-		{ icon: Mail, label: "邮箱", value: userInfo.email || "未设置" },
-		{ icon: Shield, label: "角色", value: `${userInfo.role_name} (${userInfo.role_code})` },
+		{ icon: UserIcon, label: t("profile.username"), value: userInfo.username },
+		{ icon: UserIcon, label: t("profile.nickname"), value: userInfo.nickname },
+		{ icon: Mail, label: t("profile.email"), value: userInfo.email || t("profile.unset") },
+		{ icon: Shield, label: t("profile.role"), value: `${userInfo.role_name} (${userInfo.role_code})` },
 	];
 
 	return (
 		<div className="p-6 max-w-3xl mx-auto space-y-6">
 			<div>
-				<h2 className="text-2xl font-bold tracking-tight text-foreground">个人中心</h2>
-				<p className="text-muted-foreground">管理您的个人资料和账户设置。</p>
+				<h2 className="text-2xl font-bold tracking-tight text-foreground">{t("profile.title")}</h2>
+				<p className="text-muted-foreground">{t("profile.subtitle")}</p>
 			</div>
 
 			<Card className="border-border shadow-sm">
@@ -70,7 +72,7 @@ export default function Profile() {
 					<div>
 						<div className="flex items-center gap-2 mb-4">
 							<Clock className="h-4 w-4 text-muted-foreground" />
-							<span className="text-sm font-medium text-foreground">权限标识</span>
+							<span className="text-sm font-medium text-foreground">{t("profile.permissions")}</span>
 						</div>
 						<div className="flex flex-wrap gap-2">
 							{userInfo.permissions.length > 0 ? (
@@ -83,7 +85,7 @@ export default function Profile() {
 									</span>
 								))
 							) : (
-								<span className="text-sm text-muted-foreground">暂无权限</span>
+								<span className="text-sm text-muted-foreground">{t("profile.noPermissions")}</span>
 							)}
 						</div>
 					</div>

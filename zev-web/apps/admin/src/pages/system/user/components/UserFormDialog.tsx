@@ -6,12 +6,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@zev/ui/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zev/ui/components/select";
 import { motion, useAnimation } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { getRoleList } from "@/api/system/role";
 import { createUser, type User, updateUser } from "@/api/system/user";
+import { useI18n } from "@/i18n";
 
 interface UserFormDialogProps {
 	open: boolean;
@@ -19,16 +20,6 @@ interface UserFormDialogProps {
 	editingUser: User | null;
 	onSuccess: () => void;
 }
-
-const getUserSchema = (isEditing: boolean) =>
-	z.object({
-		username: z.string().min(2, "用户名至少需要2个字符").max(32, "用户名不能超过32个字符"),
-		password: isEditing ? z.string().optional() : z.string().min(6, "密码至少需要6个字符"),
-		nickname: z.string().min(2, "昵称至少需要2个字符"),
-		email: z.string().email("无效的电子邮件格式").or(z.literal("")),
-		role_id: z.number().min(1, "必须选择一个角色"),
-		status: z.number().default(0),
-	});
 
 type UserFormData = {
 	username: string;
@@ -40,10 +31,24 @@ type UserFormData = {
 };
 
 export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: UserFormDialogProps) {
+	const { t } = useI18n();
 	const controls = useAnimation();
+	const userSchema = useMemo(
+		() =>
+			z.object({
+				username: z.string().min(2, t("user.usernameMin")).max(32, t("user.usernameMax")),
+				password: editingUser ? z.string().optional() : z.string().min(6, t("user.passwordMin")),
+				nickname: z.string().min(2, t("user.nicknameMin")),
+				email: z.string().email(t("user.emailInvalid")).or(z.literal("")),
+				role_id: z.number().min(1, t("user.roleRequired")),
+				status: z.number().default(0),
+			}),
+		[editingUser, t],
+	);
+
 	const form = useForm<UserFormData>({
 		// biome-ignore lint/suspicious/noExplicitAny: third-party type mismatch
-		resolver: zodResolver(getUserSchema(!!editingUser)) as any,
+		resolver: zodResolver(userSchema) as any,
 		defaultValues: {
 			username: "",
 			password: "",
@@ -80,24 +85,24 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 	const createMutation = useMutation({
 		mutationFn: createUser,
 		onSuccess: () => {
-			toast.success("用户创建成功");
+			toast.success(t("user.createSuccess"));
 			onSuccess();
 			onOpenChange(false);
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "创建用户失败");
+			toast.error(error.message || t("user.createFailed"));
 		},
 	});
 
 	const updateMutation = useMutation({
 		mutationFn: updateUser,
 		onSuccess: () => {
-			toast.success("用户更新成功");
+			toast.success(t("user.updateSuccess"));
 			onSuccess();
 			onOpenChange(false);
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "更新用户失败");
+			toast.error(error.message || t("user.updateFailed"));
 		},
 	});
 
@@ -123,10 +128,10 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 	return (
 		<Modal isOpen={open} onClose={() => onOpenChange(false)}>
 			<div className="flex flex-col space-y-1.5 text-center sm:text-left mb-4">
-				<h2 className="text-lg font-semibold leading-none tracking-tight">{editingUser ? "编辑用户" : "添加用户"}</h2>
-				<p className="text-sm text-muted-foreground">
-					{editingUser ? "更新用户的详细信息。" : "填写详细信息以创建新用户。"}
-				</p>
+				<h2 className="text-lg font-semibold leading-none tracking-tight">
+					{editingUser ? t("user.editUser") : t("user.addUser")}
+				</h2>
+				<p className="text-sm text-muted-foreground">{editingUser ? t("user.editDesc") : t("user.addDesc")}</p>
 			</div>
 
 			<Form {...form}>
@@ -136,9 +141,9 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 						name="username"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>用户名</FormLabel>
+								<FormLabel>{t("user.username")}</FormLabel>
 								<FormControl>
-									<Input placeholder="输入用户名" {...field} />
+									<Input placeholder={t("user.usernamePlaceholder")} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -150,10 +155,11 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>
-									密码 {editingUser && <span className="text-muted-foreground text-xs">(留空则不修改)</span>}
+									{t("user.password")}{" "}
+									{editingUser && <span className="text-muted-foreground text-xs">{t("user.passwordKeepHint")}</span>}
 								</FormLabel>
 								<FormControl>
-									<Input type="password" placeholder="输入密码" {...field} />
+									<Input type="password" placeholder={t("user.passwordPlaceholder")} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -164,9 +170,9 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 						name="nickname"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>昵称</FormLabel>
+								<FormLabel>{t("user.nickname")}</FormLabel>
 								<FormControl>
-									<Input placeholder="输入昵称" {...field} />
+									<Input placeholder={t("user.nicknamePlaceholder")} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -177,9 +183,9 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 						name="email"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>邮箱</FormLabel>
+								<FormLabel>{t("user.email")}</FormLabel>
 								<FormControl>
-									<Input type="email" placeholder="user@example.com" {...field} />
+									<Input type="email" placeholder={t("user.emailPlaceholder")} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -191,11 +197,11 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 							name="role_id"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>角色</FormLabel>
+									<FormLabel>{t("user.role")}</FormLabel>
 									<Select onValueChange={(val) => field.onChange(Number(val))} value={String(field.value)}>
 										<FormControl>
 											<SelectTrigger>
-												<SelectValue placeholder="选择角色" />
+												<SelectValue placeholder={t("user.selectRole")} />
 											</SelectTrigger>
 										</FormControl>
 										<SelectContent>
@@ -215,16 +221,16 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 							name="status"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>状态</FormLabel>
+									<FormLabel>{t("user.status")}</FormLabel>
 									<Select onValueChange={(val) => field.onChange(Number(val))} value={String(field.value)}>
 										<FormControl>
 											<SelectTrigger>
-												<SelectValue placeholder="选择状态" />
+												<SelectValue placeholder={t("user.selectStatus")} />
 											</SelectTrigger>
 										</FormControl>
 										<SelectContent>
-											<SelectItem value="0">正常</SelectItem>
-											<SelectItem value="1">禁用</SelectItem>
+											<SelectItem value="0">{t("common.normal")}</SelectItem>
+											<SelectItem value="1">{t("common.disabled")}</SelectItem>
 										</SelectContent>
 									</Select>
 									<FormMessage />
@@ -235,10 +241,10 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 
 					<div className="pt-4 flex justify-end">
 						<Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
-							取消
+							{t("common.cancel")}
 						</Button>
 						<Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-							{createMutation.isPending || updateMutation.isPending ? "保存中..." : "保存"}
+							{createMutation.isPending || updateMutation.isPending ? t("common.saving") : t("common.save")}
 						</Button>
 					</div>
 				</motion.form>

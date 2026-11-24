@@ -39,7 +39,7 @@ export function Header() {
 				<HeaderActions />
 				<NoticePopover />
 
-				<div className="w-[1px] h-4 bg-[#E5E5E5] dark:bg-zinc-800 mx-2" />
+				<div className="w-[1px] h-4 bg-border mx-2" />
 				<AccountDropdown />
 			</div>
 		</header>

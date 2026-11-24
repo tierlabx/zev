@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { MenuItem } from "@/api/interface/system/user";
+import { useI18n } from "@/i18n";
 import { getMenuIcon } from "@/utils/menu-icons";
 
 export type NavItemType = {
@@ -49,6 +50,8 @@ export function NavItem({
 	sidebarCollapsed: boolean;
 	toggleSidebar: () => void;
 }) {
+	const { translateMenu } = useI18n();
+	const displayName = translateMenu(item.path, item.name);
 	const hasChildren = item.children && item.children.length > 0;
 
 	// A parent is active if any of its children match the current route path
@@ -74,7 +77,7 @@ export function NavItem({
 							setExpanded(!expanded);
 						}
 					}}
-					title={sidebarCollapsed ? item.name : undefined}
+					title={sidebarCollapsed ? displayName : undefined}
 					className={cn(
 						"w-full flex items-center justify-between px-3 py-2.5 rounded-md cursor-pointer transition-colors font-medium relative group",
 						sidebarCollapsed ? "justify-center" : "",
@@ -88,7 +91,7 @@ export function NavItem({
 								isChildActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
 							)}
 						/>
-						{!sidebarCollapsed && <span className="text-sm truncate relative z-10">{item.name}</span>}
+						{!sidebarCollapsed && <span className="text-sm truncate relative z-10">{displayName}</span>}
 					</div>
 					{!sidebarCollapsed && (
 						<ChevronDown
@@ -129,7 +132,7 @@ export function NavItem({
 	return (
 		<Link
 			to={item.path as never}
-			title={sidebarCollapsed ? item.name : undefined}
+			title={sidebarCollapsed ? displayName : undefined}
 			className={cn(
 				"flex items-center px-3 py-2.5 rounded-md cursor-pointer transition-colors font-medium relative group",
 				sidebarCollapsed ? "justify-center" : "space-x-3",
@@ -149,7 +152,7 @@ export function NavItem({
 					active ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
 				)}
 			/>
-			{!sidebarCollapsed && <span className="text-sm truncate relative z-10">{item.name}</span>}
+			{!sidebarCollapsed && <span className="text-sm truncate relative z-10">{displayName}</span>}
 		</Link>
 	);
 }

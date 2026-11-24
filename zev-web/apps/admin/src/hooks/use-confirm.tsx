@@ -9,8 +9,10 @@ import {
 	AlertDialogTitle,
 } from "@zev/ui/components/alert-dialog";
 import { useCallback, useState } from "react";
+import { useI18n } from "@/i18n";
 
 export function useConfirm() {
+	const { t } = useI18n();
 	const [isOpen, setIsOpen] = useState(false);
 	const [config, setConfig] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
@@ -31,25 +33,25 @@ export function useConfirm() {
 			<AlertDialog open={isOpen} onOpenChange={setIsOpen}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>确认操作</AlertDialogTitle>
+						<AlertDialogTitle>{t("common.confirmAction")}</AlertDialogTitle>
 						<AlertDialogDescription>{config?.message}</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel onClick={() => setIsOpen(false)}>取消</AlertDialogCancel>
+						<AlertDialogCancel onClick={() => setIsOpen(false)}>{t("common.cancel")}</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
 								e.preventDefault();
 								handleConfirm();
 							}}
-							className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-600"
+							className="bg-destructive text-destructive-foreground hover:bg-destructive/90 focus:ring-destructive"
 						>
-							确定
+							{t("common.confirm")}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
 		);
-	}, [isOpen, config, handleConfirm]);
+	}, [isOpen, config, handleConfirm, t]);
 
 	return { confirm, ConfirmDialog };
 }

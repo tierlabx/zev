@@ -6,11 +6,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@zev/ui/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zev/ui/components/select";
 import { motion, useAnimation } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { createMenu, type Menu, updateMenu } from "@/api/system/menu";
+import { useI18n } from "@/i18n";
 
 interface MenuFormDialogProps {
 	open: boolean;
@@ -20,44 +21,60 @@ interface MenuFormDialogProps {
 	onSuccess: () => void;
 }
 
-const menuSchema = z
-	.object({
-		parent_id: z.number(),
-		type: z.string(),
-		name: z.string().min(1, "菜单名称不能为空"),
-		path: z.string().optional(),
-		component: z.string().optional(),
-		icon: z.string().optional(),
-		sort: z.number().default(0),
-		perms: z.string().optional(),
-	})
-	.superRefine((data, ctx) => {
-		if (data.type === "C" && (!data.path || data.path.trim() === "")) {
-			ctx.addIssue({
-				path: ["path"],
-				message: "菜单类型必须填写路由路径",
-				code: z.ZodIssueCode.custom,
-			});
-		}
-		if (data.type === "C" && (!data.component || data.component.trim() === "")) {
-			ctx.addIssue({
-				path: ["component"],
-				message: "菜单类型必须填写组件路径",
-				code: z.ZodIssueCode.custom,
-			});
-		}
-		if (data.type === "F" && (!data.perms || data.perms.trim() === "")) {
-			ctx.addIssue({
-				path: ["perms"],
-				message: "按钮类型必须填写权限标识",
-				code: z.ZodIssueCode.custom,
-			});
-		}
-	});
+type MenuFormData = {
+	parent_id: number;
+	type: string;
+	name: string;
+	path?: string;
+	component?: string;
+	icon?: string;
+	sort: number;
+	perms?: string;
+};
 
 export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSuccess }: MenuFormDialogProps) {
+	const { t } = useI18n();
 	const controls = useAnimation();
-	const form = useForm<z.infer<typeof menuSchema>>({
+	const menuSchema = useMemo(
+		() =>
+			z
+				.object({
+					parent_id: z.number(),
+					type: z.string(),
+					name: z.string().min(1, t("menuPage.nameRequired")),
+					path: z.string().optional(),
+					component: z.string().optional(),
+					icon: z.string().optional(),
+					sort: z.number().default(0),
+					perms: z.string().optional(),
+				})
+				.superRefine((data, ctx) => {
+					if (data.type === "C" && (!data.path || data.path.trim() === "")) {
+						ctx.addIssue({
+							path: ["path"],
+							message: t("menuPage.pathRequired"),
+							code: z.ZodIssueCode.custom,
+						});
+					}
+					if (data.type === "C" && (!data.component || data.component.trim() === "")) {
+						ctx.addIssue({
+							path: ["component"],
+							message: t("menuPage.componentRequired"),
+							code: z.ZodIssueCode.custom,
+						});
+					}
+					if (data.type === "F" && (!data.perms || data.perms.trim() === "")) {
+						ctx.addIssue({
+							path: ["perms"],
+							message: t("menuPage.permsRequired"),
+							code: z.ZodIssueCode.custom,
+						});
+					}
+				}),
+		[t],
+	);
+
+	const form = useForm<MenuFormData>({
 		// biome-ignore lint/suspicious/noExplicitAny: third-party type mismatch
 		resolver: zodResolver(menuSchema) as any,
 		defaultValues: {
@@ -105,28 +122,28 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 	const createMutation = useMutation({
 		mutationFn: createMenu,
 		onSuccess: () => {
-			toast.success("菜单创建成功");
+			toast.success(t("menuPage.createSuccess"));
 			onSuccess();
 			onOpenChange(false);
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "创建菜单失败");
+			toast.error(error.message || t("menuPage.createFailed"));
 		},
 	});
 
 	const updateMutation = useMutation({
 		mutationFn: updateMenu,
 		onSuccess: () => {
-			toast.success("菜单更新成功");
+			toast.success(t("menuPage.updateSuccess"));
 			onSuccess();
 			onOpenChange(false);
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "更新菜单失败");
+			toast.error(error.message || t("menuPage.updateFailed"));
 		},
 	});
 
-	const onSubmit = (values: z.infer<typeof menuSchema>) => {
+	const onSubmit = (values: MenuFormData) => {
 		if (editingMenu) {
 			updateMutation.mutate({
 				ID: editingMenu.ID,
@@ -147,10 +164,10 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 	return (
 		<Modal isOpen={open} onClose={() => onOpenChange(false)}>
 			<div className="flex flex-col space-y-1.5 text-center sm:text-left mb-4">
-				<h2 className="text-lg font-semibold leading-none tracking-tight">{editingMenu ? "编辑菜单" : "添加菜单"}</h2>
-				<p className="text-sm text-muted-foreground">
-					{editingMenu ? "更新菜单配置信息。" : "填写详细信息以创建新菜单。"}
-				</p>
+				<h2 className="text-lg font-semibold leading-none tracking-tight">
+					{editingMenu ? t("menuPage.editMenu") : t("menuPage.addMenu")}
+				</h2>
+				<p className="text-sm text-muted-foreground">{editingMenu ? t("menuPage.editDesc") : t("menuPage.addDesc")}</p>
 			</div>
 
 			<Form {...form}>
@@ -160,17 +177,17 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 						name="type"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>菜单类型</FormLabel>
+								<FormLabel>{t("menuPage.type")}</FormLabel>
 								<Select onValueChange={field.onChange} value={field.value}>
 									<FormControl>
 										<SelectTrigger>
-											<SelectValue placeholder="选择菜单类型" />
+											<SelectValue placeholder={t("menuPage.selectType")} />
 										</SelectTrigger>
 									</FormControl>
 									<SelectContent>
-										<SelectItem value="M">目录</SelectItem>
-										<SelectItem value="C">菜单</SelectItem>
-										<SelectItem value="F">按钮</SelectItem>
+										<SelectItem value="M">{t("menuPage.typeDir")}</SelectItem>
+										<SelectItem value="C">{t("menuPage.typeMenu")}</SelectItem>
+										<SelectItem value="F">{t("menuPage.typeButton")}</SelectItem>
 									</SelectContent>
 								</Select>
 								<FormMessage />
@@ -182,11 +199,15 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 						name="name"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>菜单名称</FormLabel>
+								<FormLabel>{t("menuPage.name")}</FormLabel>
 								<FormControl>
 									<Input
 										placeholder={
-											selectedType === "M" ? "如：系统管理" : selectedType === "C" ? "如：用户管理" : "如：新增用户"
+											selectedType === "M"
+												? t("menuPage.namePlaceholderDir")
+												: selectedType === "C"
+													? t("menuPage.namePlaceholderMenu")
+													: t("menuPage.namePlaceholderButton")
 										}
 										{...field}
 									/>
@@ -200,7 +221,7 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 						name="parent_id"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>父级 ID</FormLabel>
+								<FormLabel>{t("menuPage.parentId")}</FormLabel>
 								<FormControl>
 									<Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
 								</FormControl>
@@ -215,9 +236,14 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 							name="path"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>路由路径</FormLabel>
+									<FormLabel>{t("menuPage.path")}</FormLabel>
 									<FormControl>
-										<Input placeholder={selectedType === "M" ? "如：/system" : "如：/system/user"} {...field} />
+										<Input
+											placeholder={
+												selectedType === "M" ? t("menuPage.pathPlaceholderDir") : t("menuPage.pathPlaceholderMenu")
+											}
+											{...field}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -231,9 +257,9 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 							name="component"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>组件路径</FormLabel>
+									<FormLabel>{t("menuPage.component")}</FormLabel>
 									<FormControl>
-										<Input placeholder="如：system/user/index" {...field} />
+										<Input placeholder={t("menuPage.componentPlaceholder")} {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -247,9 +273,9 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 							name="perms"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>权限标识</FormLabel>
+									<FormLabel>{t("menuPage.perms")}</FormLabel>
 									<FormControl>
-										<Input placeholder="如：system:user:add" {...field} />
+										<Input placeholder={t("menuPage.permsPlaceholder")} {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -263,9 +289,9 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 							name="icon"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>图标</FormLabel>
+									<FormLabel>{t("menuPage.icon")}</FormLabel>
 									<FormControl>
-										<Input placeholder="如：Settings" {...field} />
+										<Input placeholder={t("menuPage.iconPlaceholder")} {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -278,7 +304,7 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 						name="sort"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>排序</FormLabel>
+								<FormLabel>{t("common.sort")}</FormLabel>
 								<FormControl>
 									<Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
 								</FormControl>
@@ -289,10 +315,10 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 
 					<div className="pt-4 flex justify-end">
 						<Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
-							取消
+							{t("common.cancel")}
 						</Button>
 						<Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-							{createMutation.isPending || updateMutation.isPending ? "保存中..." : "保存"}
+							{createMutation.isPending || updateMutation.isPending ? t("common.saving") : t("common.save")}
 						</Button>
 					</div>
 				</motion.form>

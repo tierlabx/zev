@@ -18,7 +18,7 @@ export default function Modal({ isOpen, onClose, children, modalSize = "lg", cla
 			{isOpen && (
 				<div
 					onClick={onClose}
-					className="fixed inset-0 z-50 flex cursor-pointer items-center justify-center overflow-y-auto bg-slate-900/20 p-8 backdrop-blur"
+					className="fixed inset-0 z-50 flex cursor-pointer items-center justify-center overflow-y-auto bg-black/40 dark:bg-black/65 p-8 backdrop-blur"
 				>
 					<motion.div
 						initial={{ scale: 0, rotate: "180deg" }}
@@ -33,7 +33,7 @@ export default function Modal({ isOpen, onClose, children, modalSize = "lg", cla
 						exit={{ scale: 0, rotate: "180deg" }}
 						onClick={(e) => e.stopPropagation()}
 						className={cn(
-							"relative w-full cursor-default overflow-hidden rounded-xl bg-background p-6 text-foreground shadow-2xl border",
+							"relative w-full cursor-default overflow-hidden rounded-xl bg-card p-6 text-card-foreground shadow-2xl border border-border",
 							{
 								"max-w-sm": modalSize === "sm",
 								"max-w-lg": modalSize === "lg",

@@ -6,11 +6,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@zev/ui/components/input";
 import { Switch } from "@zev/ui/components/switch";
 import { motion, useAnimation } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { createDictType, type DictType, updateDictType } from "@/api/system/dict";
+import { useI18n } from "@/i18n";
 
 interface DictTypeFormDialogProps {
 	open: boolean;
@@ -19,16 +20,28 @@ interface DictTypeFormDialogProps {
 	onSuccess: () => void;
 }
 
-const dictTypeSchema = z.object({
-	name: z.string().min(2, "字典名称至少需要2个字符").max(32, "字典名称不能超过32个字符"),
-	type: z.string().min(2, "字典类型至少需要2个字符"),
-	status: z.number().default(0),
-	remark: z.string().optional(),
-});
+type DictTypeFormData = {
+	name: string;
+	type: string;
+	status: number;
+	remark?: string;
+};
 
 export function DictTypeFormDialog({ open, onOpenChange, editingDictType, onSuccess }: DictTypeFormDialogProps) {
+	const { t } = useI18n();
 	const controls = useAnimation();
-	const form = useForm<z.infer<typeof dictTypeSchema>>({
+	const dictTypeSchema = useMemo(
+		() =>
+			z.object({
+				name: z.string().min(2, t("dict.typeNameMin")).max(32, t("dict.typeNameMax")),
+				type: z.string().min(2, t("dict.typeCodeMin")),
+				status: z.number().default(0),
+				remark: z.string().optional(),
+			}),
+		[t],
+	);
+
+	const form = useForm<DictTypeFormData>({
 		// biome-ignore lint/suspicious/noExplicitAny: third-party type mismatch
 		resolver: zodResolver(dictTypeSchema) as any,
 		defaultValues: {
@@ -57,28 +70,28 @@ export function DictTypeFormDialog({ open, onOpenChange, editingDictType, onSucc
 	const createMutation = useMutation({
 		mutationFn: createDictType,
 		onSuccess: () => {
-			toast.success("字典类型创建成功");
+			toast.success(t("dict.createTypeSuccess"));
 			onSuccess();
 			onOpenChange(false);
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "创建字典类型失败");
+			toast.error(error.message || t("dict.createTypeFailed"));
 		},
 	});
 
 	const updateMutation = useMutation({
 		mutationFn: updateDictType,
 		onSuccess: () => {
-			toast.success("字典类型更新成功");
+			toast.success(t("dict.updateTypeSuccess"));
 			onSuccess();
 			onOpenChange(false);
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "更新字典类型失败");
+			toast.error(error.message || t("dict.updateTypeFailed"));
 		},
 	});
 
-	const onSubmit = (values: z.infer<typeof dictTypeSchema>) => {
+	const onSubmit = (values: DictTypeFormData) => {
 		if (editingDictType) {
 			updateMutation.mutate({
 				ID: editingDictType.ID,
@@ -100,10 +113,10 @@ export function DictTypeFormDialog({ open, onOpenChange, editingDictType, onSucc
 		<Modal isOpen={open} onClose={() => onOpenChange(false)}>
 			<div className="flex flex-col space-y-1.5 text-center sm:text-left mb-4">
 				<h2 className="text-lg font-semibold leading-none tracking-tight">
-					{editingDictType ? "编辑字典类型" : "添加字典类型"}
+					{editingDictType ? t("dict.editType") : t("dict.addTypeTitle")}
 				</h2>
 				<p className="text-sm text-muted-foreground">
-					{editingDictType ? "更新字典类型的详细信息。" : "填写详细信息以创建新字典类型。"}
+					{editingDictType ? t("dict.editTypeDesc") : t("dict.addTypeDesc")}
 				</p>
 			</div>
 
@@ -114,9 +127,9 @@ export function DictTypeFormDialog({ open, onOpenChange, editingDictType, onSucc
 						name="name"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>字典名称</FormLabel>
+								<FormLabel>{t("dict.name")}</FormLabel>
 								<FormControl>
-									<Input placeholder="输入字典名称" {...field} />
+									<Input placeholder={t("dict.namePlaceholder")} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -127,9 +140,9 @@ export function DictTypeFormDialog({ open, onOpenChange, editingDictType, onSucc
 						name="type"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>字典类型</FormLabel>
+								<FormLabel>{t("dict.type")}</FormLabel>
 								<FormControl>
-									<Input placeholder="输入字典类型" {...field} />
+									<Input placeholder={t("dict.typePlaceholder")} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -140,9 +153,9 @@ export function DictTypeFormDialog({ open, onOpenChange, editingDictType, onSucc
 						name="remark"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>备注</FormLabel>
+								<FormLabel>{t("common.remark")}</FormLabel>
 								<FormControl>
-									<Input placeholder="输入备注" {...field} />
+									<Input placeholder={t("dict.remarkPlaceholder")} {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -154,7 +167,7 @@ export function DictTypeFormDialog({ open, onOpenChange, editingDictType, onSucc
 						render={({ field }) => (
 							<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
 								<div className="space-y-0.5">
-									<FormLabel>{field.value === 0 ? "正常" : "停用"}</FormLabel>
+									<FormLabel>{field.value === 0 ? t("common.normal") : t("common.stopped")}</FormLabel>
 								</div>
 								<FormControl>
 									<Switch checked={field.value === 0} onCheckedChange={(checked) => field.onChange(checked ? 0 : 1)} />
@@ -165,10 +178,10 @@ export function DictTypeFormDialog({ open, onOpenChange, editingDictType, onSucc
 
 					<div className="pt-4 flex justify-end">
 						<Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
-							取消
+							{t("common.cancel")}
 						</Button>
 						<Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-							{createMutation.isPending || updateMutation.isPending ? "保存中..." : "保存"}
+							{createMutation.isPending || updateMutation.isPending ? t("common.saving") : t("common.save")}
 						</Button>
 					</div>
 				</motion.form>

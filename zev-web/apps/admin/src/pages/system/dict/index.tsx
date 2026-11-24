@@ -18,10 +18,12 @@ import {
 import { ZevTable } from "@/components/zev-table";
 import { useConfirm } from "@/hooks/use-confirm";
 import { usePermission } from "@/hooks/use-permission";
+import { useI18n } from "@/i18n";
 import { DictDataFormDialog } from "./components/DictDataFormDialog";
 import { DictTypeFormDialog } from "./components/DictTypeFormDialog";
 
 export default function DictManagement() {
+	const { t } = useI18n();
 	const queryClient = useQueryClient();
 	const { confirm, ConfirmDialog } = useConfirm();
 	const { hasPermission } = usePermission();
@@ -54,25 +56,25 @@ export default function DictManagement() {
 	const deleteTypeMutation = useMutation({
 		mutationFn: deleteDictType,
 		onSuccess: () => {
-			toast.success("字典类型删除成功");
+			toast.success(t("dict.deleteTypeSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["dictTypes"] });
 			if (selectedDictType) {
 				setSelectedDictType(null);
 			}
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "删除字典类型失败");
+			toast.error(error.message || t("dict.deleteTypeFailed"));
 		},
 	});
 
 	const deleteDataMutation = useMutation({
 		mutationFn: deleteDictData,
 		onSuccess: () => {
-			toast.success("字典数据删除成功");
+			toast.success(t("dict.deleteDataSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["dictData"] });
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "删除字典数据失败");
+			toast.error(error.message || t("dict.deleteDataFailed"));
 		},
 	});
 
@@ -91,22 +93,22 @@ export default function DictManagement() {
 	const handleDeleteType = useCallback(
 		(e: React.MouseEvent, id: number) => {
 			e.stopPropagation();
-			confirm("确定要删除此字典类型吗？同时也会删除关联的字典数据", () => {
+			confirm(t("dict.deleteTypeConfirm"), () => {
 				deleteTypeMutation.mutate(id);
 			});
 		},
-		[deleteTypeMutation, confirm],
+		[deleteTypeMutation, confirm, t],
 	);
 
 	// Handlers for Data
 	const handleAddData = useCallback(() => {
 		if (!selectedDictType) {
-			toast.error("请先选择一个字典类型");
+			toast.error(t("dict.selectTypeFirst"));
 			return;
 		}
 		setEditingDictData(null);
 		setIsDataDialogOpen(true);
-	}, [selectedDictType]);
+	}, [selectedDictType, t]);
 
 	const handleEditData = useCallback((data: DictData) => {
 		setEditingDictData(data);
@@ -115,11 +117,11 @@ export default function DictManagement() {
 
 	const handleDeleteData = useCallback(
 		(id: number) => {
-			confirm("确定要删除此字典数据吗？", () => {
+			confirm(t("dict.deleteDataConfirm"), () => {
 				deleteDataMutation.mutate(id);
 			});
 		},
-		[deleteDataMutation, confirm],
+		[deleteDataMutation, confirm, t],
 	);
 
 	const dictTypes = typeData?.list || [];
@@ -134,19 +136,24 @@ export default function DictManagement() {
 		() => [
 			{
 				accessorKey: "name",
-				header: "字典名称",
+				header: t("dict.name"),
 			},
 			{
 				accessorKey: "type",
-				header: "字典类型",
+				header: t("dict.type"),
 			},
 			{
 				id: "actions",
-				header: () => <div className="text-right">操作</div>,
+				header: () => <div className="text-right">{t("common.actions")}</div>,
 				cell: ({ row }) => (
 					<div className="flex justify-end space-x-2">
 						{hasPermission("system:dict:update") && (
-							<Button variant="outline" size="icon" onClick={(e) => handleEditType(e, row.original)} title="编辑">
+							<Button
+								variant="outline"
+								size="icon"
+								onClick={(e) => handleEditType(e, row.original)}
+								title={t("common.edit")}
+							>
 								<Edit className="h-4 w-4" />
 							</Button>
 						)}
@@ -155,7 +162,7 @@ export default function DictManagement() {
 								variant="destructive"
 								size="icon"
 								onClick={(e) => handleDeleteType(e, row.original.ID)}
-								title="删除"
+								title={t("common.delete")}
 							>
 								<Trash2 className="h-4 w-4" />
 							</Button>
@@ -164,44 +171,58 @@ export default function DictManagement() {
 				),
 			},
 		],
-		[handleEditType, handleDeleteType, hasPermission],
+		[handleEditType, handleDeleteType, hasPermission, t],
 	);
 
 	const dataColumns = useMemo<ColumnDef<DictData>[]>(
 		() => [
 			{
 				accessorKey: "label",
-				header: "数据标签",
+				header: t("dict.label"),
 			},
 			{
 				accessorKey: "value",
-				header: "数据键值",
+				header: t("dict.value"),
 			},
 			{
 				accessorKey: "sort",
-				header: "排序",
+				header: t("common.sort"),
 			},
 			{
 				accessorKey: "status",
-				header: "状态",
+				header: t("common.status"),
 				cell: ({ row }) => (
-					<span className={row.original.status === 0 ? "text-green-600" : "text-red-600"}>
-						{row.original.status === 0 ? "正常" : "停用"}
+					<span
+						className={
+							row.original.status === 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
+						}
+					>
+						{row.original.status === 0 ? t("common.normal") : t("common.stopped")}
 					</span>
 				),
 			},
 			{
 				id: "actions",
-				header: () => <div className="text-right">操作</div>,
+				header: () => <div className="text-right">{t("common.actions")}</div>,
 				cell: ({ row }) => (
 					<div className="flex justify-end space-x-2">
 						{hasPermission("system:dict:update") && (
-							<Button variant="outline" size="icon" onClick={() => handleEditData(row.original)} title="编辑">
+							<Button
+								variant="outline"
+								size="icon"
+								onClick={() => handleEditData(row.original)}
+								title={t("common.edit")}
+							>
 								<Edit className="h-4 w-4" />
 							</Button>
 						)}
 						{hasPermission("system:dict:delete") && (
-							<Button variant="destructive" size="icon" onClick={() => handleDeleteData(row.original.ID)} title="删除">
+							<Button
+								variant="destructive"
+								size="icon"
+								onClick={() => handleDeleteData(row.original.ID)}
+								title={t("common.delete")}
+							>
 								<Trash2 className="h-4 w-4" />
 							</Button>
 						)}
@@ -209,7 +230,7 @@ export default function DictManagement() {
 				),
 			},
 		],
-		[handleEditData, handleDeleteData, hasPermission],
+		[handleEditData, handleDeleteData, hasPermission, t],
 	);
 
 	return (
@@ -218,17 +239,17 @@ export default function DictManagement() {
 				{/* Left Panel: Dict Types */}
 				<Card className="col-span-1 rounded-md shadow-sm border p-4 flex flex-col">
 					<div className="flex items-center justify-between mb-4">
-						<h2 className="text-lg font-semibold">字典类型</h2>
+						<h2 className="text-lg font-semibold">{t("dict.typeTitle")}</h2>
 						{hasPermission("system:dict:create") && (
 							<Button onClick={handleAddType} size="sm">
 								<Plus className="mr-2 h-4 w-4" />
-								添加类型
+								{t("dict.addType")}
 							</Button>
 						)}
 					</div>
 					<div className="mb-4">
 						<Input
-							placeholder="搜索类型名称..."
+							placeholder={t("dict.searchTypePlaceholder")}
 							value={searchKeyword}
 							onChange={(e) => setSearchKeyword(e.target.value)}
 						/>
@@ -240,7 +261,7 @@ export default function DictManagement() {
 							isLoading={isTypeLoading}
 							containerHeight="calc(100vh - 330px)"
 							onRowClick={(row) => setSelectedDictType(row)}
-							className="border-gray-200"
+							className="border-border"
 							pagination={false}
 							showToolbar={false}
 						/>
@@ -251,13 +272,13 @@ export default function DictManagement() {
 				<Card className="col-span-1 md:col-span-2 rounded-md shadow-sm border p-4 flex flex-col">
 					<div className="flex items-center justify-between mb-4">
 						<h2 className="text-lg font-semibold">
-							字典数据{" "}
-							{selectedDictType && <span className="text-blue-600 text-sm ml-2">({selectedDictType.name})</span>}
+							{t("dict.dataTitle")}{" "}
+							{selectedDictType && <span className="text-primary text-sm ml-2">({selectedDictType.name})</span>}
 						</h2>
 						{hasPermission("system:dict:create") && (
 							<Button onClick={handleAddData} size="sm" disabled={!selectedDictType}>
 								<Plus className="mr-2 h-4 w-4" />
-								添加数据
+								{t("dict.addData")}
 							</Button>
 						)}
 					</div>
@@ -268,13 +289,13 @@ export default function DictManagement() {
 								data={dictDataList}
 								isLoading={isDataLoading}
 								containerHeight="calc(100vh - 280px)"
-								className="border-gray-200"
+								className="border-border"
 								pagination={false}
 								showToolbar={false}
 							/>
 						) : (
-							<div className="h-[calc(100vh-280px)] flex items-center justify-center border border-dashed rounded-md text-gray-400">
-								请在左侧选择一个字典类型
+							<div className="h-[calc(100vh-280px)] flex items-center justify-center border border-dashed border-border rounded-md text-muted-foreground">
+								{t("dict.selectTypePrompt")}
 							</div>
 						)}
 					</div>

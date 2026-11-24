@@ -14,10 +14,12 @@ import { Auth } from "@/components/auth";
 import { ZevTable } from "@/components/zev-table";
 import { Checkbox } from "@/components/zev-table/checkbox";
 import { useConfirm } from "@/hooks/use-confirm";
+import { useI18n } from "@/i18n";
 import { AssignUserRoleDialog } from "./components/AssignUserRoleDialog";
 import { UserFormDialog } from "./components/UserFormDialog";
 
 export default function UserManagement() {
+	const { locale, t } = useI18n();
 	const queryClient = useQueryClient();
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
@@ -46,11 +48,11 @@ export default function UserManagement() {
 	const deleteMutation = useMutation({
 		mutationFn: deleteUser,
 		onSuccess: () => {
-			toast.success("用户删除成功");
+			toast.success(t("user.deleteSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["users"] });
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "删除用户失败");
+			toast.error(error.message || t("user.deleteFailed"));
 		},
 	});
 
@@ -71,11 +73,11 @@ export default function UserManagement() {
 
 	const handleDelete = useCallback(
 		(id: number) => {
-			confirm("确定要删除此用户吗？", () => {
+			confirm(t("user.deleteConfirm"), () => {
 				deleteMutation.mutate(id);
 			});
 		},
-		[deleteMutation, confirm],
+		[deleteMutation, confirm, t],
 	);
 
 	const users = data?.list || [];
@@ -106,20 +108,20 @@ export default function UserManagement() {
 
 			{
 				accessorKey: "username",
-				header: "用户名",
+				header: t("user.username"),
 			},
 			{
 				accessorKey: "nickname",
-				header: "昵称",
+				header: t("user.nickname"),
 			},
 			{
 				accessorKey: "email",
-				header: "邮箱",
+				header: t("user.email"),
 				cell: ({ row }) => row.original.email || "-",
 			},
 			{
 				accessorKey: "role_id",
-				header: "角色",
+				header: t("user.role"),
 				cell: ({ row }) => {
 					const role = roles.find((r) => r.ID === row.original.role_id);
 					return role ? role.name : `#${row.original.role_id}`;
@@ -127,40 +129,53 @@ export default function UserManagement() {
 			},
 			{
 				accessorKey: "status",
-				header: "状态",
+				header: t("common.status"),
 				cell: ({ row }) =>
 					row.original.status === 1 ? (
-						<Badge variant="destructive">禁用</Badge>
+						<Badge variant="destructive">{t("common.disabled")}</Badge>
 					) : (
-						<Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">
-							正常
+						<Badge
+							variant="default"
+							className="bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-400 border-emerald-500/20 shadow-none"
+						>
+							{t("common.normal")}
 						</Badge>
 					),
 			},
 			{
 				accessorKey: "CreatedAt",
-				header: "创建时间",
-				cell: ({ row }) => new Date(row.original.CreatedAt).toLocaleString(),
+				header: t("common.createdAt"),
+				cell: ({ row }) => new Date(row.original.CreatedAt).toLocaleString(locale),
 			},
 			{
 				id: "actions",
-				header: "操作",
+				header: t("common.actions"),
 				size: 100,
 				meta: { fixed: "right" },
 				cell: ({ row }) => (
 					<div className="flex justify-end space-x-2">
 						<Auth permission="system:user:assign">
-							<Button variant="outline" size="icon" onClick={() => handleAssignRole(row.original)} title="分配角色">
+							<Button
+								variant="outline"
+								size="icon"
+								onClick={() => handleAssignRole(row.original)}
+								title={t("user.assignRole")}
+							>
 								<ShieldCheck className="h-4 w-4" />
 							</Button>
 						</Auth>
 						<Auth permission="system:user:update">
-							<Button variant="outline" size="icon" onClick={() => handleEdit(row.original)} title="编辑">
+							<Button variant="outline" size="icon" onClick={() => handleEdit(row.original)} title={t("common.edit")}>
 								<Edit className="h-4 w-4" />
 							</Button>
 						</Auth>
 						<Auth permission="system:user:delete">
-							<Button variant="destructive" size="icon" onClick={() => handleDelete(row.original.ID)}>
+							<Button
+								variant="destructive"
+								size="icon"
+								onClick={() => handleDelete(row.original.ID)}
+								title={t("common.delete")}
+							>
 								<Trash2 className="h-4 w-4" />
 							</Button>
 						</Auth>
@@ -168,7 +183,7 @@ export default function UserManagement() {
 				),
 			},
 		],
-		[handleEdit, handleDelete, roles, handleAssignRole],
+		[handleEdit, handleDelete, roles, handleAssignRole, t, locale],
 	);
 
 	return (
@@ -176,7 +191,7 @@ export default function UserManagement() {
 			<Card className="flex-1 flex flex-col rounded-md shadow-sm border p-4 min-h-0">
 				<div className="flex items-center justify-between mb-4 shrink-0">
 					<Input
-						placeholder="搜索用户名、昵称或邮箱..."
+						placeholder={t("user.searchPlaceholder")}
 						className="w-[300px]"
 						value={search}
 						onChange={(e) => {
@@ -187,7 +202,7 @@ export default function UserManagement() {
 					<Auth permission="system:user:create">
 						<Button onClick={handleAdd}>
 							<Plus className="mr-2 h-4 w-4" />
-							添加用户
+							{t("user.addUser")}
 						</Button>
 					</Auth>
 				</div>

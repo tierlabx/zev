@@ -4,13 +4,17 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@zev/ui/components/dropdown-menu";
-import { Globe, Maximize, Minimize, Moon, Sun } from "lucide-react";
+import { cn } from "@zev/ui/lib/utils";
+import { Check, Globe, Maximize, Minimize, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { LOCALE_OPTIONS, useI18n } from "@/i18n";
 
 export function HeaderActions() {
-	const { theme, setTheme } = useTheme();
+	const { resolvedTheme, systemTheme, setTheme } = useTheme();
+	const { locale, setLocale, t } = useI18n();
 	const [isFullscreen, setIsFullscreen] = useState(false);
+	const isDark = resolvedTheme === "dark";
 
 	useEffect(() => {
 		const handleFullscreenChange = () => {
@@ -28,36 +32,62 @@ export function HeaderActions() {
 		}
 	};
 
+	const handleToggleTheme = () => {
+		const targetTheme = isDark ? "light" : "dark";
+		// 目标主题与系统偏好一致时恢复为跟随系统，避免隐性钉死主题
+		setTheme(targetTheme === systemTheme ? "system" : targetTheme);
+	};
+
 	return (
 		<>
 			<button
 				type="button"
 				onClick={toggleFullscreen}
-				className="p-2 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors group"
+				aria-label={isFullscreen ? t("header.exitFullscreen") : t("header.fullscreen")}
+				title={isFullscreen ? t("header.exitFullscreen") : t("header.fullscreen")}
+				className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors group"
 			>
 				{isFullscreen ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
 			</button>
 
 			<button
 				type="button"
-				onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-				className="p-2 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors group"
+				onClick={handleToggleTheme}
+				aria-label={isDark ? t("header.switchToLight") : t("header.switchToDark")}
+				title={isDark ? t("header.switchToLight") : t("header.switchToDark")}
+				className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors group"
 			>
-				{theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+				{isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
 			</button>
 
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<button
 						type="button"
-						className="p-2 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors group outline-none"
+						aria-label={t("header.switchLanguage")}
+						title={t("header.switchLanguage")}
+						className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors group outline-none"
 					>
 						<Globe className="size-4" />
 					</button>
 				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end">
-					<DropdownMenuItem>简体中文</DropdownMenuItem>
-					<DropdownMenuItem>English</DropdownMenuItem>
+				<DropdownMenuContent align="end" className="min-w-[140px]">
+					{LOCALE_OPTIONS.map((option) => {
+						const isActive = locale === option.value;
+						return (
+							<DropdownMenuItem
+								key={option.value}
+								onClick={() => setLocale(option.value)}
+								className={cn(
+									"cursor-pointer justify-between",
+									isActive && "bg-accent text-accent-foreground font-medium",
+								)}
+							>
+								<span>{option.label}</span>
+								{isActive && <Check className="size-3.5 text-primary" />}
+							</DropdownMenuItem>
+						);
+					})}
 				</DropdownMenuContent>
 			</DropdownMenu>
 		</>

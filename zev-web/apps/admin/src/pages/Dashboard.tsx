@@ -6,10 +6,11 @@ import { Activity, Cpu, Database, HardDrive, ShieldCheck, UserCheck, Users } fro
 import { useEffect } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { type DashboardActivityRes, getDashboardStats } from "@/api/system/dashboard";
+import { useI18n } from "@/i18n";
 
-function AnimatedNumber({ value }: { value: number }) {
+function AnimatedNumber({ value, locale }: { value: number; locale: string }) {
 	const spring = useSpring(0, { bounce: 0, duration: 1500 });
-	const display = useTransform(spring, (current) => Math.round(current).toLocaleString());
+	const display = useTransform(spring, (current) => Math.round(current).toLocaleString(locale));
 
 	useEffect(() => {
 		spring.set(value);
@@ -19,6 +20,7 @@ function AnimatedNumber({ value }: { value: number }) {
 }
 
 export default function Dashboard() {
+	const { locale, t } = useI18n();
 	const { data: res, isLoading } = useQuery({
 		queryKey: ["dashboardStats"],
 		queryFn: getDashboardStats,
@@ -31,28 +33,28 @@ export default function Dashboard() {
 
 	const statCards = [
 		{
-			title: "总用户数",
+			title: t("dashboard.userTotalTitle"),
 			value: stats?.userTotal || 0,
 			icon: <Users className="h-4 w-4 text-muted-foreground" />,
-			description: "系统所有注册用户",
+			description: t("dashboard.userTotalDesc"),
 		},
 		{
-			title: "角色数量",
+			title: t("dashboard.roleTotalTitle"),
 			value: stats?.roleTotal || 0,
 			icon: <ShieldCheck className="h-4 w-4 text-muted-foreground" />,
-			description: "系统定义的角色总数",
+			description: t("dashboard.roleTotalDesc"),
 		},
 		{
-			title: "菜单权限数",
+			title: t("dashboard.menuTotalTitle"),
 			value: stats?.menuTotal || 0,
 			icon: <UserCheck className="h-4 w-4 text-muted-foreground" />,
-			description: "系统定义的菜单路由",
+			description: t("dashboard.menuTotalDesc"),
 		},
 		{
-			title: "字典类型数",
+			title: t("dashboard.dictTotalTitle"),
 			value: stats?.dictTotal || 0,
 			icon: <Database className="h-4 w-4 text-muted-foreground" />,
-			description: "系统配置的字典总数",
+			description: t("dashboard.dictTotalDesc"),
 		},
 	];
 
@@ -77,7 +79,7 @@ export default function Dashboard() {
 									{isLoading ? (
 										<span className="bg-muted animate-pulse rounded w-16 inline-block h-8"></span>
 									) : (
-										<AnimatedNumber value={card.value} />
+										<AnimatedNumber value={card.value} locale={locale} />
 									)}
 								</div>
 								<p className="text-xs text-muted-foreground mt-1">{card.description}</p>
@@ -97,8 +99,8 @@ export default function Dashboard() {
 				>
 					<Card className="flex-1">
 						<CardHeader>
-							<CardTitle>用户新增趋势</CardTitle>
-							<CardDescription>最近 7 天的每日新增用户数量</CardDescription>
+							<CardTitle>{t("dashboard.trendTitle")}</CardTitle>
+							<CardDescription>{t("dashboard.trendDesc")}</CardDescription>
 						</CardHeader>
 						<CardContent className="min-h-[300px]">
 							{isLoading ? (
@@ -129,13 +131,15 @@ export default function Dashboard() {
 											contentStyle={{
 												borderRadius: "8px",
 												border: "1px solid var(--color-border)",
-												backgroundColor: "var(--color-background)",
+												backgroundColor: "var(--color-popover)",
 											}}
+											labelStyle={{ color: "var(--color-muted-foreground)" }}
 											itemStyle={{ color: "var(--color-foreground)" }}
 										/>
 										<Area
 											type="monotone"
 											dataKey="count"
+											name={t("dashboard.trendSeriesName")}
 											stroke="var(--color-primary, #2563EB)"
 											fillOpacity={1}
 											fill="url(#colorCount)"
@@ -159,14 +163,14 @@ export default function Dashboard() {
 							<CardHeader className="pb-3">
 								<CardTitle className="text-md flex items-center gap-2">
 									<Activity className="h-4 w-4" />
-									系统健康状态
+									{t("dashboard.healthTitle")}
 								</CardTitle>
 							</CardHeader>
 							<CardContent className="space-y-4">
 								<div className="space-y-1">
 									<div className="flex justify-between text-xs">
 										<span className="flex items-center gap-1 text-muted-foreground">
-											<Cpu className="h-3 w-3" /> CPU 使用率
+											<Cpu className="h-3 w-3" /> {t("dashboard.cpuUsage")}
 										</span>
 										<span className="font-medium">{health?.cpuUsage ?? 0}%</span>
 									</div>
@@ -175,7 +179,7 @@ export default function Dashboard() {
 								<div className="space-y-1">
 									<div className="flex justify-between text-xs">
 										<span className="flex items-center gap-1 text-muted-foreground">
-											<HardDrive className="h-3 w-3" /> 内存使用率
+											<HardDrive className="h-3 w-3" /> {t("dashboard.memoryUsage")}
 										</span>
 										<span className="font-medium">{health?.memoryUsage ?? 0}%</span>
 									</div>
@@ -184,7 +188,7 @@ export default function Dashboard() {
 								<div className="space-y-1">
 									<div className="flex justify-between text-xs">
 										<span className="flex items-center gap-1 text-muted-foreground">
-											<Database className="h-3 w-3" /> DB 连通率
+											<Database className="h-3 w-3" /> {t("dashboard.dbResponse")}
 										</span>
 										<span className="font-medium">{health?.dbResponse ?? 0}%</span>
 									</div>
@@ -203,7 +207,7 @@ export default function Dashboard() {
 					>
 						<Card className="flex-1">
 							<CardHeader className="pb-3">
-								<CardTitle className="text-md">最新操作动态</CardTitle>
+								<CardTitle className="text-md">{t("dashboard.activityTitle")}</CardTitle>
 							</CardHeader>
 							<CardContent>
 								{isLoading ? (
@@ -234,7 +238,7 @@ export default function Dashboard() {
 										))}
 									</div>
 								) : (
-									<div className="text-sm text-muted-foreground text-center py-4">暂无活动</div>
+									<div className="text-sm text-muted-foreground text-center py-4">{t("dashboard.noActivities")}</div>
 								)}
 							</CardContent>
 						</Card>

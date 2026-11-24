@@ -3,8 +3,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@zev/ui/components/popo
 import { motion } from "framer-motion";
 import { Bell } from "lucide-react";
 import { getNoticeList, markNoticeAsRead, type SysNotice } from "@/api/system/notice";
+import { useI18n } from "@/i18n";
 
 export function NoticePopover() {
+	const { locale, t } = useI18n();
 	const queryClient = useQueryClient();
 
 	const { data: notices = [] } = useQuery({
@@ -25,7 +27,7 @@ export function NoticePopover() {
 			<PopoverTrigger asChild>
 				<button
 					type="button"
-					className="p-2 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors relative group outline-none"
+					className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors relative group outline-none"
 				>
 					<motion.div
 						style={{ originY: 0 }}
@@ -35,14 +37,14 @@ export function NoticePopover() {
 						<Bell className="size-4" />
 					</motion.div>
 					{notices.length > 0 && (
-						<span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full border border-white dark:border-zinc-950"></span>
+						<span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full border border-card"></span>
 					)}
 				</button>
 			</PopoverTrigger>
 			<PopoverContent align="end" className="w-80 p-0">
 				<div className="flex flex-col">
 					<div className="flex items-center justify-between p-4 border-b">
-						<h4 className="font-semibold text-sm">通知 ({notices.length})</h4>
+						<h4 className="font-semibold text-sm">{t("header.notifications", { count: notices.length })}</h4>
 					</div>
 					<div className="max-h-80 overflow-y-auto">
 						{notices.length > 0 ? (
@@ -57,7 +59,7 @@ export function NoticePopover() {
 										<div className="flex items-center justify-between w-full">
 											<span className="font-medium text-sm">{notice.title}</span>
 											<span className="text-[10px] text-muted-foreground">
-												{new Date(notice.CreatedAt).toLocaleDateString()}
+												{new Date(notice.CreatedAt).toLocaleDateString(locale)}
 											</span>
 										</div>
 										<p className="text-xs text-muted-foreground line-clamp-2">{notice.content}</p>
@@ -65,7 +67,7 @@ export function NoticePopover() {
 								))}
 							</div>
 						) : (
-							<div className="p-4 text-sm text-muted-foreground text-center">暂无新通知。</div>
+							<div className="p-4 text-sm text-muted-foreground text-center">{t("header.noNotifications")}</div>
 						)}
 					</div>
 				</div>

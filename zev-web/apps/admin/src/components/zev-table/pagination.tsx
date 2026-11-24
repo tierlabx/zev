@@ -2,6 +2,7 @@ import { Button } from "@zev/ui/components/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zev/ui/components/select";
 import { cn } from "@zev/ui/lib/utils";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { useI18n } from "@/i18n";
 
 interface PaginationProps {
 	page: number;
@@ -13,6 +14,7 @@ interface PaginationProps {
 }
 
 export function Pagination({ page, pageSize, total, onPageChange, onPageSizeChange, className }: PaginationProps) {
+	const { t } = useI18n();
 	const totalPages = Math.ceil(total / pageSize);
 
 	const renderPageNumbers = () => {
@@ -37,7 +39,7 @@ export function Pagination({ page, pageSize, total, onPageChange, onPageSizeChan
 			if (p === "ellipsis") {
 				return (
 					// biome-ignore lint/suspicious/noArrayIndexKey: Static array mapping for pagination
-					<div key={`ellipsis-${idx}`} className="flex items-end justify-center w-8 h-8 pb-1 text-gray-400">
+					<div key={`ellipsis-${idx}`} className="flex items-end justify-center w-8 h-8 pb-1 text-muted-foreground">
 						<MoreHorizontal className="w-4 h-4" />
 					</div>
 				);
@@ -50,8 +52,8 @@ export function Pagination({ page, pageSize, total, onPageChange, onPageSizeChan
 					className={cn(
 						"w-8 h-8 rounded-md text-sm transition-colors",
 						page === p
-							? "bg-black text-white hover:bg-gray-800 hover:text-white"
-							: "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+							? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+							: "text-muted-foreground hover:bg-muted hover:text-foreground",
 					)}
 					onClick={() => onPageChange(p as number)}
 				>
@@ -63,12 +65,12 @@ export function Pagination({ page, pageSize, total, onPageChange, onPageSizeChan
 
 	return (
 		<div className={cn("flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-2", className)}>
-			<div className="flex items-center space-x-2 text-sm text-gray-500">
-				<span>共 {total} 条记录</span>
+			<div className="flex items-center space-x-2 text-sm text-muted-foreground">
+				<span>{t("table.totalRecords", { total })}</span>
 				<div className="flex items-center space-x-2">
-					<span className="hidden sm:inline-block">每页</span>
+					<span className="hidden sm:inline-block">{t("table.perPage")}</span>
 					<Select value={pageSize.toString()} onValueChange={(val) => onPageSizeChange(Number(val))}>
-						<SelectTrigger className="h-8 w-[70px] bg-white text-xs">
+						<SelectTrigger className="h-8 w-[70px] bg-background text-foreground text-xs">
 							<SelectValue placeholder={pageSize.toString()} />
 						</SelectTrigger>
 						<SelectContent>
@@ -79,7 +81,7 @@ export function Pagination({ page, pageSize, total, onPageChange, onPageSizeChan
 							))}
 						</SelectContent>
 					</Select>
-					<span className="hidden sm:inline-block">条</span>
+					<span className="hidden sm:inline-block">{t("table.unit")}</span>
 				</div>
 			</div>
 
@@ -87,7 +89,7 @@ export function Pagination({ page, pageSize, total, onPageChange, onPageSizeChan
 				<Button
 					variant="ghost"
 					size="icon"
-					className="w-8 h-8 rounded-md text-gray-500 hover:text-gray-900"
+					className="w-8 h-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
 					onClick={() => onPageChange(page - 1)}
 					disabled={page <= 1}
 				>
@@ -97,7 +99,7 @@ export function Pagination({ page, pageSize, total, onPageChange, onPageSizeChan
 				<Button
 					variant="ghost"
 					size="icon"
-					className="w-8 h-8 rounded-md text-gray-500 hover:text-gray-900"
+					className="w-8 h-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
 					onClick={() => onPageChange(page + 1)}
 					disabled={page >= totalPages || totalPages === 0}
 				>

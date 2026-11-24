@@ -12,10 +12,12 @@ import { Auth } from "@/components/auth";
 import { ZevTable } from "@/components/zev-table";
 import { Checkbox } from "@/components/zev-table/checkbox";
 import { useConfirm } from "@/hooks/use-confirm";
+import { useI18n } from "@/i18n";
 import { AssignMenuDialog } from "./components/AssignMenuDialog";
 import { RoleFormDialog } from "./components/RoleFormDialog";
 
 export default function RoleManagement() {
+	const { locale, t } = useI18n();
 	const queryClient = useQueryClient();
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
@@ -38,11 +40,11 @@ export default function RoleManagement() {
 	const deleteMutation = useMutation({
 		mutationFn: deleteRole,
 		onSuccess: () => {
-			toast.success("角色删除成功");
+			toast.success(t("role.deleteSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["roles"] });
 		},
 		onError: (error: Error) => {
-			toast.error(error.message || "删除角色失败");
+			toast.error(error.message || t("role.deleteFailed"));
 		},
 	});
 
@@ -58,11 +60,11 @@ export default function RoleManagement() {
 
 	const handleDelete = useCallback(
 		(id: number) => {
-			confirm("确定要删除此角色吗？", () => {
+			confirm(t("role.deleteConfirm"), () => {
 				deleteMutation.mutate(id);
 			});
 		},
-		[deleteMutation, confirm],
+		[deleteMutation, confirm, t],
 	);
 
 	const handleAssignMenu = useCallback((id: number) => {
@@ -98,49 +100,63 @@ export default function RoleManagement() {
 
 			{
 				accessorKey: "name",
-				header: "角色名称",
+				header: t("role.name"),
 			},
 			{
 				accessorKey: "code",
-				header: "角色编码",
+				header: t("role.code"),
 			},
 			{
 				accessorKey: "status",
-				header: "状态",
+				header: t("common.status"),
 				cell: ({ row }) => (
-					<span className={row.original.status === 0 ? "text-green-600" : "text-red-600"}>
-						{row.original.status === 0 ? "正常" : "停用"}
+					<span
+						className={
+							row.original.status === 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
+						}
+					>
+						{row.original.status === 0 ? t("common.normal") : t("common.stopped")}
 					</span>
 				),
 			},
 			{
 				accessorKey: "sort",
-				header: "排序",
+				header: t("common.sort"),
 			},
 			{
 				accessorKey: "CreatedAt",
-				header: "创建时间",
-				cell: ({ row }) => new Date(row.original.CreatedAt).toLocaleString(),
+				header: t("common.createdAt"),
+				cell: ({ row }) => new Date(row.original.CreatedAt).toLocaleString(locale),
 			},
 			{
 				id: "actions",
-				header: "操作",
+				header: t("common.actions"),
 				size: 150,
 				meta: { fixed: "right" },
 				cell: ({ row }) => (
 					<div className="flex justify-end space-x-2">
 						<Auth permission="system:role:assign">
-							<Button variant="outline" size="icon" onClick={() => handleAssignMenu(row.original.ID)} title="分配菜单">
+							<Button
+								variant="outline"
+								size="icon"
+								onClick={() => handleAssignMenu(row.original.ID)}
+								title={t("role.assignMenu")}
+							>
 								<MenuIcon className="h-4 w-4" />
 							</Button>
 						</Auth>
 						<Auth permission="system:role:update">
-							<Button variant="outline" size="icon" onClick={() => handleEdit(row.original)} title="编辑">
+							<Button variant="outline" size="icon" onClick={() => handleEdit(row.original)} title={t("common.edit")}>
 								<Edit className="h-4 w-4" />
 							</Button>
 						</Auth>
 						<Auth permission="system:role:delete">
-							<Button variant="destructive" size="icon" onClick={() => handleDelete(row.original.ID)} title="删除">
+							<Button
+								variant="destructive"
+								size="icon"
+								onClick={() => handleDelete(row.original.ID)}
+								title={t("common.delete")}
+							>
 								<Trash2 className="h-4 w-4" />
 							</Button>
 						</Auth>
@@ -148,7 +164,7 @@ export default function RoleManagement() {
 				),
 			},
 		],
-		[handleEdit, handleDelete, handleAssignMenu],
+		[handleEdit, handleDelete, handleAssignMenu, t, locale],
 	);
 
 	return (
@@ -156,7 +172,7 @@ export default function RoleManagement() {
 			<Card className="flex-1 flex flex-col rounded-md shadow-sm border p-4 min-h-0">
 				<div className="flex items-center justify-between mb-4 shrink-0">
 					<Input
-						placeholder="搜索角色名称或编码..."
+						placeholder={t("role.searchPlaceholder")}
 						className="w-[300px]"
 						value={searchKeyword}
 						onChange={(e) => {
@@ -167,7 +183,7 @@ export default function RoleManagement() {
 					<Auth permission="system:role:create">
 						<Button onClick={handleAdd}>
 							<Plus className="mr-2 h-4 w-4" />
-							添加角色
+							{t("role.addRole")}
 						</Button>
 					</Auth>
 				</div>

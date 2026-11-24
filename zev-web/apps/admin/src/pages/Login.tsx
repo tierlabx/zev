@@ -6,28 +6,40 @@ import { Input } from "@zev/ui/components/input";
 import { ShinyButton } from "@zev/ui/components/shiny-button";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { ArrowRight, Lock, User } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { getUserInfoApi, useLoginMutation } from "@/api/system/auth";
 import logoUrl from "@/assets/logo-animated.svg";
 import ThreeKoiBackground from "@/components/ThreeKoiBackground/index";
+import { useI18n } from "@/i18n";
 import { useUserStore } from "@/store";
 import { findFirstPagePath } from "@/utils/menu-utils";
 
-const loginSchema = z.object({
-	username: z.string().min(1, { message: "请输入用户名或邮箱" }),
-	password: z.string().min(1, { message: "请输入密码" }).min(5, { message: "密码不能少于6位" }),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+type LoginFormValues = {
+	username: string;
+	password: string;
+};
 
 export default function Login() {
+	const { t } = useI18n();
 	const navigate = useNavigate();
 	const loginMutation = useLoginMutation();
 	const setToken = useUserStore((state) => state.setToken);
 	const setUserInfo = useUserStore((state) => state.setUserInfo);
+
+	const loginSchema = useMemo(
+		() =>
+			z.object({
+				username: z.string().min(1, { message: t("login.usernameRequired") }),
+				password: z
+					.string()
+					.min(1, { message: t("login.passwordRequired") })
+					.min(5, { message: t("login.passwordMin") }),
+			}),
+		[t],
+	);
 
 	const x = useMotionValue(0);
 	const y = useMotionValue(0);
@@ -68,13 +80,13 @@ export default function Login() {
 						window.location.href = firstPage || "/login";
 						return;
 					} catch {
-						toast.error("获取用户信息失败");
+						toast.error(t("login.fetchUserInfoFailed"));
 					}
 				}
 				navigate({ to: "/login" });
 			},
 			onError: (err) => {
-				toast.error(err.message || "登录失败");
+				toast.error(err.message || t("login.loginFailed"));
 			},
 		});
 	};
@@ -96,17 +108,19 @@ export default function Login() {
 						transformStyle: "preserve-3d",
 					}}
 				>
-					<Card className="w-full p-6 md:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/40 bg-white/60 backdrop-blur-xl rounded-2xl relative overflow-hidden">
+					<Card className="w-full p-6 md:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/40 dark:border-slate-700/60 bg-white/60 dark:bg-slate-900/75 backdrop-blur-xl rounded-2xl relative overflow-hidden">
 						{/* Decorative blur elements inside the card */}
 						<div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 						<div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
 						<CardHeader className="p-0 mb-8 flex flex-col items-center gap-4 relative z-10">
-							<div className="flex h-16 w-16 items-center justify-center bg-white/40 rounded-2xl shadow-sm border border-white/60 backdrop-blur-md">
+							<div className="flex h-16 w-16 items-center justify-center bg-white/40 dark:bg-slate-800/60 rounded-2xl shadow-sm border border-white/60 dark:border-slate-700/60 backdrop-blur-md">
 								<img src={logoUrl} alt="Logo" className="h-10 w-10 drop-shadow-md" />
 							</div>
 							<div className="text-center space-y-1.5">
-								<h2 className="text-2xl font-bold tracking-tight text-gray-900">欢迎回来</h2>
+								<h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-slate-100">
+									{t("login.welcome")}
+								</h2>
 							</div>
 						</CardHeader>
 						<CardContent className="p-0 relative z-10">
@@ -125,8 +139,8 @@ export default function Login() {
 														<Input
 															{...field}
 															type="text"
-															placeholder="用户名或邮箱"
-															className="pl-11 h-12 bg-white/50 border-white/40 hover:bg-white/70 focus:bg-white/90 transition-all shadow-sm rounded-xl text-[14px]"
+															placeholder={t("login.usernamePlaceholder")}
+															className="pl-11 h-12 bg-white/50 dark:bg-slate-800/60 border-white/40 dark:border-slate-700/60 hover:bg-white/70 dark:hover:bg-slate-800/80 focus:bg-white/90 dark:focus:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-500 dark:placeholder:text-slate-400 transition-all shadow-sm rounded-xl text-[14px]"
 														/>
 													</div>
 												</FormControl>
@@ -147,8 +161,8 @@ export default function Login() {
 														<Input
 															{...field}
 															type="password"
-															placeholder="密码"
-															className="pl-11 h-12 bg-white/50 border-white/40 hover:bg-white/70 focus:bg-white/90 transition-all shadow-sm rounded-xl text-[14px]"
+															placeholder={t("login.passwordPlaceholder")}
+															className="pl-11 h-12 bg-white/50 dark:bg-slate-800/60 border-white/40 dark:border-slate-700/60 hover:bg-white/70 dark:hover:bg-slate-800/80 focus:bg-white/90 dark:focus:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-500 dark:placeholder:text-slate-400 transition-all shadow-sm rounded-xl text-[14px]"
 														/>
 													</div>
 												</FormControl>
@@ -162,10 +176,10 @@ export default function Login() {
 										className="mt-8 w-full h-12 text-[15px] font-medium bg-primary text-primary-foreground rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
 									>
 										{loginMutation.isPending ? (
-											"登录中..."
+											t("login.submitting")
 										) : (
 											<>
-												登 录 <ArrowRight className="h-4 w-4" />
+												{t("login.submit")} <ArrowRight className="h-4 w-4" />
 											</>
 										)}
 									</ShinyButton>

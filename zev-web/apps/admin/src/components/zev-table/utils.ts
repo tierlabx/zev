@@ -8,15 +8,14 @@ export const getPinningStyles = <TData, TValue>(column: Column<TData, TValue>): 
 
 	return {
 		boxShadow: isLastLeftPinnedColumn
-			? "inset -4px 0 4px -4px rgba(0, 0, 0, 0.1)"
+			? "inset -1px 0 0 0 var(--color-border), inset -4px 0 6px -4px rgba(0, 0, 0, 0.14)"
 			: isFirstRightPinnedColumn
-				? "inset 4px 0 4px -4px rgba(0, 0, 0, 0.1)"
+				? "inset 1px 0 0 0 var(--color-border), inset 4px 0 6px -4px rgba(0, 0, 0, 0.14)"
 				: undefined,
 		left: isPinned === "left" ? `${column.getStart("left")}px` : undefined,
 		right: isPinned === "right" ? `${column.getAfter("right")}px` : undefined,
 		position: isPinned ? "sticky" : "relative",
 		width: column.getSize(),
 		zIndex: isPinned ? 2 : 0,
-		backgroundColor: isPinned ? "inherit" : undefined,
 	};
 };

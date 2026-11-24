@@ -9,6 +9,7 @@ import {
 	DropdownMenuTrigger,
 } from "@zev/ui/components/dropdown-menu";
 import { Settings2 } from "lucide-react";
+import { useI18n } from "@/i18n";
 
 interface TableToolbarProps<TData> {
 	table: Table<TData>;
@@ -16,6 +17,7 @@ interface TableToolbarProps<TData> {
 }
 
 export function TableToolbar<TData>({ table, showColumnToggle = true }: TableToolbarProps<TData>) {
+	const { t } = useI18n();
 	if (!showColumnToggle) return null;
 
 	return (
@@ -26,11 +28,11 @@ export function TableToolbar<TData>({ table, showColumnToggle = true }: TableToo
 					<DropdownMenuTrigger asChild>
 						<Button variant="outline" size="sm" className="ml-auto hidden h-8 lg:flex">
 							<Settings2 className="mr-2 h-4 w-4" />
-							视图
+							{t("table.view")}
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end" className="w-[150px]">
-						<DropdownMenuLabel>切换列显隐</DropdownMenuLabel>
+						<DropdownMenuLabel>{t("table.toggleColumns")}</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						{table
 							.getAllColumns()

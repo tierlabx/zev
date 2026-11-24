@@ -1,10 +1,12 @@
 import { useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ArrowLeft, Home } from "lucide-react";
+import { useI18n } from "@/i18n";
 import { useUserStore } from "@/store";
 import { findFirstPagePath } from "@/utils/menu-utils";
 
 export default function NotFound() {
+	const { t } = useI18n();
 	const navigate = useNavigate();
 	const menus = useUserStore((state) => state.menus);
 
@@ -35,26 +37,24 @@ export default function NotFound() {
 						404
 					</motion.span>
 				</div>
-				<h2 className="text-xl font-semibold text-gray-700 mb-2">页面未找到</h2>
-				<p className="text-sm text-muted-foreground mb-8 max-w-sm mx-auto">
-					您访问的页面不存在或没有访问权限，请检查地址或返回首页。
-				</p>
+				<h2 className="text-xl font-semibold text-foreground mb-2">{t("notFound.title")}</h2>
+				<p className="text-sm text-muted-foreground mb-8 max-w-sm mx-auto">{t("notFound.description")}</p>
 				<div className="flex items-center justify-center gap-3">
 					<button
 						type="button"
 						onClick={() => window.history.back()}
-						className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+						className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
 					>
 						<ArrowLeft className="h-4 w-4" />
-						返回上一页
+						{t("notFound.goBack")}
 					</button>
 					<button
 						type="button"
 						onClick={handleGoHome}
-						className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[#2563EB] text-white hover:bg-[#1D4ED8] transition-colors shadow-sm"
+						className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
 					>
 						<Home className="h-4 w-4" />
-						回到首页
+						{t("notFound.goHome")}
 					</button>
 				</div>
 			</motion.div>
