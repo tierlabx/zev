@@ -1,13 +1,20 @@
+import {
+	transition as motionTransition,
+	useShouldReduceMotion,
+	useTempoTransition,
+} from "@animate-ui/react/utils/motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Popover, PopoverContent, PopoverTrigger } from "@zev/ui/components/popover";
-import { motion } from "framer-motion";
 import { Bell } from "lucide-react";
+import { motion } from "motion/react";
 import { getNoticeList, markNoticeAsRead, type SysNotice } from "@/api/system/notice";
 import { useI18n } from "@/i18n";
 
 export function NoticePopover() {
 	const { locale, t } = useI18n();
 	const queryClient = useQueryClient();
+	const reduce = useShouldReduceMotion();
+	const shakeTransition = useTempoTransition(motionTransition.shake);
 
 	const { data: notices = [] } = useQuery({
 		queryKey: ["notices"],
@@ -31,8 +38,8 @@ export function NoticePopover() {
 				>
 					<motion.div
 						style={{ originY: 0 }}
-						whileHover={{ rotate: [0, -15, 15, -15, 15, 0] }}
-						transition={{ duration: 0.5, ease: "easeInOut" }}
+						whileHover={reduce ? undefined : { rotate: [0, -12, 12, -8, 8, 0] }}
+						transition={shakeTransition}
 					>
 						<Bell className="size-4" />
 					</motion.div>

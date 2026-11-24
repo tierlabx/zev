@@ -18,7 +18,7 @@ description: Provides core guidelines, architectural constraints, and standard o
 - **代码校验**：统一使用 `biome check .`，不使用 ESLint/Prettier。严格禁止使用 `any` 类型。
 - **数据获取**：服务端请求必须使用 `@tanstack/react-query` v5。严禁在组件中手写 `useEffect` 配合 `axios`。
 - **UI 组件库**：基于 `shadcn/ui`，并从 `@zev/ui` 导入。
-- **动画机制**：动画使用 `framer-motion`，但在高性能的虚拟滚动表格（`ZevTable`）中**严禁使用进场动画**，以确保 60FPS 满血滚动性能。
+- **动画机制**：动画使用 **Animate UI** (`@animate-ui/react` + `motion/react`) 与全局 Token，但在高性能的虚拟滚动表格（`ZevTable`）中**严禁使用进场动画**，以确保 60FPS 满血滚动性能。
 - **表单交互**：必须使用 `react-hook-form` + `zod`，提示统一使用 `sonner` (`toast`)。弹窗确认必须使用自带的 `useConfirm` hook，禁止使用浏览器原生 `window.confirm`。
 - **改动后必须执行 pnpm lint**： 前端改动后必须执行pnpm lint 然后修复所有问题
 ## 3. 后端规范 (zev-go)

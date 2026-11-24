@@ -1,4 +1,4 @@
-import * as SliderPrimitive from "@radix-ui/react-slider";
+import * as SliderPrimitive from "@animate-ui/react/primitives/radix-ui/slider";
 import { cn } from "@zev/ui/lib/utils";
 import * as React from "react";
 

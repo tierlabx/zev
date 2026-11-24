@@ -1,14 +1,22 @@
+import {
+	transition as motionTransition,
+	useShouldReduceMotion,
+	useTempoTransition,
+} from "@animate-ui/react/utils/motion";
 import { Canvas } from "@react-three/fiber";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Suspense } from "react";
 import { Scene } from "./Scene";
 
 export default function ThreeKoiBackground() {
+	const reduce = useShouldReduceMotion();
+	const fadeTransition = useTempoTransition(motionTransition.overlay);
+
 	return (
 		<motion.div
-			initial={{ opacity: 0 }}
+			initial={reduce ? false : { opacity: 0 }}
 			animate={{ opacity: 1 }}
-			transition={{ duration: 1.5, ease: "easeOut" }}
+			transition={fadeTransition}
 			className="absolute inset-0 w-full h-full z-0 overflow-hidden pointer-events-none"
 		>
 			<Canvas camera={{ position: [0, 0, 10], fov: 50 }}>

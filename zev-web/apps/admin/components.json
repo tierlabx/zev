@@ -16,5 +16,8 @@
 		"ui": "@zev/ui/components",
 		"lib": "@zev/ui/lib",
 		"hooks": "@/hooks"
+	},
+	"registries": {
+		"@animate-ui": "https://animate-ui.com/r/{name}.json"
 	}
 }

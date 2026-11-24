@@ -1,7 +1,13 @@
+import {
+	transition as motionTransition,
+	spring,
+	useShouldReduceMotion,
+	useTempoTransition,
+} from "@animate-ui/react/utils/motion";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@zev/ui/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, type LucideIcon } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import type { MenuItem } from "@/api/interface/system/user";
 import { useI18n } from "@/i18n";
@@ -53,6 +59,9 @@ export function NavItem({
 	const { translateMenu } = useI18n();
 	const displayName = translateMenu(item.path, item.name);
 	const hasChildren = item.children && item.children.length > 0;
+	const reduce = useShouldReduceMotion();
+	const disclosureTransition = useTempoTransition(reduce ? { duration: 0 } : motionTransition.disclosure);
+	const selectionTransition = useTempoTransition(reduce ? { duration: 0 } : spring.selection);
 
 	// A parent is active if any of its children match the current route path
 	const isChildActive = hasChildren && item.children?.some((child) => activePath.startsWith(child.path));
@@ -109,7 +118,7 @@ export function NavItem({
 							initial={{ height: 0, opacity: 0 }}
 							animate={{ height: "auto", opacity: 1 }}
 							exit={{ height: 0, opacity: 0 }}
-							transition={{ duration: 0.2, ease: "easeInOut" }}
+							transition={disclosureTransition}
 							className="pl-6 space-y-1 mt-1 overflow-hidden"
 						>
 							{item.children?.map((child) => (
@@ -143,7 +152,7 @@ export function NavItem({
 				<motion.div
 					layoutId="sidebar-active"
 					className="absolute inset-0 bg-[var(--color-primary-light)] rounded-md"
-					transition={{ type: "spring", stiffness: 400, damping: 30 }}
+					transition={selectionTransition}
 				/>
 			)}
 			<item.icon

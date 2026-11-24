@@ -1,6 +1,12 @@
+import {
+	scale as motionScale,
+	transition as motionTransition,
+	useShouldReduceMotion,
+	useTempoTransition,
+} from "@animate-ui/react/utils/motion";
 import { useNavigate } from "@tanstack/react-router";
-import { motion } from "framer-motion";
 import { ArrowLeft, Home } from "lucide-react";
+import { motion } from "motion/react";
 import { useI18n } from "@/i18n";
 import { useUserStore } from "@/store";
 import { findFirstPagePath } from "@/utils/menu-utils";
@@ -9,6 +15,8 @@ export default function NotFound() {
 	const { t } = useI18n();
 	const navigate = useNavigate();
 	const menus = useUserStore((state) => state.menus);
+	const reduce = useShouldReduceMotion();
+	const revealTransition = useTempoTransition(motionTransition.reveal);
 
 	const handleGoHome = () => {
 		const firstPath = findFirstPagePath(menus);
@@ -22,17 +30,17 @@ export default function NotFound() {
 	return (
 		<div className="flex h-full min-h-[60vh] items-center justify-center">
 			<motion.div
-				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+				initial={reduce ? { opacity: 0 } : { opacity: 0, y: 12 }}
+				animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
+				transition={revealTransition}
 				className="text-center"
 			>
 				<div className="relative inline-block mb-8">
 					<motion.span
-						initial={{ scale: 0.8, opacity: 0 }}
-						animate={{ scale: 1, opacity: 1 }}
-						transition={{ delay: 0.1, duration: 0.5 }}
-						className="text-[120px] font-bold leading-none bg-gradient-to-br from-[#2563EB] to-[#6366F1] bg-clip-text text-transparent"
+						initial={reduce ? { opacity: 0 } : { scale: motionScale.toast, opacity: 0 }}
+						animate={reduce ? { opacity: 1 } : { scale: 1, opacity: 1 }}
+						transition={revealTransition}
+						className="text-[120px] font-bold leading-none bg-gradient-to-br from-[#2563EB] to-[#6366F1] bg-clip-text text-transparent inline-block"
 					>
 						404
 					</motion.span>

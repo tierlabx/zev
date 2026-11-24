@@ -1,6 +1,6 @@
+import { Drawer as DrawerPrimitive } from "@animate-ui/react/primitives/radix-ui/drawer"
 import { cn } from "@zev/ui/lib/utils"
 import * as React from "react"
-import { Drawer as DrawerPrimitive } from "vaul"
 
 const Drawer = ({
   shouldScaleBackground = true,

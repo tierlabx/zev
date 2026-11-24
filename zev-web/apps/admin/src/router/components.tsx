@@ -37,7 +37,7 @@ const UserManagement = lazy(() => import("@/pages/system/user"));
 const RoleManagement = lazy(() => import("@/pages/system/role"));
 const MenuManagement = lazy(() => import("@/pages/system/menu"));
 const DictManagement = lazy(() => import("@/pages/system/dict"));
-const Profile = lazy(() => import("@/pages/Profile"));
+const Profile = lazy(() => import("@/pages/profile"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 /**

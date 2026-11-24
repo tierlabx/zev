@@ -36,6 +36,7 @@ zev-web/
 ## 🛠️ 快速开始
 
 ### 环境要求
+
 - Node.js (建议 v20+)
 - [pnpm](https://pnpm.io/) (项目包管理器)
 
@@ -70,10 +71,12 @@ pnpm run build
 本项目抛弃了传统的 ESLint 和 Prettier，全面拥抱 **Biome**，它速度极快，并且开箱即用。
 
 - 检查代码问题 (Linter):
+
   ```bash
   pnpm run lint
   ```
 - 自动格式化代码 (Formatter):
+
   ```bash
   pnpm run format
   ```

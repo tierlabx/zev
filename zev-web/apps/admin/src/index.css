@@ -82,12 +82,19 @@
 	--sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
-:root:has(> head > meta[name="color-scheme"][content="light"]),
+:root:has(> head > meta[name="color-scheme"][content="light"]) {
+	color-scheme: light;
+}
+
+:root:has(> head > meta[name="color-scheme"][content="dark"]) {
+	color-scheme: dark;
+}
+
 .light {
 	color-scheme: light;
 }
 
-:root:has(> head > meta[name="color-scheme"][content="dark"]),
+/* 仅将夜间 Token 绑定到 .dark 类，保证 ThemeToggler View Transition 同步切换 class 时背景能立即生效 */
 .dark {
 	color-scheme: dark;
 	--color-bg-page: #0f172a;

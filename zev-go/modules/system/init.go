@@ -4,18 +4,19 @@ import (
 	"log/slog"
 	"os"
 
+	"zev-go/modules"
 	"zev-go/modules/system/controller"
 	"zev-go/modules/system/entity"
+	"zev-go/modules/system/seed"
 	"zev-go/modules/system/service"
 	"zev-go/pkg/middleware"
-	"zev-go/modules"
-	"zev-go/modules/system/seed"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 )
+
 type SystemModule struct{}
 
 func init() {
@@ -54,8 +55,6 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 	dashboardController := controller.NewDashboardController(dashboardService)
 	noticeController := controller.NewNoticeController(noticeService)
 
-
-
 	{
 		r.GET("/api/ping", openController.PingHandler)
 		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -83,6 +82,8 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 			userGroup := protected.Group("/user")
 			{
 				userGroup.GET("/info", userController.UserInfo)
+				userGroup.PUT("/profile", userController.UpdateProfile)
+				userGroup.PUT("/password", userController.ChangePassword)
 				userGroup.GET("/list", middleware.RequirePermission(db, "system:user:list"), userController.List)
 				userGroup.POST("/create", middleware.RequirePermission(db, "system:user:create"), userController.Create)
 				userGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:user:delete"), userController.Delete)

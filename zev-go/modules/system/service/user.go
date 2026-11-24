@@ -2,6 +2,8 @@ package service
 
 import (
 	"errors"
+	"strings"
+	"unicode/utf8"
 
 	"zev-go/modules/system/dto"
 	"zev-go/modules/system/entity"
@@ -139,6 +141,9 @@ func (s *UserService) GetUserInfo(userID uint) (*dto.UserInfoRes, error) {
 	}
 
 	perms, _ := s.roleService.GetRolePerms(user.RoleID)
+	if perms == nil {
+		perms = []string{}
+	}
 	menuTree, _ := s.menuService.GetMenuTreeByRole(user.RoleID)
 
 	var menus []any
@@ -163,4 +168,64 @@ func (s *UserService) GetUserInfo(userID uint) (*dto.UserInfoRes, error) {
 		Permissions: perms,
 		Menus:       menus,
 	}, nil
+}
+
+// UpdateProfile 允许当前登录用户自助修改昵称、邮箱与头像，限制字段白名单避免越权修改角色或状态
+func (s *UserService) UpdateProfile(userID uint, req dto.UpdateProfileReq) (*dto.UserInfoRes, error) {
+	if _, err := s.GetByID(userID); err != nil {
+		return nil, errors.New("用户不存在")
+	}
+
+	nickname := strings.TrimSpace(req.Nickname)
+	email := strings.TrimSpace(req.Email)
+	avatar := strings.TrimSpace(req.Avatar)
+
+	nicknameLen := utf8.RuneCountInString(nickname)
+	if nicknameLen < 2 || nicknameLen > 50 {
+		return nil, errors.New("昵称长度需在 2 到 50 个字符之间")
+	}
+
+	if avatar != "" &&
+		!strings.HasPrefix(avatar, "http://") &&
+		!strings.HasPrefix(avatar, "https://") &&
+		!strings.HasPrefix(avatar, "/") {
+		return nil, errors.New("头像地址仅支持 http://、https:// 或站内相对路径")
+	}
+
+	err := s.DB.Model(&entity.User{}).
+		Where("id = ?", userID).
+		Select("nickname", "email", "avatar").
+		Updates(map[string]any{
+			"nickname": nickname,
+			"email":    email,
+			"avatar":   avatar,
+		}).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return s.GetUserInfo(userID)
+}
+
+// ChangePassword 校验原密码后更新当前用户密码
+func (s *UserService) ChangePassword(userID uint, req dto.ChangePasswordReq) error {
+	user, err := s.GetByID(userID)
+	if err != nil {
+		return errors.New("用户不存在")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.OldPassword)); err != nil {
+		return errors.New("当前密码错误")
+	}
+
+	if req.OldPassword == req.NewPassword {
+		return errors.New("新密码不能与当前密码相同")
+	}
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return errors.New("密码加密失败")
+	}
+
+	return s.DB.Model(&entity.User{}).Where("id = ?", userID).Update("password", string(hashed)).Error
 }

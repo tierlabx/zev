@@ -1,6 +1,11 @@
+import {
+	transition as motionTransition,
+	useShouldReduceMotion,
+	useTempoTransition,
+} from "@animate-ui/react/utils/motion";
 import { useLocation } from "@tanstack/react-router";
-import { AnimatePresence, motion } from "framer-motion";
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import logoUrl from "@/assets/logo-animated.svg";
 import { useUserStore } from "@/store";
 import { useLayoutStore } from "@/store/layout";
@@ -13,12 +18,15 @@ export function Sidebar() {
 	const menus = useUserStore((state) => state.menus);
 
 	const navItems = buildNavItems(menus);
+	const reduce = useShouldReduceMotion();
+	const collapseTransition = useTempoTransition(reduce ? { duration: 0 } : motionTransition.collapse);
+	const labelTransition = useTempoTransition(reduce ? { duration: 0 } : motionTransition.collapseLabel);
 
 	return (
 		<motion.aside
 			initial={false}
 			animate={{ width: sidebarCollapsed ? 64 : 240 }}
-			transition={{ type: "spring", stiffness: 400, damping: 40 }}
+			transition={collapseTransition}
 			className="bg-card border-r border-border flex flex-col z-20 shadow-sm relative overflow-hidden hidden md:flex"
 		>
 			<div className="h-16 px-4 flex items-center justify-center space-x-3 border-b border-border overflow-hidden shrink-0">
@@ -31,6 +39,7 @@ export function Sidebar() {
 							initial={{ opacity: 0, width: 0 }}
 							animate={{ opacity: 1, width: "auto" }}
 							exit={{ opacity: 0, width: 0 }}
+							transition={labelTransition}
 							className="text-base font-semibold truncate whitespace-nowrap"
 						>
 							Zev Admin

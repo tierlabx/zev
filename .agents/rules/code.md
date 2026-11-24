@@ -34,7 +34,7 @@ trigger: always_on
   - 强制采用 Tailwind CSS 和 **shadcn/ui** 原生组件库及其细粒度的控制方式组合业务界面。组件包从 `@zev/ui` 导入。
   - 极简黑白灰美学 (Black & White Minimalist)：主色调使用黑、白、灰色阶，避免高饱和度彩色（仅警示色例外）。减少冗余装饰。
   - **页面禁止主副标题**：所有业务视图组件（右侧主内容区）内**绝对禁止**包含任何无意义的顶部正副标题（如“数据概览”、“欢迎回来”等），进入页面后应直接呈现核心数据区域（如表格、表单或卡片）。
-  - 动画与交互过渡基于 **Framer-motion v12** 进行设计，但在涉及到虚拟滚动的表格中禁止使用以保证极致性能。
+  - 动画与交互过渡基于 **Animate UI** (`@animate-ui/react` + `motion/react`) 进行设计，严格遵循减弱动态偏好 (`useShouldReduceMotion`) 与语义化 Token，但在涉及到虚拟滚动的表格 (`ZevTable`) 中禁止使用进场动画以保证极致性能。
 - **目录与模块约定 (`apps/admin/src`)**：
   - `api/`：Axios 请求封装及具体接口定义。
     - **`api/interface/`**：存放所有的实体结构定义（Entities/Models）。

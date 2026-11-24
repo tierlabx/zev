@@ -1,6 +1,6 @@
-import type { UserListParams, UserListResponse } from "../dto/system/user";
+import type { ChangePasswordParams, UpdateProfileParams, UserListParams, UserListResponse } from "../dto/system/user";
 
-import type { User } from "../interface/system/user";
+import type { User, UserInfo } from "../interface/system/user";
 import request from "../request";
 
 export type { User };
@@ -23,4 +23,12 @@ export const deleteUser = (id: number) => {
 
 export const assignUserRole = (id: number, roleId: number) => {
 	return request.post(`/system/user/role/${id}`, { role_id: roleId });
+};
+
+export const updateProfile = (data: UpdateProfileParams) => {
+	return request.put<UserInfo>("/system/user/profile", data);
+};
+
+export const changePassword = (data: ChangePasswordParams) => {
+	return request.put("/system/user/password", data);
 };

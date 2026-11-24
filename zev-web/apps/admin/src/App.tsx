@@ -1,6 +1,7 @@
+import { AnimateUIProvider } from "@animate-ui/react/provider";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@zev/ui/components/sonner";
-import { MotionConfig } from "framer-motion";
+import { MotionConfig } from "motion/react";
 import { ThemeProvider, useTheme } from "next-themes";
 import { useEffect } from "react";
 import { queryClient } from "@/api/queryClient";
@@ -25,10 +26,12 @@ function App({ children }: { children: React.ReactNode }) {
 		<QueryClientProvider client={queryClient}>
 			<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
 				<ThemeMetaSync />
-				<MotionConfig reducedMotion="user">
-					<Toaster position="top-center" />
-					{children}
-				</MotionConfig>
+				<AnimateUIProvider>
+					<MotionConfig reducedMotion="user">
+						<Toaster position="top-center" />
+						{children}
+					</MotionConfig>
+				</AnimateUIProvider>
 			</ThemeProvider>
 		</QueryClientProvider>
 	);

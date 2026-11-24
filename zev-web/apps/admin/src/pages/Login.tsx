@@ -1,11 +1,18 @@
+import {
+	blur as motionBlur,
+	scale as motionScale,
+	transition as motionTransition,
+	useShouldReduceMotion,
+	useTempoTransition,
+} from "@animate-ui/react/utils/motion";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader } from "@zev/ui/components/card";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@zev/ui/components/form";
 import { Input } from "@zev/ui/components/input";
 import { ShinyButton } from "@zev/ui/components/shiny-button";
-import { motion, useMotionValue, useTransform } from "framer-motion";
 import { ArrowRight, Lock, User } from "lucide-react";
+import { motion, useMotionValue, useTransform } from "motion/react";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -41,12 +48,19 @@ export default function Login() {
 		[t],
 	);
 
+	const reduce = useShouldReduceMotion();
+	const revealTransition = useTempoTransition(motionTransition.reveal);
 	const x = useMotionValue(0);
 	const y = useMotionValue(0);
 	const rotateX = useTransform(y, [-500, 500], [8, -8]);
 	const rotateY = useTransform(x, [-500, 500], [-8, 8]);
 
 	useEffect(() => {
+		if (reduce) {
+			x.set(0);
+			y.set(0);
+			return;
+		}
 		const handleMouseMove = (e: MouseEvent) => {
 			const centerX = window.innerWidth / 2;
 			const centerY = window.innerHeight / 2;
@@ -55,7 +69,7 @@ export default function Login() {
 		};
 		window.addEventListener("mousemove", handleMouseMove);
 		return () => window.removeEventListener("mousemove", handleMouseMove);
-	}, [x, y]);
+	}, [reduce, x, y]);
 
 	const form = useForm<LoginFormValues>({
 		resolver: zodResolver(loginSchema),
@@ -95,18 +109,22 @@ export default function Login() {
 		<div className="flex min-h-screen items-center justify-center md:justify-end md:px-[10vw] relative overflow-hidden bg-slate-900">
 			<ThreeKoiBackground />
 			<motion.div
-				initial={{ opacity: 0, y: 40, scale: 0.95, rotateX: 10 }}
-				animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
-				transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+				initial={reduce ? { opacity: 0 } : { opacity: 0, y: 12, scale: motionScale.toast, filter: motionBlur.surface }}
+				animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+				transition={revealTransition}
 				className="z-10 w-full max-w-[420px] px-4 md:px-0"
 				style={{ perspective: 1200 }}
 			>
 				<motion.div
-					style={{
-						rotateX,
-						rotateY,
-						transformStyle: "preserve-3d",
-					}}
+					style={
+						reduce
+							? undefined
+							: {
+									rotateX,
+									rotateY,
+									transformStyle: "preserve-3d",
+								}
+					}
 				>
 					<Card className="w-full p-6 md:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/40 dark:border-slate-700/60 bg-white/60 dark:bg-slate-900/75 backdrop-blur-xl rounded-2xl relative overflow-hidden">
 						{/* Decorative blur elements inside the card */}
@@ -140,7 +158,7 @@ export default function Login() {
 															{...field}
 															type="text"
 															placeholder={t("login.usernamePlaceholder")}
-															className="pl-11 h-12 bg-white/50 dark:bg-slate-800/60 border-white/40 dark:border-slate-700/60 hover:bg-white/70 dark:hover:bg-slate-800/80 focus:bg-white/90 dark:focus:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-500 dark:placeholder:text-slate-400 transition-all shadow-sm rounded-xl text-[14px]"
+															className="pl-11 h-12 bg-white/50 dark:bg-slate-800/60 border-white/40 dark:border-slate-700/60 hover:bg-white/70 dark:hover:bg-slate-800/80 focus:bg-white/90 dark:focus:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-500 dark:placeholder:text-slate-400 transition-[background-color,border-color,box-shadow] shadow-sm rounded-xl text-[14px]"
 														/>
 													</div>
 												</FormControl>
@@ -162,7 +180,7 @@ export default function Login() {
 															{...field}
 															type="password"
 															placeholder={t("login.passwordPlaceholder")}
-															className="pl-11 h-12 bg-white/50 dark:bg-slate-800/60 border-white/40 dark:border-slate-700/60 hover:bg-white/70 dark:hover:bg-slate-800/80 focus:bg-white/90 dark:focus:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-500 dark:placeholder:text-slate-400 transition-all shadow-sm rounded-xl text-[14px]"
+															className="pl-11 h-12 bg-white/50 dark:bg-slate-800/60 border-white/40 dark:border-slate-700/60 hover:bg-white/70 dark:hover:bg-slate-800/80 focus:bg-white/90 dark:focus:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-500 dark:placeholder:text-slate-400 transition-[background-color,border-color,box-shadow] shadow-sm rounded-xl text-[14px]"
 														/>
 													</div>
 												</FormControl>
@@ -173,7 +191,7 @@ export default function Login() {
 									<ShinyButton
 										type="submit"
 										disabled={loginMutation.isPending}
-										className="mt-8 w-full h-12 text-[15px] font-medium bg-primary text-primary-foreground rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+										className="mt-8 w-full h-12 text-[15px] font-medium bg-primary text-primary-foreground rounded-xl shadow-md hover:shadow-lg transition-[background-color,box-shadow] flex items-center justify-center gap-2"
 									>
 										{loginMutation.isPending ? (
 											t("login.submitting")

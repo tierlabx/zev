@@ -28,8 +28,6 @@ func NewUserController(userService *service.UserService, roleService *service.Ro
 	}
 }
 
-
-
 // Create 重写创建用户，支持密码加密
 // @Summary 创建用户
 // @Tags 系统管理-用户
@@ -140,6 +138,21 @@ func (c *UserController) AssignRole(ctx *gin.Context) {
 	response.Success(ctx)
 }
 
+func getCurrentUserID(ctx *gin.Context) (uint, bool) {
+	userIDAny, exists := ctx.Get("userID")
+	if !exists {
+		response.FailUnauthorized("无法获取用户信息", ctx)
+		return 0, false
+	}
+
+	userID, ok := userIDAny.(uint)
+	if !ok {
+		response.FailMessage("用户ID格式错误", ctx)
+		return 0, false
+	}
+	return userID, true
+}
+
 // UserInfo 获取当前登录用户信息（含角色、权限、菜单树）
 // @Summary 获取当前用户信息
 // @Description 获取当前登录用户的个人信息、角色、权限标识和菜单树
@@ -149,15 +162,8 @@ func (c *UserController) AssignRole(ctx *gin.Context) {
 // @Success 200 {object} response.Response{data=dto.UserInfoRes} "成功"
 // @Router /api/system/user/info [get]
 func (c *UserController) UserInfo(ctx *gin.Context) {
-	userIDAny, exists := ctx.Get("userID")
-	if !exists {
-		response.FailUnauthorized("无法获取用户信息", ctx)
-		return
-	}
-
-	userID, ok := userIDAny.(uint)
+	userID, ok := getCurrentUserID(ctx)
 	if !ok {
-		response.FailMessage("用户ID格式错误", ctx)
 		return
 	}
 
@@ -168,6 +174,67 @@ func (c *UserController) UserInfo(ctx *gin.Context) {
 	}
 
 	response.SuccessData(res, ctx)
+}
+
+// UpdateProfile 更新当前登录用户的个人资料
+// @Summary 更新个人资料
+// @Description 当前登录用户自助修改昵称、邮箱与头像
+// @Tags 系统管理-用户
+// @Accept json
+// @Produce json
+// @Param req body dto.UpdateProfileReq true "个人资料"
+// @Security Bearer
+// @Success 200 {object} response.Response{data=dto.UserInfoRes} "成功"
+// @Router /api/system/user/profile [put]
+func (c *UserController) UpdateProfile(ctx *gin.Context) {
+	userID, ok := getCurrentUserID(ctx)
+	if !ok {
+		return
+	}
+
+	var req dto.UpdateProfileReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.FailMessage("请求参数格式有误，请检查昵称与邮箱格式", ctx)
+		return
+	}
+
+	res, err := c.userService.UpdateProfile(userID, req)
+	if err != nil {
+		response.FailMessage(err.Error(), ctx)
+		return
+	}
+
+	response.SuccessData(res, ctx)
+}
+
+// ChangePassword 修改当前登录用户密码
+// @Summary 修改个人密码
+// @Description 校验当前密码后更新为新密码
+// @Tags 系统管理-用户
+// @Accept json
+// @Produce json
+// @Param req body dto.ChangePasswordReq true "密码修改信息"
+// @Security Bearer
+// @Success 200 {object} response.Response "成功"
+// @Router /api/system/user/password [put]
+func (c *UserController) ChangePassword(ctx *gin.Context) {
+	userID, ok := getCurrentUserID(ctx)
+	if !ok {
+		return
+	}
+
+	var req dto.ChangePasswordReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.FailMessage("请求参数格式有误，新密码长度需在 6 到 64 位之间", ctx)
+		return
+	}
+
+	if err := c.userService.ChangePassword(userID, req); err != nil {
+		response.FailMessage(err.Error(), ctx)
+		return
+	}
+
+	response.Success(ctx)
 }
 
 // List 重写获取用户列表，支持 keyword 模糊搜索

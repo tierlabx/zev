@@ -5,13 +5,13 @@ import { Button } from "@zev/ui/components/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@zev/ui/components/form";
 import { Input } from "@zev/ui/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zev/ui/components/select";
-import { motion, useAnimation } from "framer-motion";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { getRoleList } from "@/api/system/role";
 import { createUser, type User, updateUser } from "@/api/system/user";
+import { useShake } from "@/hooks/use-shake";
 import { useI18n } from "@/i18n";
 
 interface UserFormDialogProps {
@@ -32,7 +32,7 @@ type UserFormData = {
 
 export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: UserFormDialogProps) {
 	const { t } = useI18n();
-	const controls = useAnimation();
+	const { scope: formRef, shake } = useShake();
 	const userSchema = useMemo(
 		() =>
 			z.object({
@@ -118,13 +118,6 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 		}
 	};
 
-	const onInvalid = () => {
-		controls.start({
-			x: [0, -10, 10, -10, 10, -5, 5, 0],
-			transition: { duration: 0.4 },
-		});
-	};
-
 	return (
 		<Modal isOpen={open} onClose={() => onOpenChange(false)}>
 			<div className="flex flex-col space-y-1.5 text-center sm:text-left mb-4">
@@ -135,7 +128,7 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 			</div>
 
 			<Form {...form}>
-				<motion.form animate={controls} onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-4 mt-6">
+				<form ref={formRef} onSubmit={form.handleSubmit(onSubmit, shake)} className="space-y-4 mt-6">
 					<FormField
 						control={form.control}
 						name="username"
@@ -247,7 +240,7 @@ export function UserFormDialog({ open, onOpenChange, editingUser, onSuccess }: U
 							{createMutation.isPending || updateMutation.isPending ? t("common.saving") : t("common.save")}
 						</Button>
 					</div>
-				</motion.form>
+				</form>
 			</Form>
 		</Modal>
 	);

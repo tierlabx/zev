@@ -25,7 +25,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
 				/>
 				<div
 					className={cn(
-						"w-full h-full border border-muted-foreground/60 rounded-[4px] flex items-center justify-center transition-all duration-200 pointer-events-none",
+						"w-full h-full border border-muted-foreground/60 rounded-[4px] flex items-center justify-center transition-[background-color,border-color] duration-200 pointer-events-none",
 						isChecked ? "bg-primary border-primary text-primary-foreground" : "bg-background",
 						"peer-focus-visible:ring-2 peer-focus-visible:ring-ring/30 peer-focus-visible:ring-offset-1 peer-focus-visible:ring-offset-background",
 						"peer-disabled:opacity-50 peer-disabled:bg-muted peer-disabled:border-border",

@@ -1,22 +1,15 @@
+import { Effect, Effects } from "@animate-ui/react/primitives/effects/effect";
+import { CountingNumber } from "@animate-ui/react/primitives/texts/counting-number";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@zev/ui/components/card";
 import { Progress } from "@zev/ui/components/progress";
-import { motion, useSpring, useTransform } from "framer-motion";
 import { Activity, Cpu, Database, HardDrive, ShieldCheck, UserCheck, Users } from "lucide-react";
-import { useEffect } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { type DashboardActivityRes, getDashboardStats } from "@/api/system/dashboard";
 import { useI18n } from "@/i18n";
 
-function AnimatedNumber({ value, locale }: { value: number; locale: string }) {
-	const spring = useSpring(0, { bounce: 0, duration: 1500 });
-	const display = useTransform(spring, (current) => Math.round(current).toLocaleString(locale));
-
-	useEffect(() => {
-		spring.set(value);
-	}, [spring, value]);
-
-	return <motion.span>{display}</motion.span>;
+function getGroupSeparator(locale: string): string | undefined {
+	return new Intl.NumberFormat(locale).formatToParts(1000).find((part) => part.type === "group")?.value;
 }
 
 export default function Dashboard() {
@@ -30,6 +23,7 @@ export default function Dashboard() {
 	const trends = res?.trends || [];
 	const activities = res?.activities || [];
 	const health = res?.health;
+	const thousandSeparator = getGroupSeparator(locale);
 
 	const statCards = [
 		{
@@ -62,14 +56,12 @@ export default function Dashboard() {
 		<div className="space-y-6 overflow-hidden pb-4">
 			{/* 区块 1：统计卡片 */}
 			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-				{statCards.map((card, index) => (
-					<motion.div
-						key={card.title}
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.4, delay: 0.15 + index * 0.05 }}
-					>
-						<Card className="hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+				<Effects fade slide={{ direction: "up", offset: 12 }} delay={100} holdDelay={50}>
+					{statCards.map((card) => (
+						<Card
+							key={card.title}
+							className="hover:-translate-y-0.5 hover:shadow-md transition-[transform,box-shadow] duration-200"
+						>
 							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 								<CardTitle className="text-sm font-medium">{card.title}</CardTitle>
 								{card.icon}
@@ -79,24 +71,19 @@ export default function Dashboard() {
 									{isLoading ? (
 										<span className="bg-muted animate-pulse rounded w-16 inline-block h-8"></span>
 									) : (
-										<AnimatedNumber value={card.value} locale={locale} />
+										<CountingNumber number={card.value} thousandSeparator={thousandSeparator} />
 									)}
 								</div>
 								<p className="text-xs text-muted-foreground mt-1">{card.description}</p>
 							</CardContent>
 						</Card>
-					</motion.div>
-				))}
+					))}
+				</Effects>
 			</div>
 
 			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
 				{/* 区块 2：趋势图 */}
-				<motion.div
-					className="col-span-4 flex flex-col"
-					initial={{ opacity: 0, scale: 0.95 }}
-					animate={{ opacity: 1, scale: 1 }}
-					transition={{ duration: 0.4, delay: 0.35, ease: "easeOut" }}
-				>
+				<Effect fade slide={{ direction: "up", offset: 12 }} delay={200} className="col-span-4 flex flex-col">
 					<Card className="flex-1">
 						<CardHeader>
 							<CardTitle>{t("dashboard.trendTitle")}</CardTitle>
@@ -150,15 +137,11 @@ export default function Dashboard() {
 							)}
 						</CardContent>
 					</Card>
-				</motion.div>
+				</Effect>
 
 				<div className="col-span-3 space-y-4 flex flex-col">
 					{/* 区块 3：系统健康 */}
-					<motion.div
-						initial={{ opacity: 0, x: 20 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 0.4, delay: 0.6 }}
-					>
+					<Effect fade slide={{ direction: "left", offset: 12 }} delay={250}>
 						<Card>
 							<CardHeader className="pb-3">
 								<CardTitle className="text-md flex items-center gap-2">
@@ -196,15 +179,10 @@ export default function Dashboard() {
 								</div>
 							</CardContent>
 						</Card>
-					</motion.div>
+					</Effect>
 
 					{/* 区块 4：最新动态 */}
-					<motion.div
-						initial={{ opacity: 0, x: 20 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 0.4, delay: 0.65 }}
-						className="flex-1 flex flex-col"
-					>
+					<Effect fade slide={{ direction: "left", offset: 12 }} delay={300} className="flex-1 flex flex-col">
 						<Card className="flex-1">
 							<CardHeader className="pb-3">
 								<CardTitle className="text-md">{t("dashboard.activityTitle")}</CardTitle>
@@ -218,31 +196,27 @@ export default function Dashboard() {
 									</div>
 								) : activities.length > 0 ? (
 									<div className="space-y-4">
-										{activities.map((act: DashboardActivityRes, idx: number) => (
-											<motion.div
-												key={act.id}
-												initial={{ opacity: 0, x: 20 }}
-												animate={{ opacity: 1, x: 0 }}
-												transition={{ duration: 0.3, delay: 0.4 + idx * 0.05 }}
-												className="flex items-start gap-3"
-											>
-												<div className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />
-												<div className="flex flex-col gap-1 w-full">
-													<div className="flex justify-between text-sm">
-														<span className="font-medium">{act.operator}</span>
-														<span className="text-xs text-muted-foreground">{act.createdAt}</span>
+										<Effects fade slide={{ direction: "left", offset: 10 }} delay={340} holdDelay={40}>
+											{activities.map((act: DashboardActivityRes) => (
+												<div key={act.id} className="flex items-start gap-3">
+													<div className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />
+													<div className="flex flex-col gap-1 w-full">
+														<div className="flex justify-between text-sm">
+															<span className="font-medium">{act.operator}</span>
+															<span className="text-xs text-muted-foreground">{act.createdAt}</span>
+														</div>
+														<span className="text-xs text-muted-foreground">{act.action}</span>
 													</div>
-													<span className="text-xs text-muted-foreground">{act.action}</span>
 												</div>
-											</motion.div>
-										))}
+											))}
+										</Effects>
 									</div>
 								) : (
 									<div className="text-sm text-muted-foreground text-center py-4">{t("dashboard.noActivities")}</div>
 								)}
 							</CardContent>
 						</Card>
-					</motion.div>
+					</Effect>
 				</div>
 			</div>
 		</div>
