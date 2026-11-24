@@ -45,6 +45,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 	dictDataService := service.NewDictDataService(db)
 	dashboardService := service.NewDashboardService(db)
 	noticeService := service.NewNoticeService(db)
+	logService := service.NewLogService(db)
 
 	// 4. 初始化 Controller 层
 	openController := controller.NewOpenController(db)
@@ -56,6 +57,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 	dictDataController := controller.NewDictDataController(dictDataService)
 	dashboardController := controller.NewDashboardController(dashboardService)
 	noticeController := controller.NewNoticeController(noticeService)
+	logController := controller.NewLogController(logService)
 
 	{
 		r.GET("/api/ping", openController.PingHandler)
@@ -160,6 +162,21 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 			{
 				noticeGroup.GET("/list", noticeController.GetUnreadList)
 				noticeGroup.PUT("/read/:id", noticeController.MarkAsRead)
+			}
+
+			// 日志审计路由
+			logGroup := protected.Group("/log")
+			{
+				logGroup.GET("/stats", middleware.RequireAnyPermission(db, "system:operlog:list", "system:loginlog:list"), logController.GetStats)
+				logGroup.GET("/oper/list", middleware.RequirePermission(db, "system:operlog:list"), logController.ListOperLogs)
+				logGroup.GET("/oper/get/:id", middleware.RequirePermission(db, "system:operlog:list"), logController.GetOperLog)
+				logGroup.DELETE("/oper/delete", middleware.RequirePermission(db, "system:operlog:delete"), logController.DeleteOperLogs)
+				logGroup.POST("/oper/clear", middleware.RequirePermission(db, "system:operlog:delete"), logController.ClearOperLogs)
+				logGroup.GET("/oper/export", middleware.RequirePermission(db, "system:operlog:export"), logController.ExportOperLogs)
+				logGroup.GET("/login/list", middleware.RequirePermission(db, "system:loginlog:list"), logController.ListLoginLogs)
+				logGroup.DELETE("/login/delete", middleware.RequirePermission(db, "system:loginlog:delete"), logController.DeleteLoginLogs)
+				logGroup.POST("/login/clear", middleware.RequirePermission(db, "system:loginlog:delete"), logController.ClearLoginLogs)
+				logGroup.GET("/login/export", middleware.RequirePermission(db, "system:loginlog:export"), logController.ExportLoginLogs)
 			}
 		}
 	}

@@ -7,6 +7,7 @@ import (
 	"zev-go/modules/system/entity"
 	"zev-go/modules/system/service"
 	"zev-go/pkg/crud"
+	"zev-go/pkg/logger"
 	"zev-go/pkg/middleware"
 	"zev-go/pkg/response"
 
@@ -131,7 +132,17 @@ func (c *UserController) Login(ctx *gin.Context) {
 		return
 	}
 
-	res, err := c.userService.Login(req)
+	ua := ctx.Request.UserAgent()
+	browser, osName := logger.ParseUserAgent(ua)
+	meta := dto.ClientMeta{
+		IP:        ctx.ClientIP(),
+		UserAgent: logger.TruncateString(ua, 500),
+		Browser:   browser,
+		OS:        osName,
+		RequestID: middleware.GetRequestID(ctx),
+	}
+
+	res, err := c.userService.Login(req, meta)
 	if err != nil {
 		response.FailMessage(err.Error(), ctx)
 		return

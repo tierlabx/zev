@@ -38,6 +38,8 @@ const RoleManagement = lazy(() => import("@/pages/system/role"));
 const MenuManagement = lazy(() => import("@/pages/system/menu"));
 const DeptManagement = lazy(() => import("@/pages/system/dept"));
 const DictManagement = lazy(() => import("@/pages/system/dict"));
+const OperLogManagement = lazy(() => import("@/pages/system/log/oper"));
+const LoginLogManagement = lazy(() => import("@/pages/system/log/login"));
 const Profile = lazy(() => import("@/pages/profile"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
@@ -54,6 +56,8 @@ export const componentMap: Record<string, ComponentType> = {
 	"system/menu/index": withSuspense(MenuManagement),
 	"system/dept/index": withSuspense(DeptManagement),
 	"system/dict/index": withSuspense(DictManagement),
+	"system/log/oper/index": withSuspense(OperLogManagement),
+	"system/log/login/index": withSuspense(LoginLogManagement),
 	"profile/index": withSuspense(Profile),
 };
 

@@ -5,6 +5,15 @@ type LoginReq struct {
 	Password string `json:"password" binding:"required"`
 }
 
+// ClientMeta 客户端请求环境元信息，用于安全登录与审计日志
+type ClientMeta struct {
+	IP        string `json:"-"`
+	UserAgent string `json:"-"`
+	Browser   string `json:"-"`
+	OS        string `json:"-"`
+	RequestID string `json:"-"`
+}
+
 type LoginRes struct {
 	Token    string `json:"token"`
 	Nickname string `json:"nickname"`

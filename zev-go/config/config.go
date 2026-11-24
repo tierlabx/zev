@@ -19,6 +19,12 @@ type Config struct {
 	TrustedProxies []string
 	JWTSecret      string
 	JWTExpireHours int
+	LogLevel       string
+	LogFormat      string
+	LogFile        string
+	LogMaxSizeMB   int
+	LogMaxBackups  int
+	LogSlowSQLMs   int
 }
 
 // LoadConfig 从环境变量中加载应用与数据库配置
@@ -35,6 +41,12 @@ func LoadConfig() Config {
 	trustedProxiesStr := getEnv("TRUSTED_PROXIES", "127.0.0.1")
 	jwtSecret := getEnv("JWT_SECRET", "zev-admin-secret-key-development")
 	jwtExpireHours := getEnvInt("JWT_EXPIRE_HOURS", 24)
+	logLevel := getEnv("LOG_LEVEL", "info")
+	logFormat := getEnv("LOG_FORMAT", "text")
+	logFile := getEnv("LOG_FILE", "")
+	logMaxSizeMB := getEnvInt("LOG_MAX_SIZE_MB", 20)
+	logMaxBackups := getEnvInt("LOG_MAX_BACKUPS", 7)
+	logSlowSQLMs := getEnvInt("LOG_SLOW_SQL_MS", 200)
 
 	var trustedProxies []string
 	if trustedProxiesStr != "" && trustedProxiesStr != "none" && trustedProxiesStr != "nil" {
@@ -55,6 +67,12 @@ func LoadConfig() Config {
 		TrustedProxies: trustedProxies,
 		JWTSecret:      jwtSecret,
 		JWTExpireHours: jwtExpireHours,
+		LogLevel:       logLevel,
+		LogFormat:      logFormat,
+		LogFile:        logFile,
+		LogMaxSizeMB:   logMaxSizeMB,
+		LogMaxBackups:  logMaxBackups,
+		LogSlowSQLMs:   logSlowSQLMs,
 	}
 }
 

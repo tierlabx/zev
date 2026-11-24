@@ -3,10 +3,12 @@ package service
 import (
 	"errors"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"zev-go/modules/system/dto"
 	"zev-go/modules/system/entity"
+	"zev-go/pkg/audit"
 	"zev-go/pkg/crud"
 	"zev-go/pkg/datascope"
 	"zev-go/pkg/jwtx"
@@ -31,21 +33,44 @@ func NewUserService(db *gorm.DB, roleService *RoleService, menuService *MenuServ
 	}
 }
 
-func (s *UserService) Login(req dto.LoginReq) (*dto.LoginRes, error) {
+func (s *UserService) recordLoginAudit(userID, deptID uint, username string, status int, message string, meta dto.ClientMeta) {
+	record := &entity.SysLoginLog{
+		UserID:    userID,
+		DeptID:    deptID,
+		Username:  username,
+		Status:    status,
+		Message:   message,
+		IP:        meta.IP,
+		UserAgent: meta.UserAgent,
+		Browser:   meta.Browser,
+		OS:        meta.OS,
+		RequestID: meta.RequestID,
+		LoginTime: time.Now(),
+	}
+	if !audit.Submit(record) && s.DB != nil {
+		_ = s.DB.Create(record).Error
+	}
+}
+
+func (s *UserService) Login(req dto.LoginReq, meta dto.ClientMeta) (*dto.LoginRes, error) {
 	var user entity.User
 	err := s.DB.Where("username = ?", req.Username).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.recordLoginAudit(0, 0, req.Username, 0, "账号不存在", meta)
 			return nil, errors.New("用户名或密码错误")
 		}
+		s.recordLoginAudit(0, 0, req.Username, 0, "登录查询异常", meta)
 		return nil, err
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		s.recordLoginAudit(user.ID, user.DeptID, user.Username, 0, "密码错误", meta)
 		return nil, errors.New("用户名或密码错误")
 	}
 
 	if user.Status == 1 {
+		s.recordLoginAudit(user.ID, user.DeptID, user.Username, 0, "账号已被禁用", meta)
 		return nil, errors.New("账号已被禁用，请联系管理员")
 	}
 
@@ -58,8 +83,11 @@ func (s *UserService) Login(req dto.LoginReq) (*dto.LoginRes, error) {
 
 	token, err := jwtx.GenerateToken(user.ID, user.Username, user.RoleID)
 	if err != nil {
+		s.recordLoginAudit(user.ID, user.DeptID, user.Username, 0, "Token生成失败", meta)
 		return nil, errors.New("Token生成失败")
 	}
+
+	s.recordLoginAudit(user.ID, user.DeptID, user.Username, 1, "登录成功", meta)
 
 	return &dto.LoginRes{
 		Token:    token,

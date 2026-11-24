@@ -19,7 +19,25 @@ service.interceptors.request.use((config) => {
 
 // 响应拦截
 service.interceptors.response.use(
-	(response) => {
+	async (response) => {
+		// 文件流下载响应直接透传 Blob；若后端因权限/参数报错返回了 JSON 错误体则解析提示
+		if (response.config.responseType === "blob" && response.data instanceof Blob) {
+			if (response.data.type.includes("application/json")) {
+				try {
+					const text = await response.data.text();
+					const parsed = JSON.parse(text) as { code?: number; msg?: string };
+					if (parsed.code !== 200) {
+						toast.error(parsed.msg || t("request.errorFallback"));
+						return Promise.reject(new Error(parsed.msg || t("request.errorFallback")));
+					}
+				} catch {
+					toast.error(t("request.errorFallback"));
+					return Promise.reject(new Error(t("request.errorFallback")));
+				}
+			}
+			return response.data;
+		}
+
 		const res = response.data;
 		// 后端统一返回格式 { code, msg, data }
 		if (res.code !== 200) {

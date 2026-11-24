@@ -12,5 +12,6 @@ func AllModels() []any {
 		&DictData{},
 		&SysNotice{},
 		&SysOperLog{},
+		&SysLoginLog{},
 	}
 }
