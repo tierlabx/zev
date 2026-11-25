@@ -7,16 +7,17 @@ Zev 项目的现代前端工程，采用 **pnpm workspace** 搭建的 Monorepo�
 本项目采用了目前最前沿且高效的前端技术栈：
 
 - **核心框架**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- **构建工具**: [Vite](https://vitejs.dev/) - 极速的开发服务器和打包工具
-- **路由管理**: [React Router v7](https://reactrouter.com/)
-- **状态管理**: [Zustand](https://zustand-demo.pmnd.rs/) - 轻量级且强大的状态管理库
+- **构建工具**: [Vite 8](https://vitejs.dev/) - 极速的开发服务器和打包工具
+- **路由管理**: [TanStack Router](https://tanstack.com/router) - 类型安全且支持运行时无刷新重建动态路由树
+- **状态与缓存**: [Zustand v5](https://zustand-demo.pmnd.rs/) + [TanStack Query v5](https://tanstack.com/query)
 - **样式与组件**:
-  - [Tailwind CSS v4](https://tailwindcss.com/) - 实用优先的 CSS 框架
+  - [Tailwind CSS v4](https://tailwindcss.com/) - 基于 `@theme` CSS 变量的现代样式方案
   - [shadcn/ui](https://ui.shadcn.com/) - 可定制的无头 UI 组件库
-  - **animate-ui** - 基于 shadcn/ui 扩展的精美动画组件库
+  - **animate-ui** - 基于 `@animate-ui/react` + Motion 的动画原语、动画图标与交互背景
+  - **Recharts v3 / cmdk / Sonner** - 图表可视化、全局 `⌘K` 命令面板与堆叠通知
 - **表单与验证**:
   - [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) - 类型安全的表单状态与数据校验
-- **代码规范**: [Biome](https://biomejs.dev/) - 替代 Prettier + ESLint 的极速格式化与代码检查工具
+- **工程与预览**: [Biome](https://biomejs.dev/)（格式化与 Lint）+ [Storybook 10](https://storybook.js.org/)（组件独立调试台）
 
 ## 📂 目录结构
 
@@ -25,12 +26,13 @@ Zev 项目的现代前端工程，采用 **pnpm workspace** 搭建的 Monorepo�
 ```text
 zev-web/
 ├── apps/
-│   └── admin/        # 管理后台子应用 (Vite SPA)
+│   └── admin/              # 管理后台子应用 (Vite SPA)
+│       └── .storybook/     # Storybook 10 配置（支持明暗主题实时切换）
 ├── packages/
-│   └── ui/           # 共享的组件库 (@zev/ui)，主要存放基于 shadcn 提取的组件
-├── biome.json        # 全局代码规范配置
+│   └── ui/                 # 共享组件库 (@zev/ui)：shadcn/ui、Animate UI 图标/背景、Chart、Tracker 等
+├── biome.json              # 全局代码规范配置
 ├── pnpm-workspace.yaml
-└── package.json      # 根层级的依赖和统一脚本
+└── package.json            # 根层级的依赖和统一脚本
 ```
 
 ## 🛠️ 快速开始
@@ -58,7 +60,21 @@ pnpm run dev
 
 > 提示：本地开发服务器启动后，API 请求会默认代理到 `http://localhost:8080`（后端服务地址）。
 
-### 3. 构建打包
+### 3. 组件预览台 (Storybook)
+
+无需启动后端即可独立预览与调试 `@zev/ui` 基础组件、Animate UI 图标/背景与 `ZevTable`：
+
+```bash
+pnpm run storybook
+```
+
+构建静态预览产物校验：
+
+```bash
+pnpm run build-storybook
+```
+
+### 4. 构建打包
 
 进行生产环境的打包编译：
 
@@ -66,11 +82,11 @@ pnpm run dev
 pnpm run build
 ```
 
-## 📝 代码规范 (Biome)
+## 📝 代码规范 (Biome & TypeScript)
 
-本项目抛弃了传统的 ESLint 和 Prettier，全面拥抱 **Biome**，它速度极快，并且开箱即用。
+本项目抛弃了传统的 ESLint 和 Prettier，全面拥抱 **Biome**，并与 `tsc -b` 联动校验：
 
-- 检查代码问题 (Linter):
+- 检查并自动修复代码问题 + 类型检查:
 
   ```bash
   pnpm run lint

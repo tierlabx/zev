@@ -12,6 +12,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// trendDays 趋势天数：取 14 天，前端用前 7 天与后 7 天计算环比
+const trendDays = 14
+
 type DashboardService struct {
 	DB *gorm.DB
 }
@@ -27,6 +30,11 @@ func (s *DashboardService) GetDashboardData(scope *datascope.Scope) (*dto.Dashbo
 		DeptColumn: "dept_id",
 		UserColumn: "id",
 	})
+	// 登录/操作日志均按操作人及其所属部门进行数据范围隔离
+	logScope := datascope.Apply(scope, datascope.Options{
+		DeptColumn: "dept_id",
+		UserColumn: "user_id",
+	})
 
 	// 1. 统计卡片数据（用户数按数据范围隔离）
 	s.DB.Model(&entity.User{}).Scopes(userScope).Count(&userTotal)
@@ -34,30 +42,24 @@ func (s *DashboardService) GetDashboardData(scope *datascope.Scope) (*dto.Dashbo
 	s.DB.Model(&entity.Menu{}).Count(&menuTotal)
 	s.DB.Model(&entity.DictType{}).Count(&dictTotal)
 
-	// 2. 趋势图：最近 7 天的用户活动 (按数据范围隔离)
-	trends := make([]dto.DashboardTrendRes, 7)
+	// 2. 趋势与心跳：每张表一条按小时聚合的 SQL，Go 侧再折算成日趋势和 24h 心跳
 	now := time.Now()
-	for i := 6; i >= 0; i-- {
-		date := now.AddDate(0, 0, -i)
-		dateStr := date.Format("01-02")
+	since := startOfDay(now.AddDate(0, 0, -(trendDays - 1)))
+	users := hourlyCounts(s.DB, &entity.User{}, "created_at", "0", userScope, since)
+	logins := hourlyCounts(s.DB, &entity.SysLoginLog{}, "login_time", failedByStatus, logScope, since)
+	opers := hourlyCounts(s.DB, &entity.SysOperLog{}, "created_at", failedByStatus, logScope, since)
 
-		var count int64
-		start := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
-		end := start.AddDate(0, 0, 1)
+	// 3. 近 7 天操作模块分布（Top 6）
+	modules := make([]dto.DashboardModuleRes, 0, 6)
+	s.DB.Model(&entity.SysOperLog{}).Scopes(logScope).
+		Select("module, COUNT(*) AS count").
+		Where("created_at >= ? AND module <> ''", startOfDay(now.AddDate(0, 0, -6))).
+		Group("module").
+		Order("count DESC").
+		Limit(6).
+		Scan(&modules)
 
-		s.DB.Model(&entity.User{}).Scopes(userScope).Where("created_at >= ? AND created_at < ?", start, end).Count(&count)
-
-		trends[6-i] = dto.DashboardTrendRes{
-			Date:  dateStr,
-			Count: int(count),
-		}
-	}
-
-	// 3. 最新活动列表 (按操作人/所属部门数据范围过滤 sys_oper_log)
-	logScope := datascope.Apply(scope, datascope.Options{
-		DeptColumn: "dept_id",
-		UserColumn: "user_id",
-	})
+	// 4. 最新活动列表
 	var logs []entity.SysOperLog
 	s.DB.Model(&entity.SysOperLog{}).Scopes(logScope).Order("created_at desc").Limit(5).Find(&logs)
 
@@ -71,7 +73,23 @@ func (s *DashboardService) GetDashboardData(scope *datascope.Scope) (*dto.Dashbo
 		})
 	}
 
-	// 4. 健康指标 (真实数据采集)
+	return &dto.DashboardRes{
+		Stats: dto.DashboardStatsRes{
+			UserTotal: userTotal,
+			RoleTotal: roleTotal,
+			MenuTotal: menuTotal,
+			DictTotal: dictTotal,
+		},
+		Trends:     buildTrends(now, trendDays, users, logins, opers),
+		Heartbeats: buildHeartbeats(now, opers),
+		Modules:    modules,
+		Activities: activities,
+		Health:     s.collectHealth(),
+	}, nil
+}
+
+// collectHealth 采集主机与数据库的实时健康指标
+func (s *DashboardService) collectHealth() dto.DashboardHealthRes {
 	var memoryUsage, cpuUsage int
 	if v, err := mem.VirtualMemory(); err == nil {
 		memoryUsage = int(v.UsedPercent)
@@ -80,36 +98,21 @@ func (s *DashboardService) GetDashboardData(scope *datascope.Scope) (*dto.Dashbo
 		cpuUsage = int(percents[0])
 	}
 
-	// 测试数据库响应时间
-	startPing := time.Now()
-	dbPingResult := 100
+	// 数据库连通率 + Ping 耗时；连接失败时连通率记 0
+	dbResponse, dbLatency := 0, 0
 	if sqlDB, err := s.DB.DB(); err == nil {
+		start := time.Now()
 		if err := sqlDB.Ping(); err == nil {
-			dbPingResult = 100
-		} else {
-			dbPingResult = 0
+			dbResponse = 100
+			dbLatency = int(time.Since(start).Milliseconds())
 		}
-	} else {
-		dbPingResult = 0
 	}
-	_ = startPing
 
-	health := dto.DashboardHealthRes{
-		APIUsage:    99,           // 真实 API 可用率可能需要 Prometheus 等工具，此处用定值或简单计算
-		DBResponse:  dbPingResult, // 用连通率替代
+	return dto.DashboardHealthRes{
+		APIUsage:    99, // 真实 API 可用率需借助 Prometheus 等工具，此处保留定值
+		DBResponse:  dbResponse,
+		DBLatency:   dbLatency,
 		MemoryUsage: memoryUsage,
 		CPUUsage:    cpuUsage,
 	}
-
-	return &dto.DashboardRes{
-		Stats: dto.DashboardStatsRes{
-			UserTotal: userTotal,
-			RoleTotal: roleTotal,
-			MenuTotal: menuTotal,
-			DictTotal: dictTotal,
-		},
-		Trends:     trends,
-		Activities: activities,
-		Health:     health,
-	}, nil
 }

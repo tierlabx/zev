@@ -1,11 +1,13 @@
+import { AnimateIcon } from "@animate-ui/react/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Plus } from "@zev/ui/components/animate-ui/icons/plus";
 import { Badge } from "@zev/ui/components/badge";
 import { Button } from "@zev/ui/components/button";
 import { Card } from "@zev/ui/components/card";
 import { Input } from "@zev/ui/components/input";
 import { cn } from "@zev/ui/lib/utils";
-import { Building2, ChevronDown, ChevronRight, Edit, Plus, Search, ShieldCheck, Trash2 } from "lucide-react";
+import { Building2, ChevronDown, ChevronRight, Edit, Search, ShieldCheck, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
@@ -366,10 +368,12 @@ export default function UserManagement() {
 						}}
 					/>
 					<Auth permission="system:user:create">
-						<Button onClick={handleAdd}>
-							<Plus className="mr-2 h-4 w-4" />
-							{t("user.addUser")}
-						</Button>
+						<AnimateIcon animateOnHover asChild>
+							<Button onClick={handleAdd}>
+								<Plus className="mr-2 h-4 w-4" />
+								{t("user.addUser")}
+							</Button>
+						</AnimateIcon>
 					</Auth>
 				</div>
 

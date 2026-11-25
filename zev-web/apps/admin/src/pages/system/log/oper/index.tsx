@@ -183,7 +183,7 @@ export default function OperLogManagement() {
 
 	const handleExport = useCallback(async () => {
 		setIsExporting(true);
-		try {
+		const exportTask = (async () => {
 			const blob = await exportOperLogs({
 				operator: debouncedOperator || undefined,
 				requestId: debouncedRequestId || undefined,
@@ -195,13 +195,18 @@ export default function OperLogManagement() {
 			});
 			const stamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, "-");
 			downloadBlobFile(blob, `oper-logs-${stamp}.csv`);
-			toast.success(t("log.exportSuccess"));
-		} catch (err) {
-			if (err instanceof Error && err.message) {
-				toast.error(err.message);
-			} else {
-				toast.error(t("log.exportFailed"));
-			}
+		})();
+
+		toast.promise(exportTask, {
+			loading: t("common.loading"),
+			success: t("log.exportSuccess"),
+			error: (err) => (err instanceof Error && err.message ? err.message : t("log.exportFailed")),
+		});
+
+		try {
+			await exportTask;
+		} catch {
+			// 错误提示已由 toast.promise 统一处理
 		} finally {
 			setIsExporting(false);
 		}

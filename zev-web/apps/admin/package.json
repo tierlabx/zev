@@ -7,7 +7,9 @@
 		"dev": "vite",
 		"build": "tsc -b && vite build",
 		"lint": "biome check .",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"storybook": "storybook dev -p 6006",
+		"build-storybook": "storybook build"
 	},
 	"dependencies": {
 		"@animate-ui/react": "^2.4.6",
@@ -50,16 +52,17 @@
 		"sonner": "^2.0.7",
 		"tailwind-merge": "^3.5.0",
 		"use-debounce": "^10.1.1",
-		"vaul": "^1.1.2",
 		"zod": "^4.4.3",
 		"zustand": "^5.0.12"
 	},
 	"devDependencies": {
+		"@storybook/react-vite": "^10.6.8",
 		"@tailwindcss/vite": "^4.2.2",
 		"@types/node": "^24.12.0",
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
 		"@vitejs/plugin-react": "^6.0.1",
+		"storybook": "^10.6.8",
 		"tailwindcss": "^4.2.2",
 		"tailwindcss-animate": "^1.0.7",
 		"typescript": "~5.9.3",

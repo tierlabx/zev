@@ -1,9 +1,15 @@
+import { AnimateIcon } from "@animate-ui/react/icons";
 import { type Resolved, type ThemeSelection, ThemeToggler } from "@animate-ui/react/primitives/effects/theme-toggler";
 import {
 	transition as motionTransition,
 	useShouldReduceMotion,
 	useTempoTransition,
 } from "@animate-ui/react/utils/motion";
+import { Globe } from "@zev/ui/components/animate-ui/icons/globe";
+import { Maximize } from "@zev/ui/components/animate-ui/icons/maximize";
+import { Minimize } from "@zev/ui/components/animate-ui/icons/minimize";
+import { Moon } from "@zev/ui/components/animate-ui/icons/moon";
+import { Sun } from "@zev/ui/components/animate-ui/icons/sun";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -11,7 +17,7 @@ import {
 	DropdownMenuTrigger,
 } from "@zev/ui/components/dropdown-menu";
 import { cn } from "@zev/ui/lib/utils";
-import { Check, Globe, Maximize, Minimize, Moon, Sun } from "lucide-react";
+import { Check } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -71,17 +77,19 @@ export function HeaderActions() {
 
 	return (
 		<>
-			<button
-				type="button"
-				onClick={toggleFullscreen}
-				aria-label={isFullscreen ? t("header.exitFullscreen") : t("header.fullscreen")}
-				title={isFullscreen ? t("header.exitFullscreen") : t("header.fullscreen")}
-				className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors group"
-			>
-				<SwapIcon iconKey={isFullscreen ? "minimize" : "maximize"}>
-					{isFullscreen ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
-				</SwapIcon>
-			</button>
+			<AnimateIcon animateOnHover asChild>
+				<button
+					type="button"
+					onClick={toggleFullscreen}
+					aria-label={isFullscreen ? t("header.exitFullscreen") : t("header.fullscreen")}
+					title={isFullscreen ? t("header.exitFullscreen") : t("header.fullscreen")}
+					className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors group"
+				>
+					<SwapIcon iconKey={isFullscreen ? "minimize" : "maximize"}>
+						{isFullscreen ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
+					</SwapIcon>
+				</button>
+			</AnimateIcon>
 
 			<ThemeToggler
 				theme={toThemeSelection(theme)}
@@ -98,17 +106,19 @@ export function HeaderActions() {
 					};
 
 					return (
-						<button
-							type="button"
-							onClick={handleToggle}
-							aria-label={isDark ? t("header.switchToLight") : t("header.switchToDark")}
-							title={isDark ? t("header.switchToLight") : t("header.switchToDark")}
-							className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors group"
-						>
-							<SwapIcon iconKey={isDark ? "sun" : "moon"}>
-								{isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
-							</SwapIcon>
-						</button>
+						<AnimateIcon animateOnHover asChild>
+							<button
+								type="button"
+								onClick={handleToggle}
+								aria-label={isDark ? t("header.switchToLight") : t("header.switchToDark")}
+								title={isDark ? t("header.switchToLight") : t("header.switchToDark")}
+								className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors group"
+							>
+								<SwapIcon iconKey={isDark ? "sun" : "moon"}>
+									{isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+								</SwapIcon>
+							</button>
+						</AnimateIcon>
 					);
 				}}
 			</ThemeToggler>
@@ -121,7 +131,10 @@ export function HeaderActions() {
 						title={t("header.switchLanguage")}
 						className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors group outline-none"
 					>
-						<Globe className="size-4" />
+						{/* 置入 Trigger 内部，避免双层 asChild ref 覆盖导致下拉菜单无法打开 */}
+						<AnimateIcon animateOnHover className="inline-flex items-center justify-center">
+							<Globe className="size-4" />
+						</AnimateIcon>
 					</button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="min-w-[140px]">

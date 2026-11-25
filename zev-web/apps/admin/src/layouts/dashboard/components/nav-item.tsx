@@ -1,3 +1,4 @@
+import { AnimateIcon } from "@animate-ui/react/icons";
 import {
 	transition as motionTransition,
 	spring,
@@ -6,17 +7,17 @@ import {
 } from "@animate-ui/react/utils/motion";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@zev/ui/lib/utils";
-import { ChevronDown, type LucideIcon } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import type { MenuItem } from "@/api/interface/system/user";
 import { useI18n } from "@/i18n";
-import { getMenuIcon } from "@/utils/menu-icons";
+import { getMenuIcon, type MenuIcon } from "@/utils/menu-icons";
 
 export type NavItemType = {
 	name: string;
 	path: string;
-	icon: LucideIcon;
+	icon: MenuIcon;
 	children?: NavItemType[];
 };
 
@@ -76,42 +77,45 @@ export function NavItem({
 	if (hasChildren) {
 		return (
 			<div className="space-y-1">
-				<button
-					type="button"
-					onClick={() => {
-						if (sidebarCollapsed) {
-							toggleSidebar();
-							setExpanded(true);
-						} else {
-							setExpanded(!expanded);
-						}
-					}}
-					title={sidebarCollapsed ? displayName : undefined}
-					className={cn(
-						"w-full flex items-center justify-between px-3 py-2.5 rounded-md cursor-pointer transition-colors font-medium relative group",
-						sidebarCollapsed ? "justify-center" : "",
-						isChildActive ? "text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
-					)}
-				>
-					<div className={cn("flex items-center", sidebarCollapsed ? "justify-center" : "space-x-3")}>
-						<item.icon
-							className={cn(
-								"h-[18px] w-[18px] shrink-0",
-								isChildActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
-							)}
-						/>
-						{!sidebarCollapsed && <span className="text-sm truncate relative z-10">{displayName}</span>}
-					</div>
-					{!sidebarCollapsed && (
-						<ChevronDown
-							className={cn(
-								"h-4 w-4 transition-transform relative z-10",
-								isChildActive ? "text-primary" : "text-muted-foreground",
-								expanded ? "rotate-180" : "",
-							)}
-						/>
-					)}
-				</button>
+				{/* 整行悬停即播放图标动画，而非只有图标本身响应 */}
+				<AnimateIcon animateOnHover asChild>
+					<button
+						type="button"
+						onClick={() => {
+							if (sidebarCollapsed) {
+								toggleSidebar();
+								setExpanded(true);
+							} else {
+								setExpanded(!expanded);
+							}
+						}}
+						title={sidebarCollapsed ? displayName : undefined}
+						className={cn(
+							"w-full flex items-center justify-between px-3 py-2.5 rounded-md cursor-pointer transition-colors font-medium relative group",
+							sidebarCollapsed ? "justify-center" : "",
+							isChildActive ? "text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+						)}
+					>
+						<div className={cn("flex items-center", sidebarCollapsed ? "justify-center" : "space-x-3")}>
+							<item.icon
+								className={cn(
+									"h-[18px] w-[18px] shrink-0",
+									isChildActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
+								)}
+							/>
+							{!sidebarCollapsed && <span className="text-sm truncate relative z-10">{displayName}</span>}
+						</div>
+						{!sidebarCollapsed && (
+							<ChevronDown
+								className={cn(
+									"h-4 w-4 transition-transform relative z-10",
+									isChildActive ? "text-primary" : "text-muted-foreground",
+									expanded ? "rotate-180" : "",
+								)}
+							/>
+						)}
+					</button>
+				</AnimateIcon>
 				<AnimatePresence initial={false}>
 					{expanded && !sidebarCollapsed && (
 						<motion.div
@@ -139,29 +143,31 @@ export function NavItem({
 
 	const active = activePath === item.path;
 	return (
-		<Link
-			to={item.path as never}
-			title={sidebarCollapsed ? displayName : undefined}
-			className={cn(
-				"flex items-center px-3 py-2.5 rounded-md cursor-pointer transition-colors font-medium relative group",
-				sidebarCollapsed ? "justify-center" : "space-x-3",
-				active ? "text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
-			)}
-		>
-			{active && (
-				<motion.div
-					layoutId="sidebar-active"
-					className="absolute inset-0 bg-[var(--color-primary-light)] rounded-md"
-					transition={selectionTransition}
-				/>
-			)}
-			<item.icon
+		<AnimateIcon animateOnHover asChild>
+			<Link
+				to={item.path as never}
+				title={sidebarCollapsed ? displayName : undefined}
 				className={cn(
-					"h-[18px] w-[18px] shrink-0 relative z-10",
-					active ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
+					"flex items-center px-3 py-2.5 rounded-md cursor-pointer transition-colors font-medium relative group",
+					sidebarCollapsed ? "justify-center" : "space-x-3",
+					active ? "text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
 				)}
-			/>
-			{!sidebarCollapsed && <span className="text-sm truncate relative z-10">{displayName}</span>}
-		</Link>
+			>
+				{active && (
+					<motion.div
+						layoutId="sidebar-active"
+						className="absolute inset-0 bg-[var(--color-primary-light)] rounded-md"
+						transition={selectionTransition}
+					/>
+				)}
+				<item.icon
+					className={cn(
+						"h-[18px] w-[18px] shrink-0 relative z-10",
+						active ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
+					)}
+				/>
+				{!sidebarCollapsed && <span className="text-sm truncate relative z-10">{displayName}</span>}
+			</Link>
+		</AnimateIcon>
 	);
 }

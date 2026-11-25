@@ -3,6 +3,20 @@ import request from "../request";
 export interface DashboardTrendRes {
 	date: string;
 	count: number;
+	logins: number;
+	operations: number;
+	failures: number;
+}
+
+export interface DashboardHeartbeatRes {
+	hour: string;
+	total: number;
+	failed: number;
+}
+
+export interface DashboardModuleRes {
+	module: string;
+	count: number;
 }
 
 export interface DashboardActivityRes {
@@ -22,6 +36,7 @@ export interface DashboardStatsRes {
 export interface DashboardHealthRes {
 	apiUsage: number;
 	dbResponse: number;
+	dbLatency: number;
 	memoryUsage: number;
 	cpuUsage: number;
 }
@@ -29,6 +44,8 @@ export interface DashboardHealthRes {
 export interface DashboardRes {
 	stats: DashboardStatsRes;
 	trends: DashboardTrendRes[];
+	heartbeats: DashboardHeartbeatRes[];
+	modules: DashboardModuleRes[];
 	activities: DashboardActivityRes[];
 	health: DashboardHealthRes;
 }

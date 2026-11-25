@@ -43,12 +43,12 @@ export function findFirstPagePath(menus: MenuItem[], parentPath = ""): string | 
 /**
  * 递归扁平化菜单树，只提取类型为 C（页面组件）的菜单项用于搜索
  */
-export function flattenMenus(menus: MenuItem[], parentPath = ""): { name: string; path: string }[] {
-	let result: { name: string; path: string }[] = [];
+export function flattenMenus(menus: MenuItem[], parentPath = ""): { name: string; path: string; icon: string }[] {
+	let result: { name: string; path: string; icon: string }[] = [];
 	for (const menu of menus) {
 		const fullPath = menu.path.startsWith("/") ? menu.path : `${parentPath}/${menu.path}`.replace(/\/+/g, "/");
 		if (menu.type === "C") {
-			result.push({ name: menu.name, path: fullPath });
+			result.push({ name: menu.name, path: fullPath, icon: menu.icon });
 		}
 		if (menu.children && menu.children.length > 0) {
 			result = result.concat(flattenMenus(menu.children, fullPath));

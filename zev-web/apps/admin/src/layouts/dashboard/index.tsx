@@ -1,7 +1,8 @@
-import { Navigate } from "@tanstack/react-router";
+import { Navigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getUserInfoApi } from "@/api/system/auth";
 import { useI18n } from "@/i18n";
+import { clearSessionAndRedirectToLogin, invalidateRouter, syncRouterRoutes } from "@/router/session";
 import { useUserStore } from "@/store";
 import { Footer } from "./footer";
 import { Header } from "./header";
@@ -14,8 +15,10 @@ export default function DashboardLayout() {
 	const token = useUserStore((state) => state.token);
 	const userInfo = useUserStore((state) => state.userInfo);
 	const setUserInfo = useUserStore((state) => state.setUserInfo);
-	const logout = useUserStore((state) => state.logout);
 	const [loading, setLoading] = useState(false);
+	const isNavigatingToLogin = useRouterState({
+		select: (s) => s.location.pathname === "/login" || s.resolvedLocation?.pathname === "/login",
+	});
 
 	useEffect(() => {
 		// 有 token 但没有 userInfo（如持久化数据不完整），自动获取
@@ -26,25 +29,24 @@ export default function DashboardLayout() {
 			getUserInfoApi()
 				.then((info) => {
 					setUserInfo(info);
-					// 如果之前 menus 为空但现在有数据，说明路由树需要重建
-					// （router 在模块加载时从空 menus 构建，没有动态路由）
+					// 如果之前 menus 为空但现在有数据，运行时重建路由树并重新校验当前路由
 					if (!hadMenus && info.menus?.length > 0) {
-						window.location.reload();
-						return;
+						syncRouterRoutes(info.menus);
+						void invalidateRouter();
 					}
 				})
 				.catch(() => {
-					// 获取用户信息失败（token 过期等），清除登录状态
-					logout();
+					// 获取用户信息失败（token 过期等），清除登录状态并跳转登录页
+					clearSessionAndRedirectToLogin();
 				})
 				.finally(() => {
 					setLoading(false);
 				});
 		}
-	}, [token, userInfo, loading, setUserInfo, logout]);
+	}, [token, userInfo, loading, setUserInfo]);
 
 	if (!token) {
-		return <Navigate to="/login" replace />;
+		return isNavigatingToLogin ? null : <Navigate to="/login" replace />;
 	}
 
 	// 正在获取用户信息时显示加载状态

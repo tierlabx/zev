@@ -28,9 +28,9 @@ Zev 是一个现代化的前后端分离项目，采用 Go 语言作为强大的
 | 领域 | 核心技术选型 |
 | --- | --- |
 | **后端** | Go, Gin, GORM, PostgreSQL, Swaggo, Air |
-| **前端框架** | React 19, TypeScript, Vite, React Router v7, Zustand |
-| **前端 UI** | Tailwind CSS v4, shadcn/ui, animate-ui, React Hook Form, Zod |
-| **代码规范** | Biome (前端代码格式化与检查) |
+| **前端框架** | React 19, TypeScript, Vite 8, TanStack Router, TanStack Query, Zustand |
+| **前端 UI** | Tailwind CSS v4, shadcn/ui, animate-ui, Recharts, cmdk, Sonner, React Hook Form, Zod |
+| **代码规范与预览** | Biome (格式化与 Lint 检查), Storybook 10 (组件预览工作台) |
 | **部署与运行** | Docker, Docker Compose |
 
 ## 🛠️ 快速开始 (使用 Docker Compose)

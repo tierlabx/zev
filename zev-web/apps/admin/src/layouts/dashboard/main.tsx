@@ -13,7 +13,7 @@ export function Main() {
 
 	return (
 		<main className="flex-1 flex flex-col relative overflow-hidden bg-transparent">
-			<div className="flex-1 flex flex-col p-4 overflow-auto min-h-0">
+			<div className="flex-1 flex flex-col p-4 overflow-y-auto overflow-x-hidden min-h-0">
 				<motion.div
 					key={pathname}
 					initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8 }}

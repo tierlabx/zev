@@ -1,4 +1,7 @@
+import { AnimateIcon } from "@animate-ui/react/icons";
 import { useNavigate } from "@tanstack/react-router";
+import { LogOut } from "@zev/ui/components/animate-ui/icons/log-out";
+import { User } from "@zev/ui/components/animate-ui/icons/user";
 import { Avatar, AvatarFallback, AvatarImage } from "@zev/ui/components/avatar";
 import {
 	DropdownMenu,
@@ -8,14 +11,13 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@zev/ui/components/dropdown-menu";
-import { LogOut, User } from "lucide-react";
 import { useLogoutMutation } from "@/api/system/auth";
 import { useI18n } from "@/i18n";
+import { clearSessionAndRedirectToLogin } from "@/router/session";
 import { useUserStore } from "@/store";
 
 export function AccountDropdown() {
 	const { t } = useI18n();
-	const logout = useUserStore((state) => state.logout);
 	const userInfo = useUserStore((state) => state.userInfo);
 	const navigate = useNavigate();
 	const logoutMutation = useLogoutMutation();
@@ -31,10 +33,8 @@ export function AccountDropdown() {
 		} catch {
 			// logout failure is fine, we clear local state anyway
 		} finally {
-			// 清除 store 后用 window.location.href 触发页面刷新，
-			// 让 router 模块从清空后的 store 重建路由树（仅 login 路由）
-			logout();
-			window.location.href = "/login";
+			// 运行时清空会话并重建无权限路由树，实现无刷新平滑退出
+			clearSessionAndRedirectToLogin();
 		}
 	};
 
@@ -52,7 +52,7 @@ export function AccountDropdown() {
 					<span className="text-sm font-medium">{nickname}</span>
 				</button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent className="w-56" align="end" forceMount>
+			<DropdownMenuContent className="w-56" align="end">
 				<DropdownMenuLabel className="font-normal">
 					<div className="flex flex-col space-y-1">
 						<p className="text-sm font-medium leading-none">{nickname}</p>
@@ -60,18 +60,22 @@ export function AccountDropdown() {
 					</div>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem className="cursor-pointer" onClick={() => navigate({ to: "/profile" as never })}>
-					<User className="mr-2 h-4 w-4" />
-					<span>{t("header.profile")}</span>
-				</DropdownMenuItem>
+				<AnimateIcon animateOnHover asChild>
+					<DropdownMenuItem className="cursor-pointer" onClick={() => navigate({ to: "/profile" as never })}>
+						<User className="mr-2 h-4 w-4" />
+						<span>{t("header.profile")}</span>
+					</DropdownMenuItem>
+				</AnimateIcon>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem
-					className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-					onClick={handleLogout}
-				>
-					<LogOut className="mr-2 h-4 w-4" />
-					<span>{t("header.logout")}</span>
-				</DropdownMenuItem>
+				<AnimateIcon animateOnHover asChild>
+					<DropdownMenuItem
+						className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+						onClick={handleLogout}
+					>
+						<LogOut className="mr-2 h-4 w-4" />
+						<span>{t("header.logout")}</span>
+					</DropdownMenuItem>
+				</AnimateIcon>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

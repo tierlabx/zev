@@ -1,4 +1,5 @@
-import { Menu } from "lucide-react";
+import { AnimateIcon } from "@animate-ui/react/icons";
+import { Menu } from "@zev/ui/components/animate-ui/icons/menu";
 import { useLayoutStore } from "@/store/layout";
 import { AccountDropdown } from "../components/account-dropdown";
 import { Breadcrumb } from "../components/breadcrumb";
@@ -13,22 +14,26 @@ export function Header() {
 	return (
 		<header className="h-16 px-4 bg-card border-b border-border flex items-center justify-between z-10 relative">
 			<div className="flex items-center space-x-2">
-				{/* Desktop Sidebar Toggle */}
-				<button
-					type="button"
-					onClick={toggleSidebar}
-					className="hidden md:flex p-1.5 -ml-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
-				>
-					<Menu className="size-4" />
-				</button>
+				{/* 桌面端侧边栏折叠按钮 */}
+				<AnimateIcon animateOnHover asChild>
+					<button
+						type="button"
+						onClick={toggleSidebar}
+						className="hidden md:flex p-1.5 -ml-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
+					>
+						<Menu className="size-4" />
+					</button>
+				</AnimateIcon>
 
-				{/* Mobile Sidebar Toggle (Drawer) */}
+				{/* 移动端侧边栏抽屉触发按钮：将 AnimateIcon 置入内部避免与 SheetTrigger asChild 冲突 */}
 				<MobileSidebar>
 					<button
 						type="button"
 						className="md:hidden p-1.5 -ml-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
 					>
-						<Menu className="size-4" />
+						<AnimateIcon animateOnHover className="inline-flex items-center justify-center">
+							<Menu className="size-4" />
+						</AnimateIcon>
 					</button>
 				</MobileSidebar>
 

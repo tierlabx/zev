@@ -1,15 +1,11 @@
-import {
-	transition as motionTransition,
-	useShouldReduceMotion,
-	useTempoTransition,
-} from "@animate-ui/react/utils/motion";
+import { AnimateIcon } from "@animate-ui/react/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { Bell } from "@zev/ui/components/animate-ui/icons/bell";
 import { Badge } from "@zev/ui/components/badge";
 import { Button } from "@zev/ui/components/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@zev/ui/components/popover";
-import { Bell, CheckCheck, ChevronRight } from "lucide-react";
-import { motion } from "motion/react";
+import { CheckCheck, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -26,8 +22,6 @@ export function NoticePopover() {
 	const { locale, t } = useI18n();
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
-	const reduce = useShouldReduceMotion();
-	const shakeTransition = useTempoTransition(motionTransition.shake);
 	const [open, setOpen] = useState(false);
 
 	// 订阅 SSE 实时通知流
@@ -98,13 +92,9 @@ export function NoticePopover() {
 					className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors relative group outline-none"
 					aria-label={t("header.notifications", { count: totalUnread })}
 				>
-					<motion.div
-						style={{ originY: 0 }}
-						whileHover={reduce ? undefined : { rotate: [0, -12, 12, -8, 8, 0] }}
-						transition={shakeTransition}
-					>
+					<AnimateIcon animateOnHover className="inline-flex items-center justify-center">
 						<Bell className="size-4" />
-					</motion.div>
+					</AnimateIcon>
 					{totalUnread > 0 ? (
 						<span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-[10px] font-medium leading-4 text-destructive-foreground text-center tabular-nums">
 							{totalUnread > 99 ? "99+" : totalUnread}

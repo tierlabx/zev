@@ -9,6 +9,19 @@ import { layoutBeforeLoad, loginBeforeLoad, splatBeforeLoad } from "@/router/rou
 import { buildStaticRoutes } from "@/router/static-routes";
 import { findFirstPagePath } from "@/utils/menu-utils";
 
+/**
+ * 稳定的根布局组件引用。
+ * 动态调用 router.update({ routeTree }) 重建路由树时保持引用不变，
+ * 避免 App（ThemeProvider / QueryClientProvider / Toaster）被卸载重挂造成闪烁。
+ */
+function RootLayout() {
+	return (
+		<App>
+			<Outlet />
+		</App>
+	);
+}
+
 // ============================================================
 //  Route Tree Builder（组装完整路由树）
 // ============================================================
@@ -18,19 +31,15 @@ import { findFirstPagePath } from "@/utils/menu-utils";
  *
  * 调用时机：
  * 1. 模块加载时 —— 从 zustand persist 读取持久化的菜单数据
- * 2. 登录后页面刷新 —— store 已更新，路由树包含完整动态路由
- * 3. 退出后页面刷新 —— store 已清空，路由树仅包含 login
+ * 2. 登录成功后 —— 运行时通过 router.update({ routeTree }) 动态重建完整业务路由
+ * 3. 退出登录后 —— 运行时通过 router.update({ routeTree }) 收敛为无菜单路由树
  *
  * @param menus 后端返回的菜单树（已按角色过滤）
  * @returns 完整的 TanStack Router 路由树
  */
 export function buildRouteTree(menus: MenuItem[] = []) {
 	const rootRoute = createRootRoute({
-		component: () => (
-			<App>
-				<Outlet />
-			</App>
-		),
+		component: RootLayout,
 	});
 
 	const loginRoute = createRoute({

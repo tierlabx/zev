@@ -3412,11 +3412,40 @@ const docTemplate = `{
                 "cpuUsage": {
                     "type": "integer"
                 },
+                "dbLatency": {
+                    "description": "数据库 Ping 耗时(ms)",
+                    "type": "integer"
+                },
                 "dbResponse": {
                     "type": "integer"
                 },
                 "memoryUsage": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.DashboardHeartbeatRes": {
+            "type": "object",
+            "properties": {
+                "failed": {
+                    "type": "integer"
+                },
+                "hour": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.DashboardModuleRes": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "module": {
+                    "type": "string"
                 }
             }
         },
@@ -3431,6 +3460,18 @@ const docTemplate = `{
                 },
                 "health": {
                     "$ref": "#/definitions/dto.DashboardHealthRes"
+                },
+                "heartbeats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.DashboardHeartbeatRes"
+                    }
+                },
+                "modules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.DashboardModuleRes"
+                    }
                 },
                 "stats": {
                     "$ref": "#/definitions/dto.DashboardStatsRes"
@@ -3464,10 +3505,23 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "count": {
+                    "description": "新增用户数",
                     "type": "integer"
                 },
                 "date": {
                     "type": "string"
+                },
+                "failures": {
+                    "description": "异常操作次数",
+                    "type": "integer"
+                },
+                "logins": {
+                    "description": "登录次数",
+                    "type": "integer"
+                },
+                "operations": {
+                    "description": "操作次数",
+                    "type": "integer"
                 }
             }
         },

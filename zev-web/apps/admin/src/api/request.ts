@@ -1,6 +1,7 @@
 import axios, { type AxiosRequestConfig } from "axios";
 import { toast } from "sonner";
 import { t } from "@/i18n";
+import { clearSessionAndRedirectToLogin } from "@/router/session";
 import { useUserStore } from "@/store";
 
 const service = axios.create({
@@ -42,10 +43,7 @@ service.interceptors.response.use(
 		// 后端统一返回格式 { code, msg, data }
 		if (res.code !== 200) {
 			if (res.code === 401) {
-				useUserStore.getState().logout();
-				// 使用 window.location.href 而非 router.navigate，
-				// 确保路由树从清空后的 store 重建
-				window.location.href = "/login";
+				clearSessionAndRedirectToLogin();
 			} else if (res.code === 403) {
 				toast.error(t("request.forbidden"));
 			} else {
@@ -59,8 +57,7 @@ service.interceptors.response.use(
 		const status = error.response?.status;
 
 		if (status === 401) {
-			useUserStore.getState().logout();
-			window.location.href = "/login";
+			clearSessionAndRedirectToLogin();
 		} else if (status === 403) {
 			toast.error(t("request.forbidden"));
 		} else if (status === 400) {

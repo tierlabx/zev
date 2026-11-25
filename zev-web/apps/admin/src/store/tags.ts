@@ -12,6 +12,7 @@ interface TagsState {
 	removeView: (path: string) => void;
 	closeOthers: (path: string) => void;
 	closeAll: () => void;
+	resetViews: () => void;
 }
 
 export const useTagsStore = create<TagsState>((set) => ({
@@ -33,4 +34,5 @@ export const useTagsStore = create<TagsState>((set) => ({
 		set((state) => ({
 			visitedViews: state.visitedViews.filter((v) => v.closable === false),
 		})),
+	resetViews: () => set({ visitedViews: [] }),
 }));

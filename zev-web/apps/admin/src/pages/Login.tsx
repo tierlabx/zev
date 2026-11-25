@@ -1,3 +1,4 @@
+import { AnimateIcon } from "@animate-ui/react/icons";
 import {
 	blur as motionBlur,
 	scale as motionScale,
@@ -7,11 +8,13 @@ import {
 } from "@animate-ui/react/utils/motion";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
+import { ArrowRight } from "@zev/ui/components/animate-ui/icons/arrow-right";
+import { Lock } from "@zev/ui/components/animate-ui/icons/lock";
+import { User } from "@zev/ui/components/animate-ui/icons/user";
 import { Card, CardContent, CardHeader } from "@zev/ui/components/card";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@zev/ui/components/form";
 import { Input } from "@zev/ui/components/input";
 import { ShinyButton } from "@zev/ui/components/shiny-button";
-import { ArrowRight, Lock, User } from "lucide-react";
 import { motion, useMotionValue, useTransform } from "motion/react";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
@@ -21,6 +24,7 @@ import { getUserInfoApi, useLoginMutation } from "@/api/system/auth";
 import logoUrl from "@/assets/logo-animated.svg";
 import ShaderKoiBackground from "@/components/ShaderKoiBackground";
 import { useI18n } from "@/i18n";
+import { syncRouterRoutes } from "@/router/session";
 import { useUserStore } from "@/store";
 import { findFirstPagePath } from "@/utils/menu-utils";
 
@@ -87,17 +91,15 @@ export default function Login() {
 					try {
 						const userInfo = await getUserInfoApi();
 						setUserInfo(userInfo);
-						// 用 window.location.href 触发页面刷新，
-						// 让 router 模块从更新后的 store 重建动态路由树
-						// 跳转到用户有权限的第一个页面
+						syncRouterRoutes(userInfo.menus);
 						const firstPage = findFirstPagePath(userInfo.menus);
-						window.location.href = firstPage || "/login";
+						await navigate({ to: (firstPage || "/dashboard") as never, replace: true });
 						return;
 					} catch {
+						useUserStore.getState().logout();
 						toast.error(t("login.fetchUserInfoFailed"));
 					}
 				}
-				navigate({ to: "/login" });
 			},
 			onError: (err) => {
 				toast.error(err.message || t("login.loginFailed"));
@@ -150,17 +152,19 @@ export default function Login() {
 										render={({ field }) => (
 											<FormItem className="space-y-1">
 												<FormControl>
-													<div className="relative group">
-														<div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
-															<User className="h-[18px] w-[18px]" />
+													<AnimateIcon animateOnHover asChild>
+														<div className="relative group">
+															<div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+																<User className="h-[18px] w-[18px]" />
+															</div>
+															<Input
+																{...field}
+																type="text"
+																placeholder={t("login.usernamePlaceholder")}
+																className="pl-11 h-12 bg-white/50 dark:bg-slate-800/60 border-white/40 dark:border-slate-700/60 hover:bg-white/70 dark:hover:bg-slate-800/80 focus:bg-white/90 dark:focus:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-500 dark:placeholder:text-slate-400 transition-[background-color,border-color,box-shadow] shadow-sm rounded-xl text-[14px]"
+															/>
 														</div>
-														<Input
-															{...field}
-															type="text"
-															placeholder={t("login.usernamePlaceholder")}
-															className="pl-11 h-12 bg-white/50 dark:bg-slate-800/60 border-white/40 dark:border-slate-700/60 hover:bg-white/70 dark:hover:bg-slate-800/80 focus:bg-white/90 dark:focus:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-500 dark:placeholder:text-slate-400 transition-[background-color,border-color,box-shadow] shadow-sm rounded-xl text-[14px]"
-														/>
-													</div>
+													</AnimateIcon>
 												</FormControl>
 												<FormMessage className="text-[13px] ml-1 text-red-500 font-medium" />
 											</FormItem>
@@ -172,35 +176,39 @@ export default function Login() {
 										render={({ field }) => (
 											<FormItem className="space-y-1">
 												<FormControl>
-													<div className="relative group">
-														<div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
-															<Lock className="h-[18px] w-[18px]" />
+													<AnimateIcon animateOnHover asChild>
+														<div className="relative group">
+															<div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+																<Lock className="h-[18px] w-[18px]" />
+															</div>
+															<Input
+																{...field}
+																type="password"
+																placeholder={t("login.passwordPlaceholder")}
+																className="pl-11 h-12 bg-white/50 dark:bg-slate-800/60 border-white/40 dark:border-slate-700/60 hover:bg-white/70 dark:hover:bg-slate-800/80 focus:bg-white/90 dark:focus:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-500 dark:placeholder:text-slate-400 transition-[background-color,border-color,box-shadow] shadow-sm rounded-xl text-[14px]"
+															/>
 														</div>
-														<Input
-															{...field}
-															type="password"
-															placeholder={t("login.passwordPlaceholder")}
-															className="pl-11 h-12 bg-white/50 dark:bg-slate-800/60 border-white/40 dark:border-slate-700/60 hover:bg-white/70 dark:hover:bg-slate-800/80 focus:bg-white/90 dark:focus:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-500 dark:placeholder:text-slate-400 transition-[background-color,border-color,box-shadow] shadow-sm rounded-xl text-[14px]"
-														/>
-													</div>
+													</AnimateIcon>
 												</FormControl>
 												<FormMessage className="text-[13px] ml-1 text-red-500 font-medium" />
 											</FormItem>
 										)}
 									/>
-									<ShinyButton
-										type="submit"
-										disabled={loginMutation.isPending}
-										className="mt-8 w-full h-12 text-[15px] font-medium bg-primary text-primary-foreground rounded-xl shadow-md hover:shadow-lg transition-[background-color,box-shadow] flex items-center justify-center gap-2"
-									>
-										{loginMutation.isPending ? (
-											t("login.submitting")
-										) : (
-											<>
-												{t("login.submit")} <ArrowRight className="h-4 w-4" />
-											</>
-										)}
-									</ShinyButton>
+									<AnimateIcon animateOnHover asChild>
+										<ShinyButton
+											type="submit"
+											disabled={loginMutation.isPending}
+											className="mt-8 w-full h-12 text-[15px] font-medium bg-primary text-primary-foreground rounded-xl shadow-md hover:shadow-lg transition-[background-color,box-shadow] flex items-center justify-center gap-2 cursor-pointer"
+										>
+											{loginMutation.isPending ? (
+												t("login.submitting")
+											) : (
+												<>
+													{t("login.submit")} <ArrowRight className="h-4 w-4" />
+												</>
+											)}
+										</ShinyButton>
+									</AnimateIcon>
 								</form>
 							</Form>
 						</CardContent>

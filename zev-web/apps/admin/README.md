@@ -4,67 +4,58 @@
 
 ## 技术栈
 
-- **框架**: React 19 + TypeScript + Vite
-- **路由**: React Router (v7)
-- **状态管理**: Zustand (全局状态), React Query (服务端状态 & API 缓存)
-- **样式**: Tailwind CSS v4, Framer Motion (动画效果)
-- **UI 组件库**: `shadcn/ui`, Radix UI primitives
+- **框架**: React 19 + TypeScript + Vite 8
+- **路由**: TanStack Router (`@tanstack/react-router`)
+- **状态与缓存**: Zustand v5 (全局状态), TanStack Query v5 (服务端状态 & API 缓存)
+- **样式与动效**: Tailwind CSS v4, Animate UI (`@animate-ui/react`), Motion
+- **UI 组件库**: `@zev/ui` (`shadcn/ui`, Radix UI primitives, Recharts v3, `cmdk`, `sonner`)
 - **表单与校验**: React Hook Form + Zod
-- **代码规范**: Biome (极致的格式化与 Lint 工具)
+- **代码规范与预览**: Biome + Storybook 10
 
 ## 目录结构
 
 ```text
 src/
-├── api/          # 接口请求封装和 React Query Hooks（按模块划分，如 system）
-├── assets/       # 静态资源（图片、SVG 以及全局 CSS）
-├── components/   # 公共 UI 组件（通常从工作区的 UI package 中导入）
-├── layouts/      # 页面布局模板（例如包含侧边栏和顶栏的 DashboardLayout）
-├── pages/        # 业务路由页面（如 Login、Dashboard、UserManagement 等）
-├── router/       # React Router 路由配置与菜单元数据定义
-├── store/        # Zustand 全局状态切片（如用户的 Token 管理）
-└── App.tsx       # 根组件，用于挂载各种全局 Providers (如 React Query、全局提示等)
+├── api/          # 接口请求封装、DTO/实体定义和 React Query Hooks（按模块划分，如 system）
+├── assets/       # 静态资源（SVG Logo 等）
+├── components/   # 业务组件（ZevTable 虚拟滚动表格、ShaderKoiBackground 锦鲤着色器等）
+├── hooks/        # 全局交互 Hooks（useConfirm、usePermission、useNoticeStream 等）
+├── i18n/         # 国际化与强类型字典校验
+├── layouts/      # 页面布局（Sidebar、Header、TagsView、⌘K 全局命令面板、通知弹出层）
+├── locales/      # 中英文语言包（zh-CN.ts / en-US.ts）
+├── pages/        # 业务路由页面（Dashboard 模块化仪表盘、Login、系统管理等）
+├── router/       # TanStack Router 路由构建、守卫与无刷新会话桥接 (session.ts)
+├── store/        # Zustand 全局状态切片（user、layout、locale、tags）
+└── utils/        # 全局工具类（图标映射 menu-icons、树工具、菜单工具、下载等）
 ```
 
 ## 快速开始
 
-因为该项目属于 `pnpm` 工作区（Workspace），推荐在项目根目录运行指令。
-
-### 安装依赖
+该项目属于 `pnpm` 工作区（Workspace），推荐在 `zev-web` 根目录运行指令：
 
 ```bash
+# 安装依赖
 pnpm install
-```
 
-### 启动开发服务器
-
-启动 Vite 本地开发服务器：
-
-```bash
-# 从工作区根目录启动 admin：
+# 启动开发服务器（/api 默认代理到 http://localhost:8080）
 pnpm run dev
 
-# 或者直接在 apps/admin 目录内启动：
-pnpm run dev
-```
+# 启动 Storybook 独立调试组件与 ZevTable（无需启动后端）
+pnpm run storybook
 
-### 生产环境构建
+# 运行 Biome Lint + TypeScript 类型检查
+pnpm run lint
 
-```bash
-# 从工作区根目录执行：
+# 生产环境构建
 pnpm run build
 ```
 
-### 代码检查与格式化
+## 核心架构特性
 
-本项目使用 [Biome](https://biomejs.dev/) 作为 Lint 和格式化工具，速度极快。
-
-```bash
-pnpm run lint
-pnpm run format
-```
-
-## 核心架构设计
-
-- **API 接口管理与缓存**：所有的网络请求均统一收敛在 `src/api/[module]` 目录下。底层使用 Axios 拦截器处理 Token 和全局异常，上层组件统一通过 `@tanstack/react-query` 提供的 Hooks 进行调用。这使得组件内部无需手动管理 `loading` 和 `error` 状态。
-- **动态路由与菜单配置**：侧边栏的菜单项不是硬编码的，而是自动根据 `src/router/routes.tsx` 中的路由配置动态渲染。菜单的名称（title）和图标（icon）等元数据统一保存在每一个路由对象的 `handle` 属性中，实现了菜单和路由的完全一致。
+- **无刷新动态路由重建 (`src/router/session.ts`)**：通过 `router.update({ routeTree })` 在运行时同步重建业务路由树，登录、退出登录及 401 会话过期均以纯 SPA 方式清理 `useTagsStore` 与 `queryClient` 并跳转，杜绝整页硬刷新闪烁；`RootLayout` 保持顶层稳定引用防止 `<App>` 重挂载。
+- **全局命令面板 (`⌘K` / `Ctrl+K`)**：`layouts/dashboard/components/global-search.tsx` 基于 `cmdk` 提供最近访问路由、带菜单图标的路由搜索，以及主题/语言/侧边栏/全屏/退出等快捷指令。
+- **模块化仪表盘 (`src/pages/dashboard/`)**：结合 Recharts v3 `ChartContainer` 与 Tremor 风格 `Tracker` / `BarList` / `DeltaBadge`，展示 KPI 环比微曲线、14 天操作/登录/用户趋势、24h 服务心跳及近 7 天活跃模块分布。
+- **性能与交互红线**：
+  - 登录页固定保留 WebGPU `ShaderKoiBackground` 锦鲤着色器背景；404 页面采用轻量 `GravityStarsBackground`。
+  - `ZevTable` 虚拟滚动表格行内禁止引入进场动画或动画图标；全站交互核心区图标使用 Animate UI 悬停动效。
+  - 下拉菜单等弹出层禁止传入 `forceMount`，避免关闭态透明遮罩阻挡下方按钮点击。

@@ -25,3 +25,4 @@ zev-go/docs/swagger.yaml
 zev-go/tmp/
 .pnpm-store
 .pnpm-store/
+storybook-static/
