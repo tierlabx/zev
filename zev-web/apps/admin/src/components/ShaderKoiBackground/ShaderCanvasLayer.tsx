@@ -1,86 +1,143 @@
-import { useEffect } from "react";
-import { CustomShader, ImageTexture, isWebGPUSupported, Shader } from "shaders/react";
-import { koiFishShader, koiWaterBgShader } from "./shaders";
-
-export interface KoiTextures {
-	bg: string;
-	whiteFish: string;
-	blackFish: string;
-}
+import { useEffect, useRef } from "react";
+import { createKoiPondScene } from "./koi-scene";
+import type { KoiPondController } from "./koi-types";
 
 interface ShaderCanvasLayerProps {
-	textures: KoiTextures;
-	hasMovedPointer: boolean;
 	isReady: boolean;
 	onReady: () => void;
 	onUnavailable: () => void;
 }
 
-const STATIC_CENTER = { x: 0.5, y: 0.5 };
-const MOUSE_RIPPLE_DRIVER = { type: "mouse-position" as const, smoothing: 0.72, momentum: 0 };
-const CAMERA_PARALLAX_DRIVER = { type: "mouse-position" as const, smoothing: 0.86, momentum: 0 };
+/** 检测当前浏览器是否支持 WebGL2 / WebGL 上下文 */
+export function isWebGLSupported(): boolean {
+	if (typeof document === "undefined") {
+		return false;
+	}
+	try {
+		const testCanvas = document.createElement("canvas");
+		return Boolean(testCanvas.getContext("webgl2") || testCanvas.getContext("webgl"));
+	} catch {
+		return false;
+	}
+}
 
 /**
- * 独立异步加载的 WebGPU 着色器画布层，避免将全量 `shaders` 引擎静态打入首屏主包。
+ * 独立异步加载的 Three.js 3D 黑白锦鲤水池画布层，避免将 Three.js 引擎静态打入首屏主包。
  */
-export default function ShaderCanvasLayer({
-	textures,
-	hasMovedPointer,
-	isReady,
-	onReady,
-	onUnavailable,
-}: ShaderCanvasLayerProps) {
-	const webGpuSupported = isWebGPUSupported();
+export default function ShaderCanvasLayer({ isReady, onReady, onUnavailable }: ShaderCanvasLayerProps) {
+	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
 	useEffect(() => {
-		if (!webGpuSupported) {
+		const canvas = canvasRef.current;
+		if (!canvas || !isWebGLSupported()) {
 			onUnavailable();
+			return;
 		}
-	}, [webGpuSupported, onUnavailable]);
 
-	if (!webGpuSupported) {
-		return null;
-	}
+		let controller: KoiPondController | null = null;
+		let rafId = 0;
+		let lastTs = performance.now();
 
-	const mouseProp = hasMovedPointer ? MOUSE_RIPPLE_DRIVER : STATIC_CENTER;
-	const cameraProp = hasMovedPointer ? CAMERA_PARALLAX_DRIVER : STATIC_CENTER;
+		try {
+			controller = createKoiPondScene(canvas);
+			controller.render();
+			onReady();
+		} catch {
+			onUnavailable();
+			return;
+		}
+
+		const handleContextLost = (event: Event) => {
+			event.preventDefault();
+			if (rafId) {
+				cancelAnimationFrame(rafId);
+				rafId = 0;
+			}
+			onUnavailable();
+		};
+		canvas.addEventListener("webglcontextlost", handleContextLost);
+
+		const resizeObserver = new ResizeObserver((entries) => {
+			if (!controller) return;
+			const entry = entries[0];
+			if (entry) {
+				controller.resize(entry.contentRect.width, entry.contentRect.height);
+			}
+		});
+		resizeObserver.observe(canvas);
+
+		const updateFromClientPoint = (clientX: number, clientY: number, target: EventTarget | null) => {
+			if (!controller) return;
+			const rect = canvas.getBoundingClientRect();
+			if (rect.width <= 0 || rect.height <= 0) return;
+			const nx = (clientX - rect.left) / rect.width;
+			const ny = (clientY - rect.top) / rect.height;
+			const el = target instanceof Element ? target : null;
+			const overCard = Boolean(el?.closest("[data-login-card]"));
+			controller.setPointerNormalized(nx, ny, overCard);
+		};
+
+		const handleMouseMove = (event: MouseEvent) => {
+			updateFromClientPoint(event.clientX, event.clientY, event.target);
+		};
+
+		const handlePointerDown = (event: PointerEvent) => {
+			if (!controller) return;
+			const el = event.target instanceof Element ? event.target : null;
+			if (el?.closest("[data-login-card]")) return;
+			const rect = canvas.getBoundingClientRect();
+			if (rect.width <= 0 || rect.height <= 0) return;
+			const nx = (event.clientX - rect.left) / rect.width;
+			const ny = (event.clientY - rect.top) / rect.height;
+			controller.setPointerNormalized(nx, ny, false);
+			controller.triggerRipple(nx, ny, 0.92);
+		};
+
+		const handleTouchMove = (event: TouchEvent) => {
+			const touch = event.touches[0];
+			if (touch) {
+				updateFromClientPoint(touch.clientX, touch.clientY, event.target);
+			}
+		};
+
+		const handleMouseLeave = () => {
+			controller?.clearPointer();
+		};
+
+		window.addEventListener("mousemove", handleMouseMove, { passive: true });
+		window.addEventListener("pointerdown", handlePointerDown, { passive: true });
+		window.addEventListener("touchmove", handleTouchMove, { passive: true });
+		document.addEventListener("mouseleave", handleMouseLeave);
+
+		const tick = (now: number) => {
+			if (!controller) return;
+			const dt = (now - lastTs) / 1000;
+			lastTs = now;
+			controller.step(dt);
+			controller.render();
+			rafId = requestAnimationFrame(tick);
+		};
+		rafId = requestAnimationFrame(tick);
+
+		return () => {
+			if (rafId) {
+				cancelAnimationFrame(rafId);
+			}
+			window.removeEventListener("mousemove", handleMouseMove);
+			window.removeEventListener("pointerdown", handlePointerDown);
+			window.removeEventListener("touchmove", handleTouchMove);
+			document.removeEventListener("mouseleave", handleMouseLeave);
+			canvas.removeEventListener("webglcontextlost", handleContextLost);
+			resizeObserver.disconnect();
+			controller?.dispose();
+			controller = null;
+		};
+	}, [onReady, onUnavailable]);
 
 	return (
-		<Shader
-			disableTelemetry
-			colorSpace="srgb"
-			toneMapping="linear"
-			onReady={onReady}
-			onUnavailable={onUnavailable}
-			className={`absolute inset-0 w-full h-full transition-opacity duration-300 ${isReady ? "opacity-100" : "opacity-0"}`}
-		>
-			<CustomShader src={koiWaterBgShader} mouse={mouseProp} cameraMouse={cameraProp}>
-				<ImageTexture url={textures.bg} objectFit="fill" />
-			</CustomShader>
-
-			<CustomShader
-				src={koiFishShader}
-				blendMode="normal"
-				mouse={mouseProp}
-				cameraMouse={cameraProp}
-				layerZ={0.1}
-				pivotX={0.41}
-				pivotY={0.65}
-			>
-				<ImageTexture url={textures.whiteFish} objectFit="fill" />
-			</CustomShader>
-
-			<CustomShader
-				src={koiFishShader}
-				blendMode="normal"
-				mouse={mouseProp}
-				cameraMouse={cameraProp}
-				layerZ={0.2}
-				pivotX={0.57}
-				pivotY={0.34}
-			>
-				<ImageTexture url={textures.blackFish} objectFit="fill" />
-			</CustomShader>
-		</Shader>
+		<canvas
+			ref={canvasRef}
+			className={`absolute inset-0 w-full h-full block transition-opacity duration-500 ${isReady ? "opacity-100" : "opacity-0"}`}
+		/>
 	);
 }

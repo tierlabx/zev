@@ -6,6 +6,11 @@ trigger: always_on
 
 这份指南旨在为参与 ZEV 项目开发的 AI 助手提供明确的架构约束、代码规范与工作流指导。在执行任何代码编写、重构或调试任务时，请严格遵守以下原则。
 
+不保留向后兼容：过时东西直接删，别写迁移脚本和回退方案。
+别造轮子：优先用成熟的、有人维护的第三方库。
+先查再写：动手前先翻翻项目里已有的依赖，别想当然瞎引包。
+架构要有远见：绝不接受“先凑合，以后再说”的临时屎山。
+
 ## 1. 整体架构准则
 - **单体仓库 (Monorepo)**：项目根目录为 `f:\03_OpenSource\zev`（工作区根目录）。后端代码位于 `zev-go`，前端代码位于 `zev-web`，两者逻辑独立。
 - **环境隔离**：使用 Docker 和 `docker-compose.yml` 联调前后端与数据库。
@@ -18,7 +23,7 @@ trigger: always_on
 **核心原则：代码必须符合规范，结构化，模块化，低耦合，高内聚，不允许出现大段的重复代码，必须编写注释。不允许出现特大文件，如果文件过大，必须拆分。**
 
 ## 2. 前端开发规范 (zev-web)
-- **技术栈锁定**：React 19 + Vite 8 + TypeScript + Zustand v5 + TanStack Router (`@tanstack/react-router`) + TanStack Query v5 + Tailwind CSS v4 + Recharts v3 + cmdk + Sonner + Storybook 10。
+- **技术栈锁定**：React 19 + Vite 8 + TypeScript + Zustand v5 + TanStack Router (`@tanstack/react-router`) + TanStack Query v5 + Tailwind CSS v4 + Recharts v3 + Three.js + cmdk + Sonner + Storybook 10。
   > [!WARNING]  
   > 本项目使用的是 **Tailwind CSS v4**，请注意 V4 的新特性与配置差异（如无需 `tailwind.config.js`，`components.json` 中 `"config"` 必须为空字符串 `""`，基于 `@theme` 的 CSS 变量定义等），切勿输出 V3 版本的兼容代码。请保持依赖极简整洁，不要引入未使用的 `vaul` 等冗余包。
 - **工程化架构**：使用 pnpm workspace。后台主应用位于 `apps/admin`，复用组件库位于 `packages/ui`（`@zev/ui`）。
@@ -44,7 +49,7 @@ trigger: always_on
   - 导航、顶栏、通知铃铛、弹窗主操作按钮等交互核心区，优先使用 `@zev/ui/components/animate-ui/icons/*` 配合 `<AnimateIcon animateOnHover asChild>` 实现整颗按钮/菜单项悬停播放动画。
   - **防 `asChild` 冲突**：遇到 Radix 的 `Trigger asChild`（`PopoverTrigger`、`DropdownMenuTrigger`、`SheetTrigger`）时，必须将 `<AnimateIcon animateOnHover>` 置于触发按钮内部，禁止双层 `asChild` 叠加。
   - **弹出层防遮挡红线**：**严禁**在基于 `@animate-ui/react/primitives/radix-ui/*` 的弹出层（如 `DropdownMenuContent`、`PopoverContent`）上传入 `forceMount`，避免关闭态透明容器以 `z-50` 拦截下方页面点击；`DropdownMenuContent` 必须保留 `data-[state=closed]:pointer-events-none`。
-  - **动态背景约定**：`@zev/ui/components/animate-ui/backgrounds/{stars,gravity-stars}` 仅用于 `NotFound.tsx` 等非高频数据页；**登录页 (`Login.tsx`) 固定保留原 WebGPU 锦鲤着色器 `ShaderKoiBackground`，禁止替换为其他背景或增加背景切换控件**。
+  - **动态背景约定**：`@zev/ui/components/animate-ui/backgrounds/{stars,gravity-stars}` 仅用于 `NotFound.tsx` 等非高频数据页；**登录页 (`Login.tsx`) 固定保留基于 Three.js WebGL 的 3D 黑白线稿锦鲤水池 `ShaderKoiBackground`（`React.lazy` 异步分包、动态海浪分割线、单侧咬饵交互、纯 CSS `StaticKoiFallback` 降级），禁止替换为其他背景或增加背景切换控件**。
   - **Registry 接入检查**：后续若通过 `@animate-ui` registry 新拉取组件到 `packages/ui/src/components/animate-ui/`，必须检查其 `cn` 导入指向 `@zev/ui/lib/utils`，并清理未使用的 `import * as React` 以满足 `noUnusedLocals`。
 - **数据可视化、全局命令面板与组件工作台**：
   - 图表统一使用 `@zev/ui/components/chart`（Recharts v3 兼容封装）。**禁止运行 `shadcn add chart`**，以免 CLI 将 Recharts 降级到 v2 并覆盖 `card.tsx`。

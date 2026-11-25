@@ -128,7 +128,10 @@ export default function Login() {
 								}
 					}
 				>
-					<Card className="w-full p-6 md:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/40 dark:border-slate-700/60 bg-white/60 dark:bg-slate-900/75 backdrop-blur-xl rounded-2xl relative overflow-hidden">
+					<Card
+						data-login-card
+						className="w-full p-6 md:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/40 dark:border-slate-700/60 bg-white/60 dark:bg-slate-900/75 backdrop-blur-xl rounded-2xl relative overflow-hidden"
+					>
 						{/* Decorative blur elements inside the card */}
 						<div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 						<div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />

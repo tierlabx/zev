@@ -13,7 +13,7 @@ description: Provides core guidelines, architectural constraints, and standard o
 - **代码质量**：不允许大段重复代码，不允许超大文件，代码必须具备清晰的“为什么”注释。
 
 ## 2. 前端规范 (zev-web)
-- **技术栈**：React 19 + Vite 8 + TypeScript + Zustand v5 + TanStack Router (`@tanstack/react-router`) + TanStack Query v5 + Tailwind CSS v4 + Recharts v3 + cmdk + Sonner + Storybook 10。
+- **技术栈**：React 19 + Vite 8 + TypeScript + Zustand v5 + TanStack Router (`@tanstack/react-router`) + TanStack Query v5 + Tailwind CSS v4 + Recharts v3 + Three.js + cmdk + Sonner + Storybook 10（登录页 `ShaderKoiBackground` 固定采用懒加载 Three.js WebGL 3D 黑白线稿锦鲤水池）。
   - **重要提醒**：使用的是 Tailwind CSS v4，禁止使用 V3 语法与 `tailwind.config.js` 模式，`components.json` 中 `"config"` 必须保持为 `""`；禁止引入未使用的 `vaul` 等冗余依赖。
 - **代码校验**：统一使用 `biome check .`，不使用 ESLint/Prettier。严格禁止使用 `any` 类型。
 - **数据获取**：服务端请求必须使用 `@tanstack/react-query` v5。严禁在组件中手写 `useEffect` 配合 `axios`。
