@@ -10,6 +10,7 @@ import logoUrl from "@/assets/logo-animated.svg";
 import { useUserStore } from "@/store";
 import { useLayoutStore } from "@/store/layout";
 import { buildNavItems, NavItem } from "./components/nav-item";
+import { SidebarFireworksBackground } from "./components/sidebar-fireworks-background";
 
 export function Sidebar() {
 	const location = useLocation();
@@ -29,7 +30,8 @@ export function Sidebar() {
 			transition={collapseTransition}
 			className="bg-card border-r border-border flex flex-col z-20 shadow-sm relative overflow-hidden hidden md:flex"
 		>
-			<div className="h-16 px-4 flex items-center justify-center space-x-3 border-b border-border overflow-hidden shrink-0">
+			<SidebarFireworksBackground collapsed={sidebarCollapsed} />
+			<div className="h-16 px-4 flex items-center justify-center space-x-3 border-b border-border overflow-hidden shrink-0 relative z-10 bg-card/70 backdrop-blur-[1px]">
 				<div className="flex aspect-square size-8 items-center justify-center shrink-0">
 					<img src={logoUrl} alt="Logo" className="size-8" />
 				</div>
@@ -47,7 +49,7 @@ export function Sidebar() {
 					)}
 				</AnimatePresence>
 			</div>
-			<nav className="flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden mb-12">
+			<nav className="relative z-10 flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden mb-12">
 				{navItems.map((item) => (
 					<NavItem
 						key={item.path}
@@ -60,7 +62,7 @@ export function Sidebar() {
 			</nav>
 			<button
 				type="button"
-				className="absolute bottom-0 left-0 right-0 h-12 border-t border-border flex items-center justify-center cursor-pointer hover:bg-muted text-muted-foreground transition-colors bg-card z-10 w-full"
+				className="absolute bottom-0 left-0 right-0 h-12 border-t border-border flex items-center justify-center cursor-pointer hover:bg-muted/80 text-muted-foreground transition-colors bg-card/80 backdrop-blur-xs z-20 w-full"
 				onClick={toggleSidebar}
 			>
 				{sidebarCollapsed ? <ChevronsRight className="h-5 w-5" /> : <ChevronsLeft className="h-5 w-5" />}

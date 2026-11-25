@@ -1,5 +1,6 @@
 import { AnimateIcon } from "@animate-ui/react/icons";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { FireworksBackground } from "@zev/ui/components/animate-ui/backgrounds/fireworks";
 import { GravityStarsBackground } from "@zev/ui/components/animate-ui/backgrounds/gravity-stars";
 import { StarsBackground } from "@zev/ui/components/animate-ui/backgrounds/stars";
 import { Activity } from "@zev/ui/components/animate-ui/icons/activity";
@@ -122,5 +123,22 @@ export const GravityStarsInteractiveBackground: Story = {
 				</span>
 			</div>
 		</GravityStarsBackground>
+	),
+};
+
+export const FireworksInteractiveBackground: Story = {
+	render: () => (
+		<div className="relative h-72 w-full overflow-hidden rounded-xl border border-border bg-slate-950">
+			<FireworksBackground
+				population={0.8}
+				color={["#f8fafc", "#cbd5e1", "#94a3b8"]}
+				className="absolute inset-0"
+			/>
+			<div className="pointer-events-none relative z-10 flex h-72 items-center justify-center">
+				<span className="rounded-lg border border-white/15 bg-black/40 px-4 py-2 text-sm font-medium text-white backdrop-blur-md">
+					点击区域可触发烟花绽放
+				</span>
+			</div>
+		</div>
 	),
 };

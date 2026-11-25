@@ -62,6 +62,7 @@ export const zhCN = {
 		markAllRead: "全部已读",
 		viewAllMessages: "查看全部消息",
 		profile: "个人中心",
+		messageCenter: "消息中心",
 		logout: "退出登录",
 	},
 	tags: {

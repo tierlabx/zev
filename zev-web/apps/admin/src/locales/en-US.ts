@@ -68,6 +68,7 @@ export const enUS: LocaleSchema<typeof zhCN> = {
 		markAllRead: "Mark all read",
 		viewAllMessages: "View all messages",
 		profile: "Profile",
+		messageCenter: "Message Center",
 		logout: "Sign Out",
 	},
 	tags: {
