@@ -3,7 +3,6 @@ package system
 import (
 	"log/slog"
 	"os"
-	"strings"
 
 	"zev-go/modules"
 	"zev-go/modules/system/controller"
@@ -11,6 +10,7 @@ import (
 	"zev-go/modules/system/seed"
 	"zev-go/modules/system/service"
 	"zev-go/pkg/middleware"
+	"zev-go/pkg/swagger"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -63,7 +63,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 	{
 		r.GET("/api/ping", openController.PingHandler)
 		// 生产模式默认关闭 Swagger 路由暴露，可通过 ENABLE_SWAGGER=true 按需开启
-		if gin.Mode() != gin.ReleaseMode || strings.EqualFold(os.Getenv("ENABLE_SWAGGER"), "true") {
+		if swagger.IsEnabled() {
 			r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}
 	}

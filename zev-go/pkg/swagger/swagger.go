@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 // crudInfo 保存了用于生成 Swagger 文档的 CRUD 实体及路由元数据。
@@ -24,6 +26,11 @@ type crudInfo struct {
 // crudRegistry 存储所有已注册的 CRUD 实体配置，作为代码生成的数据源。
 var crudRegistry []crudInfo
 
+// IsEnabled 返回当前运行环境是否启用 Swagger 文档路由。
+// 非生产模式默认开启；生产模式需显式设置 ENABLE_SWAGGER=true 才会暴露。
+func IsEnabled() bool {
+	return gin.Mode() != gin.ReleaseMode || strings.EqualFold(os.Getenv("ENABLE_SWAGGER"), "true")
+}
 
 // Init 自动通过 AST 静态扫描项目源码找出所有带有 swagger_tag 标签的模型，并构建 Swagger 文档
 func Init() {
@@ -252,5 +259,3 @@ func DummyList%d() {}
 
 	os.WriteFile("pkg/swagger/docs_crud_generated.go", []byte(sb.String()), 0644)
 }
-
-

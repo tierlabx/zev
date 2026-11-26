@@ -20,6 +20,7 @@ import (
 	"zev-go/pkg/logger"
 	"zev-go/pkg/middleware"
 	"zev-go/pkg/noticehub"
+	"zev-go/pkg/portal"
 	"zev-go/pkg/swagger"
 
 	"github.com/gin-gonic/gin"
@@ -71,6 +72,14 @@ func main() {
 
 	// 5. 注册并初始化所有业务模块
 	modules.InitAll(r, db)
+
+	// 5.5 注册根路径 3D 导航门户页（单二进制内嵌纯 HTML，支持一键跳转 Swagger 与服务健康探测）
+	portal.Register(r, portal.Options{
+		Version:        "1.0",
+		EnvMode:        gin.Mode(),
+		SwaggerEnabled: swagger.IsEnabled(),
+		ShowDevLinks:   gin.Mode() != gin.ReleaseMode,
+	})
 
 	// 6. 初始化并全自动构建 Swagger 文档（仅非生产模式启用，避免生产容器无 Go 工具链报错）
 	if !strings.EqualFold(os.Getenv("GIN_MODE"), "release") {
