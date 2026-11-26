@@ -109,12 +109,16 @@ export function ZevTable<TData, TValue>({
 	return (
 		<div
 			className={cn(
-				"relative w-full rounded-xl border border-border bg-card text-card-foreground shadow-sm flex flex-col",
+				"relative w-full rounded-xl border border-border bg-card text-card-foreground shadow-sm flex flex-col min-w-0 overflow-hidden",
 				className,
 			)}
 			style={containerHeight ? { height: containerHeight } : undefined}
 		>
-			{showToolbar && <TableToolbar table={table} />}
+			{showToolbar && (
+				<div className="shrink-0">
+					<TableToolbar table={table} />
+				</div>
+			)}
 
 			<div ref={tableContainerRef} className="w-full overflow-auto relative flex-1 min-h-0">
 				{isLoading && data.length === 0 ? (
@@ -237,7 +241,7 @@ export function ZevTable<TData, TValue>({
 			</div>
 
 			{pagination && onPageChange && onPageSizeChange && (
-				<div className="border-t border-border bg-muted/30 rounded-b-xl">
+				<div className="shrink-0 border-t border-border bg-muted/30 rounded-b-xl">
 					<Pagination
 						page={page}
 						pageSize={pageSize}

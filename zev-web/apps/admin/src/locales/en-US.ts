@@ -14,8 +14,7 @@ export const enUS: LocaleSchema<typeof zhCN> = {
 		"/system/dept": "Department Management",
 		"/system/dict": "Dictionary Management",
 		"/system/notice": "Notifications",
-		"/system/oper-log": "Operation Logs",
-		"/system/login-log": "Login Logs",
+		"/system/log": "Audit Logs",
 		"/agent": "Agent Center",
 		"/agent/provider": "Model Providers",
 		"/agent/workspace": "Agent Workspace",
@@ -425,6 +424,8 @@ export const enUS: LocaleSchema<typeof zhCN> = {
 		dataValueRequired: "Data value is required",
 	},
 	log: {
+		tabOper: "Operation Logs",
+		tabLogin: "Login Logs",
 		statsOperTotal: "Total Operation Logs",
 		statsOperToday: "Operations Today",
 		statsOperErrorToday: "Errors Today",

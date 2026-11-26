@@ -479,7 +479,7 @@ func seedInitialNotices(tx *gorm.DB) error {
 			Level:       dto.NoticeLevelNormal,
 			TargetType:  dto.NoticeTargetAll,
 			TargetIDs:   "[]",
-			Link:        "/system/oper-log",
+			Link:        "/system/log",
 			Status:      dto.NoticeStatusPublished,
 			SenderID:    1,
 			DeptID:      1,

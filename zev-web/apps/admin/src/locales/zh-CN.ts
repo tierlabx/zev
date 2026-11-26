@@ -8,8 +8,7 @@ export const zhCN = {
 		"/system/dept": "部门管理",
 		"/system/dict": "字典管理",
 		"/system/notice": "通知公告",
-		"/system/oper-log": "操作日志",
-		"/system/login-log": "登录日志",
+		"/system/log": "审计日志",
 		"/agent": "智能体中心",
 		"/agent/provider": "模型网关",
 		"/agent/workspace": "智能体编排",
@@ -418,6 +417,8 @@ export const zhCN = {
 		dataValueRequired: "数据键值不能为空",
 	},
 	log: {
+		tabOper: "操作日志",
+		tabLogin: "登录日志",
 		statsOperTotal: "累计操作审计",
 		statsOperToday: "今日操作数",
 		statsOperErrorToday: "今日操作异常",

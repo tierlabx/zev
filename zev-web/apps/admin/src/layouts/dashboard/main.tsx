@@ -19,7 +19,7 @@ export function Main() {
 					initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8 }}
 					animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
 					transition={revealTransition}
-					className="flex-1 flex flex-col pb-4 min-h-0"
+					className="flex-1 flex flex-col pb-4 min-h-0 min-w-0"
 				>
 					<Outlet />
 				</motion.div>

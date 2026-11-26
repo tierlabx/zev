@@ -39,8 +39,7 @@ const MenuManagement = lazy(() => import("@/pages/system/menu"));
 const DeptManagement = lazy(() => import("@/pages/system/dept"));
 const DictManagement = lazy(() => import("@/pages/system/dict"));
 const NoticeManagement = lazy(() => import("@/pages/system/notice"));
-const OperLogManagement = lazy(() => import("@/pages/system/log/oper"));
-const LoginLogManagement = lazy(() => import("@/pages/system/log/login"));
+const LogManagement = lazy(() => import("@/pages/system/log"));
 const MessagesCenter = lazy(() => import("@/pages/messages"));
 const Profile = lazy(() => import("@/pages/profile"));
 const AgentProvider = lazy(() => import("@/pages/agent/provider"));
@@ -64,8 +63,7 @@ export const componentMap: Record<string, ComponentType> = {
 	"system/dept/index": withSuspense(DeptManagement),
 	"system/dict/index": withSuspense(DictManagement),
 	"system/notice/index": withSuspense(NoticeManagement),
-	"system/log/oper/index": withSuspense(OperLogManagement),
-	"system/log/login/index": withSuspense(LoginLogManagement),
+	"system/log/index": withSuspense(LogManagement),
 	"messages/index": withSuspense(MessagesCenter),
 	"profile/index": withSuspense(Profile),
 	"agent/provider/index": withSuspense(AgentProvider),
