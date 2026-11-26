@@ -72,8 +72,10 @@ func main() {
 	// 5. 注册并初始化所有业务模块
 	modules.InitAll(r, db)
 
-	// 6. 初始化并全自动构建 Swagger 文档
-	swagger.Init()
+	// 6. 初始化并全自动构建 Swagger 文档（仅非生产模式启用，避免生产容器无 Go 工具链报错）
+	if !strings.EqualFold(os.Getenv("GIN_MODE"), "release") {
+		swagger.Init()
+	}
 
 	// 6. 启动 HTTP 服务（配置优雅停机）
 	port := cfg.AppPort

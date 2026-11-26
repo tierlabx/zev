@@ -1,0 +1,45 @@
+# 生产模式覆盖配置（执行 `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build` 启动）
+services:
+  db:
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  backend:
+    image: zev-backend:prod
+    build:
+      target: prod
+    environment:
+      GIN_MODE: release
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1,172.16.0.0/12,192.168.0.0/16,10.0.0.0/8}
+      ENABLE_SWAGGER: ${ENABLE_SWAGGER:-false}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  frontend:
+    image: zev-web:prod
+    build:
+      target: prod
+    ports:
+      - "${WEB_PORT:-80}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:80/healthz >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

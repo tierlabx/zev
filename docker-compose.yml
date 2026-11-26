@@ -1,47 +1,64 @@
-
+# 基础编排配置（dev 与 prod 共享底座，勿在此处暴露 dev 专用端口或源码卷）
 services:
   db:
-    extends:
-      file: ./zev-go/docker-compose-db.yml
-      service: db
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER:-zev}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-zev}
+      TZ: Asia/Shanghai
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-zev} -d ${DB_NAME:-zev}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - zev-net
 
-  # Backend service
   backend:
     build:
       context: ./zev-go
-      target: dev
-    ports:
-      - "8080:8080"
+      args:
+        GOPROXY: ${GOPROXY:-https://proxy.golang.org,direct}
     environment:
-      - DB_HOST=db
-      - DB_USER=zev
-      - DB_PASSWORD=password
-      - DB_NAME=zev
-      - DB_PORT=5432
-    volumes:
-      - ./zev-go:/app
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-zev}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME:-zev}
+      APP_PORT: 8080
+      JWT_SECRET: ${JWT_SECRET:-zev-admin-secret-key-development}
+      JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
+      TZ: Asia/Shanghai
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/api/ping >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
     restart: unless-stopped
+    networks:
+      - zev-net
 
-  # Frontend service
   frontend:
     build:
       context: ./zev-web
-      target: dev
-    ports:
-      - "5173:5173"
-    environment:
-      - API_URL=http://backend:8080
-      - CHOKIDAR_USEPOLLING=true
-      - CI=true
-    volumes:
-      - ./zev-web:/app
-      - /app/node_modules
-      - /app/apps/admin/node_modules
-      - /app/packages/ui/node_modules
+      args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-}
     restart: unless-stopped
-    stdin_open: true
+    networks:
+      - zev-net
+
+networks:
+  zev-net:
+    driver: bridge
 
 volumes:
   db-data:

@@ -26,3 +26,5 @@ zev-go/tmp/
 .pnpm-store
 .pnpm-store/
 storybook-static/
+.env
+.env.local

@@ -2,13 +2,20 @@ services:
   db:
     image: postgres:18-alpine
     environment:
-      POSTGRES_USER: zev
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: zev
+      POSTGRES_USER: ${DB_USER:-zev}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-zev}
+      TZ: Asia/Shanghai
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-zev} -d ${DB_NAME:-zev}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
     restart: unless-stopped
 
 volumes:

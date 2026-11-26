@@ -1,0 +1,70 @@
+# 开发模式覆盖配置（执行 `docker compose up -d` 自动生效）
+services:
+  db:
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+  backend:
+    image: zev-backend:dev
+    build:
+      target: dev
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    environment:
+      GIN_MODE: debug
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      LOG_FORMAT: text
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1,172.16.0.0/12,192.168.0.0/16,10.0.0.0/8}
+      ENABLE_SWAGGER: "true"
+    volumes:
+      - ./zev-go:/app
+      - go-mod-cache:/go/pkg/mod
+      - go-build-cache:/root/.cache/go-build
+
+  frontend:
+    image: zev-web:dev
+    build:
+      target: dev
+    ports:
+      - "${VITE_PORT:-5173}:5173"
+    environment:
+      API_URL: http://backend:8080
+      CHOKIDAR_USEPOLLING: "true"
+      CI: "true"
+    volumes:
+      - ./zev-web:/app
+      - /app/node_modules
+      - /app/apps/admin/node_modules
+      - /app/packages/ui/node_modules
+    depends_on:
+      backend:
+        condition: service_started
+    stdin_open: true
+
+  # Storybook 10 组件独立预览台（仅 dev 模式启用）
+  storybook:
+    image: zev-web:dev
+    build:
+      context: ./zev-web
+      target: dev
+      args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-}
+    command: ["pnpm", "-F", "admin", "exec", "storybook", "dev", "-p", "6006", "--host", "0.0.0.0", "--ci", "--disable-telemetry"]
+    ports:
+      - "${STORYBOOK_PORT:-6006}:6006"
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      STORYBOOK_DISABLE_TELEMETRY: "1"
+      CI: "true"
+    volumes:
+      - ./zev-web:/app
+      - /app/node_modules
+      - /app/apps/admin/node_modules
+      - /app/packages/ui/node_modules
+    restart: unless-stopped
+    networks:
+      - zev-net
+
+volumes:
+  go-mod-cache:
+  go-build-cache:

@@ -1,32 +1,41 @@
+# syntax=docker/dockerfile:1
+
 # Base system
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g pnpm@9.15.4
+ARG NPM_REGISTRY=
+RUN if [ -n "$NPM_REGISTRY" ]; then npm config set registry "$NPM_REGISTRY"; fi \
+    && npm install -g pnpm@10.24.0 \
+    && pnpm config set store-dir /pnpm/store \
+    && if [ -n "$NPM_REGISTRY" ]; then pnpm config set registry "$NPM_REGISTRY"; fi
 WORKDIR /app
 
-# Dev stage
-FROM base AS dev
+# Dependency installation stage (shared by dev and builder)
+FROM base AS deps
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY apps/admin/package.json ./apps/admin/
 COPY packages/ui/package.json ./packages/ui/
-RUN pnpm install
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install; fi
+
+# Dev stage (Vite + Storybook)
+FROM deps AS dev
 COPY . .
-# React Vite 开发端口
-EXPOSE 5173
-CMD ["sh", "-c", "pnpm install && pnpm dev --host"]
+# Vite 开发端口 (5173) 与 Storybook 组件预览端口 (6006)
+EXPOSE 5173 6006
+CMD ["pnpm", "dev", "--host", "0.0.0.0"]
 
 # Build stage
-FROM base AS builder
+FROM deps AS builder
 COPY . .
-RUN pnpm install
 RUN pnpm build
 
 # Prod stage (nginx)
-FROM nginx:alpine AS prod
-# 依据 admin 目录的构建产物进行托管
+FROM nginx:1.27-alpine AS prod
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/apps/admin/dist /usr/share/nginx/html
-# React 路由兼容
-RUN echo 'server { listen 80; location / { root /usr/share/nginx/html; index index.html index.htm; try_files $$uri $$uri/ /index.html; } }' > /etc/nginx/conf.d/default.conf
 EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD wget -qO- http://127.0.0.1:80/healthz || exit 1
 CMD ["nginx", "-g", "daemon off;"]

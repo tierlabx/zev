@@ -1,0 +1,9 @@
+.git
+.env
+.env.*
+tmp/
+logs/
+*.exe
+build-errors.log
+docker-compose-db.yml
+README.md
