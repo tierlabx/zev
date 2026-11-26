@@ -116,9 +116,25 @@ func (c *UserController) Get(ctx *gin.Context) {
 	response.SuccessData(user, ctx)
 }
 
+// Captcha 获取登录图形验证码
+// @Summary 获取登录图形验证码
+// @Description 生成用于登录校验的 Base64 图形验证码
+// @Tags 系统管理-用户
+// @Produce json
+// @Success 200 {object} response.Response{data=dto.CaptchaRes} "成功"
+// @Router /api/system/captcha [get]
+func (c *UserController) Captcha(ctx *gin.Context) {
+	res, err := c.userService.GenerateCaptcha()
+	if err != nil {
+		response.FailMessage("验证码生成失败", ctx)
+		return
+	}
+	response.SuccessData(res, ctx)
+}
+
 // Login 用户登录
 // @Summary 用户登录
-// @Description 使用账号密码登录
+// @Description 使用账号、密码和图形验证码登录
 // @Tags 系统管理-用户
 // @Accept json
 // @Produce json

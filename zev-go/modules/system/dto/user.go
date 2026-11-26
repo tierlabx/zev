@@ -1,8 +1,17 @@
 package dto
 
 type LoginReq struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Username    string `json:"username" binding:"required"`
+	Password    string `json:"password" binding:"required"`
+	CaptchaID   string `json:"captcha_id" binding:"required"`
+	CaptchaCode string `json:"captcha_code" binding:"required"`
+}
+
+// CaptchaRes 登录图形验证码响应
+type CaptchaRes struct {
+	CaptchaID   string `json:"captcha_id"`
+	CaptchaImg  string `json:"captcha_img"`
+	ExpireAfter int    `json:"expire_after"`
 }
 
 // ClientMeta 客户端请求环境元信息，用于安全登录与审计日志

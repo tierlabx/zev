@@ -38,6 +38,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/captcha": {
+            "get": {
+                "description": "生成用于登录校验的 Base64 图形验证码",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理-用户"
+                ],
+                "summary": "获取登录图形验证码",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.CaptchaRes"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/dashboard/stats": {
             "get": {
                 "security": [
@@ -1341,7 +1373,7 @@ const docTemplate = `{
         },
         "/api/system/login": {
             "post": {
-                "description": "使用账号密码登录",
+                "description": "使用账号、密码和图形验证码登录",
                 "consumes": [
                     "application/json"
                 ],
@@ -3313,6 +3345,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CaptchaRes": {
+            "type": "object",
+            "properties": {
+                "captcha_id": {
+                    "type": "string"
+                },
+                "captcha_img": {
+                    "type": "string"
+                },
+                "expire_after": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.ChangePasswordReq": {
             "type": "object",
             "required": [
@@ -3641,10 +3687,18 @@ const docTemplate = `{
         "dto.LoginReq": {
             "type": "object",
             "required": [
+                "captcha_code",
+                "captcha_id",
                 "password",
                 "username"
             ],
             "properties": {
+                "captcha_code": {
+                    "type": "string"
+                },
+                "captcha_id": {
+                    "type": "string"
+                },
                 "password": {
                     "type": "string"
                 },

@@ -9,6 +9,7 @@ import (
 	"zev-go/modules/system/dto"
 	"zev-go/modules/system/entity"
 	"zev-go/pkg/audit"
+	"zev-go/pkg/captcha"
 	"zev-go/pkg/crud"
 	"zev-go/pkg/datascope"
 	"zev-go/pkg/jwtx"
@@ -22,15 +23,33 @@ type UserService struct {
 	roleService *RoleService
 	menuService *MenuService
 	deptService *DeptService
+	captcha     *captcha.Manager
 }
 
-func NewUserService(db *gorm.DB, roleService *RoleService, menuService *MenuService, deptService *DeptService) *UserService {
+func NewUserService(db *gorm.DB, roleService *RoleService, menuService *MenuService, deptService *DeptService, captchaManager *captcha.Manager) *UserService {
+	if captchaManager == nil {
+		captchaManager = captcha.NewDefault()
+	}
 	return &UserService{
 		BaseService: crud.NewBaseService[entity.User](db),
 		roleService: roleService,
 		menuService: menuService,
 		deptService: deptService,
+		captcha:     captchaManager,
 	}
+}
+
+// GenerateCaptcha 生成登录用的 Base64 图形验证码
+func (s *UserService) GenerateCaptcha() (*dto.CaptchaRes, error) {
+	id, img, err := s.captcha.Generate()
+	if err != nil {
+		return nil, err
+	}
+	return &dto.CaptchaRes{
+		CaptchaID:   id,
+		CaptchaImg:  img,
+		ExpireAfter: s.captcha.ExpireSeconds(),
+	}, nil
 }
 
 func (s *UserService) recordLoginAudit(userID, deptID uint, username string, status int, message string, meta dto.ClientMeta) {
@@ -53,6 +72,12 @@ func (s *UserService) recordLoginAudit(userID, deptID uint, username string, sta
 }
 
 func (s *UserService) Login(req dto.LoginReq, meta dto.ClientMeta) (*dto.LoginRes, error) {
+	// 在查询数据库与密码哈希校验前先校验一次性图形验证码，避免无效请求消耗数据库和 bcrypt 计算资源
+	if !s.captcha.Verify(req.CaptchaID, req.CaptchaCode) {
+		s.recordLoginAudit(0, 0, req.Username, 0, "验证码错误或已过期", meta)
+		return nil, errors.New("验证码错误或已过期")
+	}
+
 	var user entity.User
 	err := s.DB.Where("username = ?", req.Username).First(&user).Error
 	if err != nil {

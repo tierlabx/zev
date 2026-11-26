@@ -9,6 +9,7 @@ import (
 	"zev-go/modules/system/entity"
 	"zev-go/modules/system/seed"
 	"zev-go/modules/system/service"
+	"zev-go/pkg/captcha"
 	"zev-go/pkg/middleware"
 	"zev-go/pkg/swagger"
 
@@ -41,7 +42,8 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 	deptService := service.NewDeptService(db)
 	roleService := service.NewRoleService(db)
 	menuService := service.NewMenuService(db)
-	userService := service.NewUserService(db, roleService, menuService, deptService)
+	captchaManager := captcha.NewDefault()
+	userService := service.NewUserService(db, roleService, menuService, deptService, captchaManager)
 	dictTypeService := service.NewDictTypeService(db)
 	dictDataService := service.NewDictDataService(db)
 	dashboardService := service.NewDashboardService(db)
@@ -71,6 +73,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 	// 6. 注册 HTTP API 路由
 	api := r.Group("/api/system")
 	{
+		api.GET("/captcha", userController.Captcha)
 		api.POST("/login", userController.Login)
 
 		protected := api.Group("")
