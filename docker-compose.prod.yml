@@ -6,6 +6,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    restart: unless-stopped
 
   backend:
     image: zev-backend:prod
@@ -22,6 +23,7 @@ services:
       options:
         max-size: "10m"
         max-file: "5"
+    restart: unless-stopped
 
   frontend:
     image: zev-web:prod
@@ -43,3 +45,4 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    restart: unless-stopped

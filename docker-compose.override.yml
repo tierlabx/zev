@@ -3,6 +3,7 @@ services:
   db:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
+    restart: "no"
 
   backend:
     image: zev-backend:dev
@@ -20,6 +21,7 @@ services:
       - ./zev-go:/app
       - go-mod-cache:/go/pkg/mod
       - go-build-cache:/root/.cache/go-build
+    restart: "no"
 
   frontend:
     image: zev-web:dev
@@ -40,6 +42,7 @@ services:
       backend:
         condition: service_started
     stdin_open: true
+    restart: "no"
 
   # Storybook 10 组件独立预览台（仅 dev 模式启用）
   storybook:
@@ -61,7 +64,7 @@ services:
       - /app/node_modules
       - /app/apps/admin/node_modules
       - /app/packages/ui/node_modules
-    restart: unless-stopped
+    restart: "no"
     networks:
       - zev-net
 
