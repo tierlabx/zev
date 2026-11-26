@@ -181,6 +181,9 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 				noticeGroup.DELETE("/my/clear-read", noticeController.ClearReadNotices)
 				noticeGroup.GET("/receivers", noticeController.ListReceivers)
 				noticeGroup.POST("/direct", noticeController.SendDirectMessage)
+				noticeGroup.GET("/sent", noticeController.ListSentNotices)
+				noticeGroup.GET("/sent/:id", noticeController.GetSentNoticeDetail)
+				noticeGroup.POST("/sent/revoke/:id", noticeController.RevokeMyDirectMessage)
 
 				// 消息管理控制台接口 (RBAC + DataScope)
 				noticeGroup.GET("/manage/list", middleware.RequirePermission(db, "system:notice:list"), noticeController.ListManageNotices)

@@ -67,6 +67,8 @@ export default function NoticeManagement() {
 	const refreshAllNoticeQueries = useCallback(() => {
 		queryClient.invalidateQueries({ queryKey: ["manageNotices"] });
 		queryClient.invalidateQueries({ queryKey: ["myNotices"] });
+		queryClient.invalidateQueries({ queryKey: ["sentNotices"] });
+		queryClient.invalidateQueries({ queryKey: ["sentNoticeDetail"] });
 		queryClient.invalidateQueries({ queryKey: ["notices"] });
 		queryClient.invalidateQueries({ queryKey: ["noticeUnreadCount"] });
 	}, [queryClient]);

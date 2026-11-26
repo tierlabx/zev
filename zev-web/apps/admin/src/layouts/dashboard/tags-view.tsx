@@ -1,4 +1,4 @@
-import { Link, useLocation, useMatches, useNavigate } from "@tanstack/react-router";
+import { Link, useMatches, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -13,32 +13,51 @@ import { useUserStore } from "@/store";
 import { useTagsStore } from "@/store/tags";
 import { findFirstPagePath } from "@/utils/menu-utils";
 
+function normalizeTagPath(path: string): string {
+	if (!path) return "";
+	return path.length > 1 ? path.replace(/\/+$/, "") : path;
+}
+
 export function TagsView() {
 	const { t, translateMenu } = useI18n();
-	const location = useLocation();
 	const navigate = useNavigate();
 	const matches = useMatches();
+	const resolvedPathname = useRouterState({
+		select: (s) => normalizeTagPath(s.resolvedLocation?.pathname ?? s.location.pathname),
+	});
+	const isRouterPending = useRouterState({
+		select: (s) => s.status === "pending",
+	});
 	const { visitedViews, addView, removeView, closeOthers, closeAll } = useTagsStore();
 	const menus = useUserStore((state) => state.menus);
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
 
 	// 获取第一个可用页面路径（用于回退导航）
-	const firstPagePath = findFirstPagePath(menus) || "/login";
+	const firstPagePath = normalizeTagPath(findFirstPagePath(menus) || "/login");
 
 	useEffect(() => {
-		// find the deepest match that has a title in staticData
-		const match = [...matches].reverse().find((m) => m.staticData?.title);
-		const title = (match?.staticData?.title as string) || "";
+		// 仅在路由已稳定提交且命中真实页面（非目录、非 403/404 等隐藏标签页）时写入标签栏，避免无权限重定向残留幽灵标签
+		if (isRouterPending) return;
 
-		// 第一个页面路径的标签不可关闭
-		const isHome = location.pathname === firstPagePath;
+		const match = [...matches].reverse().find((m) => m.staticData?.title);
+		if (!match || match.staticData?.hideInTags || match.staticData?.isDirectory) {
+			return;
+		}
+
+		const matchPath = normalizeTagPath(match.pathname);
+		if (!matchPath || matchPath !== resolvedPathname) {
+			return;
+		}
+
+		const title = (match.staticData?.title as string) || "";
+		const isHome = resolvedPathname === firstPagePath;
 
 		addView({
-			path: location.pathname,
-			title: title,
+			path: resolvedPathname,
+			title,
 			closable: !isHome,
 		});
-	}, [location.pathname, matches, addView, firstPagePath]);
+	}, [isRouterPending, resolvedPathname, matches, addView, firstPagePath]);
 
 	const handleClose = (e: React.MouseEvent, path: string) => {
 		e.preventDefault();
@@ -48,7 +67,7 @@ export function TagsView() {
 		removeView(path);
 
 		// If we are closing the active tab, navigate to the adjacent tab
-		if (path === location.pathname) {
+		if (path === resolvedPathname) {
 			const prevView = visitedViews[index - 1] || visitedViews[index + 1];
 			if (prevView) {
 				navigate({ to: prevView.path as never });
@@ -84,7 +103,7 @@ export function TagsView() {
 				style={{ scrollbarWidth: "none", msScrollSnapType: "none" }}
 			>
 				{visitedViews.map((view) => {
-					const isActive = location.pathname === view.path;
+					const isActive = resolvedPathname === view.path;
 					return (
 						<Link
 							key={view.path}
@@ -135,7 +154,7 @@ export function TagsView() {
 					</button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-32">
-					<DropdownMenuItem onClick={() => closeOthers(location.pathname)}>{t("tags.closeOthers")}</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => closeOthers(resolvedPathname)}>{t("tags.closeOthers")}</DropdownMenuItem>
 					<DropdownMenuItem
 						onClick={() => {
 							closeAll();

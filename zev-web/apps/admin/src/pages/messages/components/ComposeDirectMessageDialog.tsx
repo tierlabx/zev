@@ -27,7 +27,7 @@ import { useI18n } from "@/i18n";
 interface ComposeDirectMessageDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	onSuccess: () => void;
+	onSuccess: (createdId?: number) => void;
 }
 
 export function ComposeDirectMessageDialog({ open, onOpenChange, onSuccess }: ComposeDirectMessageDialogProps) {
@@ -84,9 +84,9 @@ export function ComposeDirectMessageDialog({ open, onOpenChange, onSuccess }: Co
 
 	const sendMutation = useMutation({
 		mutationFn: sendDirectMessage,
-		onSuccess: () => {
+		onSuccess: (created) => {
 			toast.success(t("notice.sendDirectSuccess"));
-			onSuccess();
+			onSuccess(created?.id);
 			onOpenChange(false);
 		},
 		onError: (err: Error) => {

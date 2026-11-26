@@ -47,6 +47,7 @@ const AgentWorkspace = lazy(() => import("@/pages/agent/workspace"));
 const AgentPlayground = lazy(() => import("@/pages/agent/playground"));
 const AgentTraces = lazy(() => import("@/pages/agent/traces"));
 const AgentEvals = lazy(() => import("@/pages/agent/evals"));
+const Forbidden = lazy(() => import("@/pages/Forbidden"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 /**
@@ -72,6 +73,11 @@ export const componentMap: Record<string, ComponentType> = {
 	"agent/traces/index": withSuspense(AgentTraces),
 	"agent/evals/index": withSuspense(AgentEvals),
 };
+
+/**
+ * 403 无权限兜底组件（独立导出，不进入 componentMap 以保持 seed.json 映射纯粹）
+ */
+export const ForbiddenComponent = withSuspense(Forbidden);
 
 /**
  * 404 兜底组件

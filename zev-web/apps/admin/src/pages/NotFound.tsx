@@ -31,6 +31,14 @@ export default function NotFound() {
 		clearSessionAndRedirectToLogin();
 	};
 
+	const handleGoBack = () => {
+		if (window.history.length > 1) {
+			window.history.back();
+			return;
+		}
+		handleGoHome();
+	};
+
 	return (
 		<GravityStarsBackground
 			starsCount={55}
@@ -65,7 +73,7 @@ export default function NotFound() {
 						<AnimateIcon animateOnHover asChild>
 							<button
 								type="button"
-								onClick={() => window.history.back()}
+								onClick={handleGoBack}
 								className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
 							>
 								<ArrowLeft className="h-4 w-4" />

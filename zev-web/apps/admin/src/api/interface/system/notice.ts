@@ -18,6 +18,38 @@ export interface MyNoticeItem {
 }
 
 /**
+ * 已发送消息接收人及阅读状态明细
+ */
+export interface SentNoticeRecipientItem {
+	userId: number;
+	username: string;
+	nickname: string;
+	isRead: boolean;
+	readAt?: string | null;
+}
+
+/**
+ * 个人已发送消息实体（含接收人预览与已读回执统计）
+ */
+export interface SentNoticeItem {
+	id: number;
+	title: string;
+	content: string;
+	type: number;
+	level: number;
+	targetType: number;
+	link: string;
+	status: number; // 1: 已发布, 2: 已撤回
+	senderId: number;
+	sender: string;
+	readCount: number;
+	totalCount: number;
+	recipients: SentNoticeRecipientItem[];
+	publishedAt?: string | null;
+	createdAt: string;
+}
+
+/**
  * 各分类未读消息数量汇总
  */
 export interface UnreadCountRes {

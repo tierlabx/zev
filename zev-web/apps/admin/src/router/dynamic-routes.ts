@@ -1,17 +1,29 @@
 import { type AnyRoute, createRoute, redirect } from "@tanstack/react-router";
 import type { MenuItem } from "@/api/interface/system/user";
-import { componentMap, NotFoundComponent } from "@/router/components";
+import { componentMap, ForbiddenComponent, NotFoundComponent } from "@/router/components";
 import { findFirstPagePath, joinPath, normalizePath } from "@/utils/menu-utils";
 
 /**
- * 构建 404 兜底路由（作为 layout 的子路由）
+ * 构建 403 无权限兜底路由（作为 layout 的子路由，不写入多标签栏）
+ */
+export function buildForbiddenRoute(parent: AnyRoute): AnyRoute {
+	return createRoute({
+		getParentRoute: () => parent,
+		path: "/403",
+		component: ForbiddenComponent as never,
+		staticData: { title: "无访问权限", hideInTags: true },
+	});
+}
+
+/**
+ * 构建 404 兜底路由（作为 layout 的子路由，不写入多标签栏）
  */
 export function buildNotFoundRoute(parent: AnyRoute): AnyRoute {
 	return createRoute({
 		getParentRoute: () => parent,
 		path: "/404",
 		component: NotFoundComponent as never,
-		staticData: { title: "页面未找到" },
+		staticData: { title: "页面未找到", hideInTags: true },
 	});
 }
 
@@ -39,7 +51,7 @@ export function buildDynamicRoutes(menus: MenuItem[], parent: AnyRoute, accumula
 			const dirRoute = createRoute({
 				getParentRoute: () => parent,
 				path: routePath,
-				staticData: { title: menu.name },
+				staticData: { title: menu.name, isDirectory: true },
 			});
 
 			const childRoutes = buildDynamicRoutes(menu.children, dirRoute, fullPath);

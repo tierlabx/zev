@@ -2,6 +2,7 @@ import type { MenuItem } from "@/api/interface/system/user";
 import { queryClient } from "@/api/queryClient";
 import { useUserStore } from "@/store";
 import { useTagsStore } from "@/store/tags";
+import { getFrontendRouteOptions } from "@/utils/menu-utils";
 
 export interface RouterBridge {
 	updateMenus: (menus: MenuItem[]) => void;
@@ -20,9 +21,15 @@ export function registerRouterBridge(bridge: RouterBridge): void {
 }
 
 /**
- * 运行时用最新菜单重建 TanStack Router 路由树（无需整页刷新）
+ * 运行时用最新菜单重建 TanStack Router 路由树（无需整页刷新），并裁剪无权访问的残留标签页
  */
 export function syncRouterRoutes(menus: MenuItem[]): void {
+	if (menus.length === 0) {
+		useTagsStore.getState().resetViews();
+	} else {
+		const allowedPaths = new Set(getFrontendRouteOptions(menus).map((item) => item.path));
+		useTagsStore.getState().pruneViews(allowedPaths);
+	}
 	routerBridge?.updateMenus(menus);
 }
 

@@ -315,6 +315,71 @@ func (c *NoticeController) SendDirectMessage(ctx *gin.Context) {
 	response.SuccessData(notice, ctx)
 }
 
+// ListSentNotices 分页查询当前登录用户已发送的消息记录
+// @Summary 查询已发送消息列表
+// @Tags 系统管理-消息中心
+// @Produce json
+// @Security Bearer
+// @Param query query dto.SentNoticeListReq false "查询条件"
+// @Success 200 {object} response.Response "成功"
+// @Router /api/system/notice/sent [get]
+func (c *NoticeController) ListSentNotices(ctx *gin.Context) {
+	var req dto.SentNoticeListReq
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		response.FailMessage("查询参数错误", ctx)
+		return
+	}
+	res, err := c.noticeService.ListSentNotices(ctx.GetUint("userID"), req)
+	if err != nil {
+		response.FailMessage("获取已发送消息失败: "+err.Error(), ctx)
+		return
+	}
+	response.SuccessData(res, ctx)
+}
+
+// GetSentNoticeDetail 获取当前用户已发送单条消息详情及接收人阅读状态
+// @Summary 获取已发送消息详情
+// @Tags 系统管理-消息中心
+// @Produce json
+// @Security Bearer
+// @Param id path int true "消息ID"
+// @Success 200 {object} response.Response{data=dto.SentNoticeItem} "成功"
+// @Router /api/system/notice/sent/{id} [get]
+func (c *NoticeController) GetSentNoticeDetail(ctx *gin.Context) {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil || id == 0 {
+		response.FailMessage("无效的消息ID", ctx)
+		return
+	}
+	res, err := c.noticeService.GetSentNoticeDetail(ctx.GetUint("userID"), uint(id))
+	if err != nil {
+		response.FailMessage(err.Error(), ctx)
+		return
+	}
+	response.SuccessData(res, ctx)
+}
+
+// RevokeMyDirectMessage 发件人撤回自己发送的站内私信
+// @Summary 撤回个人发送的站内私信
+// @Tags 系统管理-消息中心
+// @Produce json
+// @Security Bearer
+// @Param id path int true "消息ID"
+// @Success 200 {object} response.Response "成功"
+// @Router /api/system/notice/sent/revoke/{id} [post]
+func (c *NoticeController) RevokeMyDirectMessage(ctx *gin.Context) {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil || id == 0 {
+		response.FailMessage("无效的消息ID", ctx)
+		return
+	}
+	if err := c.noticeService.RevokeMyDirectMessage(ctx.GetUint("userID"), uint(id)); err != nil {
+		response.FailMessage(err.Error(), ctx)
+		return
+	}
+	response.Success(ctx)
+}
+
 // ListManageNotices 管理端分页查询消息列表
 // @Summary 分页查询管理端消息
 // @Tags 系统管理-消息中心

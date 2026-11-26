@@ -4,7 +4,7 @@ import type { MenuItem } from "@/api/interface/system/user";
 import DashboardLayout from "@/layouts/dashboard";
 import Login from "@/pages/Login";
 
-import { buildDynamicRoutes, buildNotFoundRoute } from "@/router/dynamic-routes";
+import { buildDynamicRoutes, buildForbiddenRoute, buildNotFoundRoute } from "@/router/dynamic-routes";
 import { layoutBeforeLoad, loginBeforeLoad, splatBeforeLoad } from "@/router/route-guards";
 import { buildStaticRoutes } from "@/router/static-routes";
 import { findFirstPagePath } from "@/utils/menu-utils";
@@ -80,7 +80,8 @@ export function buildRouteTree(menus: MenuItem[] = []) {
 	const staticRoutes = buildStaticRoutes(layoutRoute, menus);
 	layoutChildren.push(...staticRoutes);
 
-	// 3. 404 路由
+	// 3. 403 与 404 兜底路由
+	layoutChildren.push(buildForbiddenRoute(layoutRoute));
 	layoutChildren.push(buildNotFoundRoute(layoutRoute));
 
 	// 组装 layout 路由（含子路由）

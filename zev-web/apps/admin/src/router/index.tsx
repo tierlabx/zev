@@ -34,5 +34,7 @@ declare module "@tanstack/react-router" {
 	interface StaticDataRouteOption {
 		title?: string;
 		perms?: string;
+		hideInTags?: boolean;
+		isDirectory?: boolean;
 	}
 }

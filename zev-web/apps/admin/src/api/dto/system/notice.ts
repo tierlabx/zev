@@ -11,6 +11,17 @@ export interface MyNoticeQueryParams {
 }
 
 /**
+ * 个人已发送消息分页筛选参数
+ */
+export interface SentNoticeQueryParams {
+	page: number;
+	pageSize: number;
+	type?: number;
+	level?: number;
+	keyword?: string;
+}
+
+/**
  * 消息管理列表分页筛选参数
  */
 export interface ManageNoticeQueryParams {

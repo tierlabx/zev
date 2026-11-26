@@ -31,6 +31,15 @@ type MyNoticeListReq struct {
 	Keyword  string `form:"keyword"`
 }
 
+// SentNoticeListReq 个人已发送消息分页筛选参数
+type SentNoticeListReq struct {
+	Page     int    `form:"page"`
+	PageSize int    `form:"pageSize"`
+	Type     int    `form:"type"`
+	Level    *int   `form:"level"`
+	Keyword  string `form:"keyword"`
+}
+
 // ReadAllNoticeReq 全部标为已读请求（可选按消息类型过滤）
 type ReadAllNoticeReq struct {
 	Type int `json:"type"`
@@ -100,6 +109,34 @@ type MyNoticeItem struct {
 	ReadAt      *time.Time `json:"readAt"`
 	PublishedAt *time.Time `json:"publishedAt"`
 	CreatedAt   time.Time  `json:"createdAt"`
+}
+
+// SentNoticeRecipientItem 已发送消息接收人及阅读状态明细
+type SentNoticeRecipientItem struct {
+	UserID   uint       `json:"userId"`
+	Username string     `json:"username"`
+	Nickname string     `json:"nickname"`
+	IsRead   bool       `json:"isRead"`
+	ReadAt   *time.Time `json:"readAt"`
+}
+
+// SentNoticeItem 个人已发送消息展示项（含接收人预览与已读回执统计）
+type SentNoticeItem struct {
+	ID          uint                      `json:"id"`
+	Title       string                    `json:"title"`
+	Content     string                    `json:"content"`
+	Type        int                       `json:"type"`
+	Level       int                       `json:"level"`
+	TargetType  int                       `json:"targetType"`
+	Link        string                    `json:"link"`
+	Status      int                       `json:"status"`
+	SenderID    uint                      `json:"senderId"`
+	Sender      string                    `json:"sender"`
+	ReadCount   int64                     `json:"readCount"`
+	TotalCount  int64                     `json:"totalCount"`
+	Recipients  []SentNoticeRecipientItem `json:"recipients"`
+	PublishedAt *time.Time                `json:"publishedAt"`
+	CreatedAt   time.Time                 `json:"createdAt"`
 }
 
 // UnreadCountRes 各分类未读消息数量汇总

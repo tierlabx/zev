@@ -1,26 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { Badge } from "@zev/ui/components/badge";
 import { Button } from "@zev/ui/components/button";
 import { Card } from "@zev/ui/components/card";
 import { Input } from "@zev/ui/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zev/ui/components/select";
 import { cn } from "@zev/ui/lib/utils";
-import {
-	ArrowLeft,
-	ArrowUpRight,
-	BellRing,
-	CheckCheck,
-	ChevronLeft,
-	ChevronRight,
-	Eraser,
-	Mail,
-	MailOpen,
-	PenSquare,
-	Search,
-	Settings2,
-	Trash2,
-} from "lucide-react";
+import { CheckCheck, Eraser, PenSquare, Search, Send, Settings2, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
@@ -36,15 +21,16 @@ import {
 	markNoticeAsUnread,
 } from "@/api/system/notice";
 import { Auth } from "@/components/auth";
-import { Checkbox } from "@/components/zev-table/checkbox";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useI18n } from "@/i18n";
 import { ComposeDirectMessageDialog } from "./components/ComposeDirectMessageDialog";
+import { InboxPane } from "./components/InboxPane";
+import { SentMessagesPane } from "./components/SentMessagesPane";
 
-type TabFilter = "all" | "unread" | "1" | "2" | "3";
+type TabFilter = "all" | "unread" | "1" | "2" | "3" | "sent";
 
 export default function MessagesPage() {
-	const { locale, t } = useI18n();
+	const { t } = useI18n();
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -66,29 +52,34 @@ export default function MessagesPage() {
 	const [levelFilter, setLevelFilter] = useState("all");
 	const [keyword, setKeyword] = useState("");
 	const [debouncedKeyword] = useDebounce(keyword, 300);
-	const [page, setPage] = useState(1);
+	const [inboxPage, setInboxPage] = useState(1);
+	const [sentPage, setSentPage] = useState(1);
 	const pageSize = 15;
 
 	const [selectedNoticeId, setSelectedNoticeId] = useState<number | null>(queryNoticeId);
+	const [selectedSentId, setSelectedSentId] = useState<number | null>(null);
 	const [checkedIds, setCheckedIds] = useState<number[]>([]);
 	const [mobileShowDetail, setMobileShowDetail] = useState(Boolean(queryNoticeId));
 	const [composeOpen, setComposeOpen] = useState(false);
 
-	const queryParams = useMemo(
+	const isSentTab = activeTab === "sent";
+
+	const inboxQueryParams = useMemo(
 		() => ({
-			page,
+			page: inboxPage,
 			pageSize,
 			type: activeTab === "1" || activeTab === "2" || activeTab === "3" ? Number(activeTab) : undefined,
 			isRead: activeTab === "unread" ? false : undefined,
 			level: levelFilter !== "all" ? Number(levelFilter) : undefined,
 			keyword: debouncedKeyword || undefined,
 		}),
-		[page, activeTab, levelFilter, debouncedKeyword],
+		[inboxPage, activeTab, levelFilter, debouncedKeyword],
 	);
 
-	const { data: listData, isLoading } = useQuery({
-		queryKey: ["myNotices", queryParams],
-		queryFn: () => getMyNoticeList(queryParams),
+	const { data: listData, isLoading: inboxLoading } = useQuery({
+		queryKey: ["myNotices", inboxQueryParams],
+		queryFn: () => getMyNoticeList(inboxQueryParams),
+		enabled: !isSentTab,
 	});
 
 	const { data: unreadStats } = useQuery({
@@ -98,7 +89,6 @@ export default function MessagesPage() {
 
 	const rows = listData?.list ?? [];
 	const total = listData?.total ?? 0;
-	const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
 	const visibleIds = useMemo(() => new Set(rows.map((item) => item.id)), [rows]);
 	const validCheckedIds = useMemo(() => checkedIds.filter((id) => visibleIds.has(id)), [checkedIds, visibleIds]);
@@ -108,7 +98,7 @@ export default function MessagesPage() {
 	const { data: detailFromApi } = useQuery({
 		queryKey: ["myNoticeDetail", effectiveSelectedId],
 		queryFn: () => getMyNoticeDetail(effectiveSelectedId as number),
-		enabled: effectiveSelectedId !== null && effectiveSelectedId > 0,
+		enabled: !isSentTab && effectiveSelectedId !== null && effectiveSelectedId > 0,
 	});
 
 	const activeDetail: MyNoticeItem | null =
@@ -117,6 +107,9 @@ export default function MessagesPage() {
 	const invalidateAllNoticeQueries = useCallback(() => {
 		queryClient.invalidateQueries({ queryKey: ["myNotices"] });
 		queryClient.invalidateQueries({ queryKey: ["myNoticeDetail"] });
+		queryClient.invalidateQueries({ queryKey: ["sentNotices"] });
+		queryClient.invalidateQueries({ queryKey: ["sentNoticeDetail"] });
+		queryClient.invalidateQueries({ queryKey: ["manageNotices"] });
 		queryClient.invalidateQueries({ queryKey: ["notices"] });
 		queryClient.invalidateQueries({ queryKey: ["noticeUnreadCount"] });
 	}, [queryClient]);
@@ -172,9 +165,10 @@ export default function MessagesPage() {
 		},
 	});
 
-	// 外部通过 ?id= 跳入时同步选中并自动标为已读
+	// 外部通过 ?id= 跳入时切回收件箱、同步选中并自动标为已读
 	useEffect(() => {
 		if (queryNoticeId) {
+			setActiveTab((prev) => (prev === "sent" ? "all" : prev));
 			setSelectedNoticeId(queryNoticeId);
 			setMobileShowDetail(true);
 		}
@@ -230,32 +224,16 @@ export default function MessagesPage() {
 		});
 	};
 
-	const typeBadge = (type: number) => {
-		switch (type) {
-			case 2:
-				return t("notice.typeReminder");
-			case 3:
-				return t("notice.typePrivate");
-			default:
-				return t("notice.typeSystem");
+	const handleComposeSuccess = (createdId?: number) => {
+		invalidateAllNoticeQueries();
+		setActiveTab("sent");
+		setSentPage(1);
+		if (createdId) {
+			setSelectedSentId(createdId);
 		}
 	};
 
-	const levelBadge = (level: number) => {
-		if (level >= 2) {
-			return <Badge variant="destructive">{t("notice.levelUrgent")}</Badge>;
-		}
-		if (level === 1) {
-			return (
-				<Badge variant="outline" className="border-foreground/40 text-foreground">
-					{t("notice.levelImportant")}
-				</Badge>
-			);
-		}
-		return null;
-	};
-
-	const tabs: Array<{ key: TabFilter; label: string; count?: number }> = [
+	const inboxTabs: Array<{ key: TabFilter; label: string; count?: number }> = [
 		{ key: "all", label: t("notice.tabAll") },
 		{ key: "unread", label: t("notice.tabUnread"), count: unreadStats?.total },
 		{ key: "1", label: t("notice.typeSystem"), count: unreadStats?.system },
@@ -263,16 +241,13 @@ export default function MessagesPage() {
 		{ key: "3", label: t("notice.typePrivate"), count: unreadStats?.private },
 	];
 
-	const allChecked = rows.length > 0 && rows.every((item) => validCheckedIds.includes(item.id));
-	const someChecked = rows.some((item) => validCheckedIds.includes(item.id)) && !allChecked;
-
 	return (
 		<div className="flex-1 flex flex-col gap-3 min-h-0">
 			{/* 顶部工具与分类筛选栏 */}
 			<Card className="rounded-md border px-4 py-3 shadow-sm shrink-0">
 				<div className="flex flex-wrap items-center justify-between gap-3">
 					<div className="flex flex-wrap items-center gap-1.5">
-						{tabs.map((tab) => {
+						{inboxTabs.map((tab) => {
 							const active = activeTab === tab.key;
 							return (
 								<Button
@@ -283,7 +258,7 @@ export default function MessagesPage() {
 									className="h-8 gap-1.5 text-xs"
 									onClick={() => {
 										setActiveTab(tab.key);
-										setPage(1);
+										setInboxPage(1);
 									}}
 								>
 									<span>{tab.label}</span>
@@ -300,6 +275,22 @@ export default function MessagesPage() {
 								</Button>
 							);
 						})}
+
+						<div className="h-4 w-px bg-border mx-1" />
+
+						<Button
+							type="button"
+							variant={isSentTab ? "default" : "ghost"}
+							size="sm"
+							className="h-8 gap-1.5 text-xs"
+							onClick={() => {
+								setActiveTab("sent");
+								setSentPage(1);
+							}}
+						>
+							<Send className="h-3.5 w-3.5" />
+							<span>{t("notice.tabSent")}</span>
+						</Button>
 					</div>
 
 					<div className="flex flex-wrap items-center gap-2">
@@ -309,7 +300,8 @@ export default function MessagesPage() {
 								value={keyword}
 								onChange={(e) => {
 									setKeyword(e.target.value);
-									setPage(1);
+									setInboxPage(1);
+									setSentPage(1);
 								}}
 								placeholder={t("notice.searchPlaceholder")}
 								className="h-8 w-44 pl-8 text-xs"
@@ -319,7 +311,8 @@ export default function MessagesPage() {
 							value={levelFilter}
 							onValueChange={(value) => {
 								setLevelFilter(value);
-								setPage(1);
+								setInboxPage(1);
+								setSentPage(1);
 							}}
 						>
 							<SelectTrigger className="h-8 w-28 text-xs">
@@ -332,40 +325,46 @@ export default function MessagesPage() {
 								<SelectItem value="2">{t("notice.levelUrgent")}</SelectItem>
 							</SelectContent>
 						</Select>
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							className="h-8 text-xs"
-							disabled={markAllReadMutation.isPending}
-							onClick={() => markAllReadMutation.mutate()}
-						>
-							<CheckCheck className="mr-1.5 h-3.5 w-3.5" />
-							{t("header.markAllRead")}
-						</Button>
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							className="h-8 text-xs"
-							disabled={validCheckedIds.length === 0 || deleteMutation.isPending}
-							onClick={handleBatchDelete}
-						>
-							<Trash2 className="mr-1.5 h-3.5 w-3.5" />
-							{t("notice.batchDelete")}
-							{validCheckedIds.length > 0 ? ` (${validCheckedIds.length})` : ""}
-						</Button>
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							className="h-8 text-xs"
-							disabled={clearReadMutation.isPending}
-							onClick={handleClearRead}
-						>
-							<Eraser className="mr-1.5 h-3.5 w-3.5" />
-							{t("notice.clearRead")}
-						</Button>
+
+						{!isSentTab ? (
+							<>
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									className="h-8 text-xs"
+									disabled={markAllReadMutation.isPending}
+									onClick={() => markAllReadMutation.mutate()}
+								>
+									<CheckCheck className="mr-1.5 h-3.5 w-3.5" />
+									{t("header.markAllRead")}
+								</Button>
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									className="h-8 text-xs"
+									disabled={validCheckedIds.length === 0 || deleteMutation.isPending}
+									onClick={handleBatchDelete}
+								>
+									<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+									{t("notice.batchDelete")}
+									{validCheckedIds.length > 0 ? ` (${validCheckedIds.length})` : ""}
+								</Button>
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									className="h-8 text-xs"
+									disabled={clearReadMutation.isPending}
+									onClick={handleClearRead}
+								>
+									<Eraser className="mr-1.5 h-3.5 w-3.5" />
+									{t("notice.clearRead")}
+								</Button>
+							</>
+						) : null}
+
 						<Button type="button" size="sm" className="h-8 text-xs" onClick={() => setComposeOpen(true)}>
 							<PenSquare className="mr-1.5 h-3.5 w-3.5" />
 							{t("notice.composeDirect")}
@@ -386,228 +385,45 @@ export default function MessagesPage() {
 				</div>
 			</Card>
 
-			{/* 主体双栏阅读区 */}
-			<Card className="flex-1 min-h-0 rounded-md border shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-[380px_1fr]">
-				{/* 左侧收件箱列表 */}
-				<div
-					className={cn(
-						"flex flex-col min-h-0 border-b lg:border-b-0 lg:border-r bg-card",
-						mobileShowDetail ? "hidden lg:flex" : "flex",
-					)}
-				>
-					<div className="flex items-center justify-between px-4 py-2.5 border-b bg-muted/30 shrink-0 text-xs text-muted-foreground">
-						<div className="flex items-center gap-2">
-							<Checkbox
-								checked={allChecked || (someChecked && "indeterminate")}
-								onCheckedChange={(v) => handleToggleSelectAll(!!v)}
-								aria-label={t("common.selectAll")}
-							/>
-							<span>{t("table.totalRecords", { total })}</span>
-						</div>
-						<div className="flex items-center gap-1">
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon"
-								className="h-6 w-6"
-								disabled={page <= 1}
-								onClick={() => setPage((p) => Math.max(1, p - 1))}
-							>
-								<ChevronLeft className="h-3.5 w-3.5" />
-							</Button>
-							<span className="tabular-nums px-1">
-								{page} / {totalPages}
-							</span>
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon"
-								className="h-6 w-6"
-								disabled={page >= totalPages}
-								onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-							>
-								<ChevronRight className="h-3.5 w-3.5" />
-							</Button>
-						</div>
-					</div>
+			{isSentTab ? (
+				<SentMessagesPane
+					keyword={debouncedKeyword}
+					levelFilter={levelFilter}
+					page={sentPage}
+					pageSize={pageSize}
+					selectedSentId={selectedSentId}
+					onPageChange={setSentPage}
+					onSelectSentId={setSelectedSentId}
+					onInvalidateNotices={invalidateAllNoticeQueries}
+					onNavigateLink={(link) => navigate({ to: link as never })}
+					confirm={confirm}
+				/>
+			) : (
+				<InboxPane
+					rows={rows}
+					total={total}
+					page={inboxPage}
+					pageSize={pageSize}
+					isLoading={inboxLoading}
+					validCheckedIds={validCheckedIds}
+					mobileShowDetail={mobileShowDetail}
+					activeDetail={activeDetail}
+					markingRead={markReadMutation.isPending}
+					markingUnread={markUnreadMutation.isPending}
+					deleting={deleteMutation.isPending}
+					onPageChange={setInboxPage}
+					onSelectItem={handleSelectItem}
+					onToggleCheck={handleToggleCheck}
+					onToggleSelectAll={handleToggleSelectAll}
+					onBackToList={() => setMobileShowDetail(false)}
+					onMarkRead={(id) => markReadMutation.mutate(id)}
+					onMarkUnread={(id) => markUnreadMutation.mutate(id)}
+					onDeleteSingle={handleDeleteSingle}
+					onNavigateLink={(link) => navigate({ to: link as never })}
+				/>
+			)}
 
-					<div className="flex-1 overflow-y-auto divide-y">
-						{isLoading ? (
-							<div className="py-12 text-center text-sm text-muted-foreground">{t("common.loading")}</div>
-						) : rows.length > 0 ? (
-							rows.map((item) => {
-								const isSelected = activeDetail?.id === item.id;
-								return (
-									<div
-										key={item.id}
-										className={cn(
-											"flex items-start gap-2.5 px-4 py-3 transition-colors",
-											isSelected ? "bg-muted/70" : "hover:bg-muted/40",
-										)}
-									>
-										<div className="pt-0.5 shrink-0">
-											<Checkbox
-												checked={validCheckedIds.includes(item.id)}
-												onCheckedChange={(v) => handleToggleCheck(item.id, !!v)}
-												aria-label={item.title}
-											/>
-										</div>
-										<button
-											type="button"
-											onClick={() => handleSelectItem(item)}
-											className="flex-1 min-w-0 text-left space-y-1 outline-none cursor-pointer"
-										>
-											<div className="flex items-center justify-between gap-2">
-												<div className="flex items-center gap-1.5 min-w-0">
-													{!item.isRead ? (
-														<span className="h-2 w-2 rounded-full bg-foreground shrink-0" />
-													) : (
-														<span className="h-2 w-2 rounded-full bg-transparent shrink-0" />
-													)}
-													<span
-														className={cn("text-sm truncate", item.isRead ? "text-foreground/80" : "font-semibold")}
-													>
-														{item.title}
-													</span>
-												</div>
-												<span className="text-[11px] text-muted-foreground shrink-0 tabular-nums">
-													{new Date(item.publishedAt || item.createdAt).toLocaleDateString(locale)}
-												</span>
-											</div>
-											<div className="flex items-center gap-1.5 pl-3.5">
-												<Badge variant="secondary" className="px-1.5 py-0 text-[10px] font-normal">
-													{typeBadge(item.type)}
-												</Badge>
-												{levelBadge(item.level)}
-												<span className="text-[11px] text-muted-foreground truncate">{item.sender || "-"}</span>
-											</div>
-											<p className="text-xs text-muted-foreground line-clamp-2 pl-3.5">{item.content}</p>
-										</button>
-									</div>
-								);
-							})
-						) : (
-							<div className="py-16 flex flex-col items-center justify-center gap-2 text-muted-foreground">
-								<BellRing className="h-8 w-8 opacity-40" />
-								<span className="text-sm">{t("notice.emptyInbox")}</span>
-							</div>
-						)}
-					</div>
-				</div>
-
-				{/* 右侧消息正文面板 */}
-				<div className={cn("flex flex-col min-h-0 min-w-0", mobileShowDetail ? "flex" : "hidden lg:flex")}>
-					{activeDetail ? (
-						<>
-							<div className="border-b px-6 py-4 space-y-3 shrink-0">
-								<div className="flex items-start justify-between gap-3">
-									<div className="space-y-1.5 min-w-0">
-										<div className="flex items-center gap-2 lg:hidden">
-											<Button
-												type="button"
-												variant="ghost"
-												size="sm"
-												className="h-7 px-2 -ml-2 text-xs"
-												onClick={() => setMobileShowDetail(false)}
-											>
-												<ArrowLeft className="mr-1 h-3.5 w-3.5" />
-												{t("notice.backToList")}
-											</Button>
-										</div>
-										<h3 className="text-base font-semibold text-foreground break-words">{activeDetail.title}</h3>
-										<div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-											<Badge variant="secondary" className="font-normal">
-												{typeBadge(activeDetail.type)}
-											</Badge>
-											{levelBadge(activeDetail.level)}
-											<Badge variant="outline" className="font-normal">
-												{activeDetail.isRead ? t("notice.statusRead") : t("notice.statusUnread")}
-											</Badge>
-											<span>
-												{t("notice.senderLabel")}: {activeDetail.sender || "-"}
-											</span>
-											<span>·</span>
-											<span className="tabular-nums">
-												{new Date(activeDetail.publishedAt || activeDetail.createdAt).toLocaleString(locale)}
-											</span>
-										</div>
-									</div>
-
-									<div className="flex items-center gap-1.5 shrink-0">
-										{activeDetail.isRead ? (
-											<Button
-												type="button"
-												variant="outline"
-												size="sm"
-												className="h-8 text-xs"
-												disabled={markUnreadMutation.isPending}
-												onClick={() => markUnreadMutation.mutate(activeDetail.id)}
-											>
-												<Mail className="mr-1.5 h-3.5 w-3.5" />
-												{t("notice.markUnread")}
-											</Button>
-										) : (
-											<Button
-												type="button"
-												variant="outline"
-												size="sm"
-												className="h-8 text-xs"
-												disabled={markReadMutation.isPending}
-												onClick={() => markReadMutation.mutate(activeDetail.id)}
-											>
-												<MailOpen className="mr-1.5 h-3.5 w-3.5" />
-												{t("notice.markRead")}
-											</Button>
-										)}
-										<Button
-											type="button"
-											variant="destructive"
-											size="sm"
-											className="h-8 text-xs"
-											disabled={deleteMutation.isPending}
-											onClick={() => handleDeleteSingle(activeDetail.id)}
-										>
-											<Trash2 className="mr-1.5 h-3.5 w-3.5" />
-											{t("common.delete")}
-										</Button>
-									</div>
-								</div>
-							</div>
-
-							<div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-								<div className="text-sm leading-7 text-foreground/90 whitespace-pre-wrap break-words">
-									{activeDetail.content}
-								</div>
-
-								{activeDetail.link ? (
-									<div className="pt-2 border-t">
-										<Button
-											type="button"
-											variant="outline"
-											size="sm"
-											onClick={() => navigate({ to: activeDetail.link as never })}
-										>
-											{t("notice.openRelatedLink")}
-											<ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
-										</Button>
-									</div>
-								) : null}
-							</div>
-						</>
-					) : (
-						<div className="flex-1 flex flex-col items-center justify-center gap-2 text-muted-foreground p-8">
-							<MailOpen className="h-10 w-10 opacity-30" />
-							<span className="text-sm">{t("notice.selectPrompt")}</span>
-						</div>
-					)}
-				</div>
-			</Card>
-
-			<ComposeDirectMessageDialog
-				open={composeOpen}
-				onOpenChange={setComposeOpen}
-				onSuccess={invalidateAllNoticeQueries}
-			/>
+			<ComposeDirectMessageDialog open={composeOpen} onOpenChange={setComposeOpen} onSuccess={handleComposeSuccess} />
 			<ConfirmDialog />
 		</div>
 	);

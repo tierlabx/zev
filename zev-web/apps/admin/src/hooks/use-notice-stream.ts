@@ -100,6 +100,8 @@ export function useNoticeStream() {
 						queryClient.invalidateQueries({ queryKey: ["notices"] });
 						queryClient.invalidateQueries({ queryKey: ["noticeUnreadCount"] });
 						queryClient.invalidateQueries({ queryKey: ["myNotices"] });
+						queryClient.invalidateQueries({ queryKey: ["sentNotices"] });
+						queryClient.invalidateQueries({ queryKey: ["sentNoticeDetail"] });
 						queryClient.invalidateQueries({ queryKey: ["manageNotices"] });
 						if (evt.link?.startsWith("/agent/")) {
 							queryClient.invalidateQueries({ queryKey: ["agentPendingApprovals"] });

@@ -4,6 +4,7 @@ import type {
 	MyNoticeQueryParams,
 	NoticePageResult,
 	SendDirectMessagePayload,
+	SentNoticeQueryParams,
 	UpdateNoticePayload,
 } from "../dto/system/notice";
 import type {
@@ -11,6 +12,8 @@ import type {
 	MyNoticeItem,
 	NoticePushEvent,
 	ReceiverOption,
+	SentNoticeItem,
+	SentNoticeRecipientItem,
 	UnreadCountRes,
 } from "../interface/system/notice";
 import request from "../request";
@@ -25,6 +28,9 @@ export type {
 	NoticePushEvent,
 	ReceiverOption,
 	SendDirectMessagePayload,
+	SentNoticeItem,
+	SentNoticeQueryParams,
+	SentNoticeRecipientItem,
 	UnreadCountRes,
 	UpdateNoticePayload,
 };
@@ -105,7 +111,28 @@ export function getReceiverOptions(keyword?: string) {
  * 发送站内私信
  */
 export function sendDirectMessage(data: SendDirectMessagePayload) {
-	return request.post<void>("/system/notice/direct", data);
+	return request.post<{ id: number }>("/system/notice/direct", data);
+}
+
+/**
+ * 分页查询当前用户已发送消息记录
+ */
+export function getSentNoticeList(params: SentNoticeQueryParams) {
+	return request.get<NoticePageResult<SentNoticeItem>>("/system/notice/sent", { params });
+}
+
+/**
+ * 获取已发送单条消息详情与完整接收人阅读状态
+ */
+export function getSentNoticeDetail(id: number) {
+	return request.get<SentNoticeItem>(`/system/notice/sent/${id}`);
+}
+
+/**
+ * 发件人撤回自己发出的站内私信
+ */
+export function revokeSentDirectMessage(id: number) {
+	return request.post<void>(`/system/notice/sent/revoke/${id}`);
 }
 
 /**

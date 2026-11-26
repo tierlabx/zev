@@ -3,6 +3,7 @@ package service
 import (
 	"slices"
 	"testing"
+	"time"
 )
 
 func TestEncodeDecodeTargetIDs(t *testing.T) {
@@ -44,5 +45,30 @@ func TestSummarizeContent(t *testing.T) {
 	got := SummarizeContent(raw, 10)
 	if got != "第一行标题 第二行正..." {
 		t.Fatalf("unexpected summary %q", got)
+	}
+}
+
+func TestBuildSentRecipientSummary(t *testing.T) {
+	now := time.Now()
+	rows := []sentRecipientRow{
+		{NoticeID: 10, UserID: 2, Username: "user", Nickname: "普通用户", IsRead: true, ReadAt: &now},
+		{NoticeID: 10, UserID: 3, Username: "manager", Nickname: "研发主管", IsRead: false},
+		{NoticeID: 10, UserID: 4, Username: "alice", Nickname: "Alice", IsRead: true, ReadAt: &now},
+		{NoticeID: 11, UserID: 2, Username: "user", Nickname: "普通用户", IsRead: false},
+	}
+
+	stats, previews := buildSentRecipientSummary(rows, 2)
+
+	if st := stats[10]; st.TotalCount != 3 || st.ReadCount != 2 {
+		t.Fatalf("unexpected notice 10 stats: %+v", st)
+	}
+	if len(previews[10]) != 2 {
+		t.Fatalf("expected preview truncated to 2 items, got %d", len(previews[10]))
+	}
+	if previews[10][0].Username != "user" || previews[10][1].Username != "manager" {
+		t.Fatalf("unexpected preview order: %+v", previews[10])
+	}
+	if st := stats[11]; st.TotalCount != 1 || st.ReadCount != 0 {
+		t.Fatalf("unexpected notice 11 stats: %+v", st)
 	}
 }

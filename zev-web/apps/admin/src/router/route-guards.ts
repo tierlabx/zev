@@ -1,6 +1,40 @@
 import { redirect } from "@tanstack/react-router";
+import { componentMap } from "@/router/components";
 import { useUserStore } from "@/store";
 import { findFirstPagePath } from "@/utils/menu-utils";
+
+/**
+ * 从前端组件映射表自动推导系统受保护的已知页面与目录路径集合，
+ * 用于在用户已登录但路由未命中时区分「无权访问 (403)」与「页面不存在 (404)」。
+ */
+const KNOWN_PAGE_PATHS = new Set(
+	Object.keys(componentMap).map((key) => {
+		const trimmed = key.endsWith("/index") ? key.slice(0, -"/index".length) : key;
+		return `/${trimmed}`;
+	}),
+);
+
+const KNOWN_DIR_PATHS = new Set(
+	Array.from(KNOWN_PAGE_PATHS)
+		.map((pagePath) => {
+			const idx = pagePath.lastIndexOf("/");
+			return idx > 0 ? pagePath.slice(0, idx) : "";
+		})
+		.filter(Boolean),
+);
+
+function normalizePathname(pathname: string): string {
+	if (!pathname) return "/";
+	return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+}
+
+function isKnownProtectedPath(pathname: string): boolean {
+	const normalized = normalizePathname(pathname);
+	if (KNOWN_PAGE_PATHS.has(normalized) || KNOWN_DIR_PATHS.has(normalized)) {
+		return true;
+	}
+	return Array.from(KNOWN_PAGE_PATHS).some((known) => normalized.startsWith(`${known}/`));
+}
 
 /**
  * 登录页守卫
@@ -33,16 +67,20 @@ export const layoutBeforeLoad = () => {
 
 /**
  * 根路径/未匹配路径兜底守卫
- * 校验用户登录状态并重定向到首个可用页面或登录页
+ * 未登录跳转登录页；已登录时区分系统已定义但无权限的路由（403）与完全不存在的路径（404）
  */
-export const splatBeforeLoad = () => {
+export const splatBeforeLoad = ({ location }: { location: { pathname: string } }) => {
 	const { token, menus: currentMenus } = useUserStore.getState();
 	if (!token || currentMenus.length === 0) {
-		throw redirect({ to: "/login" });
+		throw redirect({ to: "/login", replace: true });
 	}
-	const first = findFirstPagePath(currentMenus);
-	if (first) {
-		throw redirect({ to: first as never });
+	const normalizedPath = normalizePathname(location.pathname);
+	if (isKnownProtectedPath(normalizedPath)) {
+		throw redirect({
+			to: "/403",
+			search: { from: normalizedPath } as never,
+			replace: true,
+		});
 	}
-	throw redirect({ to: "/login" });
+	throw redirect({ to: "/404", replace: true });
 };
