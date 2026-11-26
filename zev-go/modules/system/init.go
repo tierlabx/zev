@@ -51,7 +51,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 	logService := service.NewLogService(db)
 
 	// 4. 初始化 Controller 层
-	openController := controller.NewOpenController(db)
+	openController := controller.NewOpenController()
 	deptController := controller.NewDeptController(deptService)
 	userController := controller.NewUserController(userService, roleService, menuService)
 	roleController := controller.NewRoleController(roleService)

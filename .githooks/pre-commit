@@ -29,4 +29,10 @@ if [ -n "$js_files" ]; then
   echo "$js_files" | xargs git add
 fi
 
+# 3. 运行仓库级机械化架构守卫
+if command -v node >/dev/null 2>&1 && [ -f "scripts/harness/cli.mjs" ]; then
+  echo "🛡️ Running ZEV Harness quick checks..."
+  node scripts/harness/cli.mjs check --quick || exit 1
+fi
+
 exit 0

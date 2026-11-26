@@ -4,16 +4,13 @@ import (
 	"zev-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 // OpenController 开放接口控制器，包含无需鉴权的公共接口
-type OpenController struct {
-	DB *gorm.DB
-}
+type OpenController struct{}
 
-func NewOpenController(db *gorm.DB) *OpenController {
-	return &OpenController{DB: db}
+func NewOpenController() *OpenController {
+	return &OpenController{}
 }
 
 // PingHandler

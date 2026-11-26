@@ -28,7 +28,7 @@ description: Provides core guidelines, architectural constraints, and standard o
 - **Animate UI 图标、动效与背景**：
   - 交互核心区优先使用 `@zev/ui/components/animate-ui/icons/*` + `<AnimateIcon animateOnHover asChild>`；若父级已是 Radix `Trigger asChild`，必须把 `<AnimateIcon animateOnHover>` 放入触发按钮内部，避免双层 `asChild` 冲突。
   - 虚拟滚动表格（`ZevTable`）行内**严禁使用进场动画或动画图标**，确保 60FPS 滚动性能。
-  - `@zev/ui/components/animate-ui/backgrounds/{stars,gravity-stars}` 仅用于非高频数据页（如 `NotFound.tsx`）；**登录页 (`Login.tsx`) 固定保留原 WebGPU 锦鲤着色器 `ShaderKoiBackground`，禁止替换或增加背景切换控件**。
+  - `@zev/ui/components/animate-ui/backgrounds/{stars,gravity-stars}` 仅用于非高频数据页（如 `NotFound.tsx`）；**登录页 (`Login.tsx`) 固定保留基于 Three.js WebGL 的 3D 黑白线稿锦鲤水池 `ShaderKoiBackground`，禁止替换或增加背景切换控件**。
   - 从 `@animate-ui` registry 新拉取图标或背景时，务必把 `cn` 导入修正为 `@zev/ui/lib/utils` 并移除未使用的 `import * as React`。
 - **全局命令面板、表单与通知**：
   - 全局搜索与快捷指令维护在 `layouts/dashboard/components/global-search.tsx`（`cmdk`，`⌘K`/`Ctrl+K`）。
@@ -47,8 +47,10 @@ description: Provides core guidelines, architectural constraints, and standard o
 - **文档**：每个接口必须包含规范的 Swagger 注释。
 
 ## 4. 开发工作流
+- 仓库上下文入口为根目录 `AGENTS.md`，架构与模块边界见 `docs/architecture/system-map.md`。
 - 修改任何文件前，先理解已有模块的风格，保持 100% 一致。
 - 前端页面开发完毕后，请自动按极简美学自查。
+- 每次改动完成后，执行 `node scripts/harness/cli.mjs check` 校验前后端架构与跨端契约；任务收尾前执行 `node scripts/harness/cli.mjs verify` 完成全量自检。
 - 本技能的规范与项目根目录 `.agents/rules/code.md` 保持同步。每次有重大的架构调整，请记得同步更新该 md 文件以及此技能文件。
 
 ## 5. 前端高级组件与布局指南
