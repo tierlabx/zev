@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 import { fromRepo, lineAtOffset } from "../lib/fs-utils.mjs";
 import { makeViolation } from "../lib/reporter.mjs";
 
@@ -9,20 +10,41 @@ export function runContractChecks() {
 	return violations;
 }
 
+function collectSeedFiles() {
+	const modulesDir = fromRepo("zev-go", "modules");
+	if (!fs.existsSync(modulesDir)) {
+		return [];
+	}
+	const files = [];
+	for (const entry of fs.readdirSync(modulesDir, { withFileTypes: true })) {
+		if (!entry.isDirectory()) continue;
+		const candidate = path.join(modulesDir, entry.name, "seed", "seed.json");
+		if (fs.existsSync(candidate)) {
+			files.push({
+				absPath: candidate,
+				relPath: `zev-go/modules/${entry.name}/seed/seed.json`,
+			});
+		}
+	}
+	return files;
+}
+
 function checkRouteComponentSync(violations) {
-	const seedPath = fromRepo("zev-go", "modules", "system", "seed", "seed.json");
+	const seedFiles = collectSeedFiles();
 	const componentsPath = fromRepo("zev-web", "apps", "admin", "src", "router", "components.tsx");
 	const staticRoutesPath = fromRepo("zev-web", "apps", "admin", "src", "router", "static-routes.ts");
 
-	if (!fs.existsSync(seedPath) || !fs.existsSync(componentsPath)) {
+	if (seedFiles.length === 0 || !fs.existsSync(componentsPath)) {
 		return;
 	}
 
-	const seed = JSON.parse(fs.readFileSync(seedPath, "utf8"));
-	const seedComponents = new Set();
-	for (const menu of seed.menus ?? []) {
-		if (menu.component && menu.component !== "Layout") {
-			seedComponents.add(menu.component);
+	const seedComponents = new Map();
+	for (const sf of seedFiles) {
+		const seed = JSON.parse(fs.readFileSync(sf.absPath, "utf8"));
+		for (const menu of seed.menus ?? []) {
+			if (menu.component && menu.component !== "Layout") {
+				seedComponents.set(menu.component, sf.relPath);
+			}
 		}
 	}
 
@@ -57,13 +79,13 @@ function checkRouteComponentSync(violations) {
 		}
 	}
 
-	for (const comp of seedComponents) {
+	for (const [comp, seedRelPath] of seedComponents.entries()) {
 		if (!registered.has(comp)) {
 			violations.push(
 				makeViolation({
 					ruleId: "X-ROUTE-COMPONENT-SYNC",
 					severity: "error",
-					file: "zev-go/modules/system/seed/seed.json",
+					file: seedRelPath,
 					line: 1,
 					message: `seed.json 中的页面组件 "${comp}" 未在前端 componentMap 中注册`,
 					remediation: `请在 zev-web/apps/admin/src/router/components.tsx 的 componentMap 中添加 "${comp}" 映射。`,

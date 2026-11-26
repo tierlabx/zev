@@ -19,7 +19,7 @@ ZEV 是采用**极简黑白灰美学**的前后端分离后台系统：`zev-go`�
 2. **前端禁止硬刷新与原生弹窗**：严禁 `window.alert/confirm/prompt`（用 `@/hooks/use-confirm` 与 `sonner`）；登录/登出/401 必须走 [session.ts](zev-web/apps/admin/src/router/session.ts) 无刷新切换。
 3. **UI 与组件库红线**：`pages/` 内严禁顶部正副标题；基于 Radix 的弹出层严禁传入 `forceMount`；锁定 Tailwind CSS v4（禁止 `tailwind.config.*` 与 `shadcn add chart`）。
 4. **多语言与类型安全**：禁止 `any`；`zh-CN.ts` 与 `en-US.ts` 通过 `LocaleSchema` 强对齐。
-5. **前后端路由同步**：[seed.json](zev-go/modules/system/seed/seed.json) 中的页面组件必须在 [components.tsx](zev-web/apps/admin/src/router/components.tsx) 注册。
+5. **前后端路由同步**：各模块 `modules/*/seed/seed.json`（如 [system/seed.json](zev-go/modules/system/seed/seed.json)、[agent/seed.json](zev-go/modules/agent/seed/seed.json)）中的页面组件必须在 [components.tsx](zev-web/apps/admin/src/router/components.tsx) 注册。
 
 ## 按需查阅文档导航
 

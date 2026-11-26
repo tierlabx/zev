@@ -1,0 +1,181 @@
+{
+  "grant_roles": ["admin"],
+  "menus": [
+    {
+      "id": 37,
+      "parent_id": 0,
+      "name": "智能体中心",
+      "path": "/agent",
+      "component": "Layout",
+      "icon": "bot",
+      "sort": 2,
+      "type": "M",
+      "perms": ""
+    },
+    {
+      "id": 38,
+      "parent_id": 37,
+      "name": "模型网关",
+      "path": "provider",
+      "component": "agent/provider/index",
+      "icon": "cpu",
+      "sort": 1,
+      "type": "C",
+      "perms": "agent:provider:list"
+    },
+    {
+      "id": 39,
+      "parent_id": 37,
+      "name": "智能体编排",
+      "path": "workspace",
+      "component": "agent/workspace/index",
+      "icon": "layers",
+      "sort": 2,
+      "type": "C",
+      "perms": "agent:workspace:list"
+    },
+    {
+      "id": 40,
+      "parent_id": 37,
+      "name": "调试演练场",
+      "path": "playground",
+      "component": "agent/playground/index",
+      "icon": "terminal",
+      "sort": 3,
+      "type": "C",
+      "perms": "agent:playground:run"
+    },
+    {
+      "id": 41,
+      "parent_id": 37,
+      "name": "执行轨迹",
+      "path": "traces",
+      "component": "agent/traces/index",
+      "icon": "activity",
+      "sort": 4,
+      "type": "C",
+      "perms": "agent:traces:list"
+    },
+    {
+      "id": 42,
+      "parent_id": 37,
+      "name": "评测回归",
+      "path": "evals",
+      "component": "agent/evals/index",
+      "icon": "flask",
+      "sort": 5,
+      "type": "C",
+      "perms": "agent:evals:list"
+    },
+    {
+      "id": 43,
+      "parent_id": 38,
+      "name": "模型网关新增",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 1,
+      "type": "F",
+      "perms": "agent:provider:create"
+    },
+    {
+      "id": 44,
+      "parent_id": 38,
+      "name": "模型网关编辑",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 2,
+      "type": "F",
+      "perms": "agent:provider:update"
+    },
+    {
+      "id": 45,
+      "parent_id": 38,
+      "name": "模型网关删除",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 3,
+      "type": "F",
+      "perms": "agent:provider:delete"
+    },
+    {
+      "id": 46,
+      "parent_id": 39,
+      "name": "智能体新增",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 1,
+      "type": "F",
+      "perms": "agent:workspace:create"
+    },
+    {
+      "id": 47,
+      "parent_id": 39,
+      "name": "智能体编辑",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 2,
+      "type": "F",
+      "perms": "agent:workspace:update"
+    },
+    {
+      "id": 48,
+      "parent_id": 39,
+      "name": "智能体删除",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 3,
+      "type": "F",
+      "perms": "agent:workspace:delete"
+    },
+    {
+      "id": 49,
+      "parent_id": 40,
+      "name": "高危工具审批",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 1,
+      "type": "F",
+      "perms": "agent:approval:decide"
+    },
+    {
+      "id": 50,
+      "parent_id": 42,
+      "name": "评测集与用例管理",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 1,
+      "type": "F",
+      "perms": "agent:evals:manage"
+    },
+    {
+      "id": 51,
+      "parent_id": 42,
+      "name": "执行回归评测",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 2,
+      "type": "F",
+      "perms": "agent:evals:run"
+    },
+    {
+      "id": 52,
+      "parent_id": 40,
+      "name": "智能体流式对话",
+      "path": "",
+      "component": "",
+      "icon": "",
+      "sort": 2,
+      "type": "F",
+      "perms": "agent:playground:run"
+    }
+  ]
+}

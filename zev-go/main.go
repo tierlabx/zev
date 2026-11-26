@@ -13,6 +13,7 @@ import (
 	"zev-go/config"
 	_ "zev-go/docs"
 	"zev-go/modules"
+	_ "zev-go/modules/agent"
 	_ "zev-go/modules/system"
 	"zev-go/pkg/audit"
 	"zev-go/pkg/database"

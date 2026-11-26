@@ -19,6 +19,7 @@ type Config struct {
 	TrustedProxies []string
 	JWTSecret      string
 	JWTExpireHours int
+	AgentSecretKey string
 	LogLevel       string
 	LogFormat      string
 	LogFile        string
@@ -41,6 +42,7 @@ func LoadConfig() Config {
 	trustedProxiesStr := getEnv("TRUSTED_PROXIES", "127.0.0.1")
 	jwtSecret := getEnv("JWT_SECRET", "zev-admin-secret-key-development")
 	jwtExpireHours := getEnvInt("JWT_EXPIRE_HOURS", 24)
+	agentSecretKey := strings.TrimSpace(getEnv("AGENT_SECRET_KEY", ""))
 	logLevel := getEnv("LOG_LEVEL", "info")
 	logFormat := getEnv("LOG_FORMAT", "text")
 	logFile := getEnv("LOG_FILE", "")
@@ -67,6 +69,7 @@ func LoadConfig() Config {
 		TrustedProxies: trustedProxies,
 		JWTSecret:      jwtSecret,
 		JWTExpireHours: jwtExpireHours,
+		AgentSecretKey: agentSecretKey,
 		LogLevel:       logLevel,
 		LogFormat:      logFormat,
 		LogFile:        logFile,

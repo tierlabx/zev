@@ -101,14 +101,19 @@ export function useNoticeStream() {
 						queryClient.invalidateQueries({ queryKey: ["noticeUnreadCount"] });
 						queryClient.invalidateQueries({ queryKey: ["myNotices"] });
 						queryClient.invalidateQueries({ queryKey: ["manageNotices"] });
+						if (evt.link?.startsWith("/agent/")) {
+							queryClient.invalidateQueries({ queryKey: ["agentPendingApprovals"] });
+						}
 
 						const showToast = evt.level >= 2 ? toast.warning : toast.info;
+						const targetLink =
+							evt.noticeId > 0 ? `/messages?id=${evt.noticeId}` : evt.link?.startsWith("/") ? evt.link : "/messages";
 						showToast(evt.title, {
 							description: evt.summary,
 							action: {
 								label: tRef.current("notice.viewDetail"),
 								onClick: () => {
-									navigateRef.current({ to: `/messages?id=${evt.noticeId}` as never });
+									navigateRef.current({ to: targetLink as never });
 								},
 							},
 						});

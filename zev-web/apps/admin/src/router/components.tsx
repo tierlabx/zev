@@ -43,6 +43,11 @@ const OperLogManagement = lazy(() => import("@/pages/system/log/oper"));
 const LoginLogManagement = lazy(() => import("@/pages/system/log/login"));
 const MessagesCenter = lazy(() => import("@/pages/messages"));
 const Profile = lazy(() => import("@/pages/profile"));
+const AgentProvider = lazy(() => import("@/pages/agent/provider"));
+const AgentWorkspace = lazy(() => import("@/pages/agent/workspace"));
+const AgentPlayground = lazy(() => import("@/pages/agent/playground"));
+const AgentTraces = lazy(() => import("@/pages/agent/traces"));
+const AgentEvals = lazy(() => import("@/pages/agent/evals"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 /**
@@ -63,6 +68,11 @@ export const componentMap: Record<string, ComponentType> = {
 	"system/log/login/index": withSuspense(LoginLogManagement),
 	"messages/index": withSuspense(MessagesCenter),
 	"profile/index": withSuspense(Profile),
+	"agent/provider/index": withSuspense(AgentProvider),
+	"agent/workspace/index": withSuspense(AgentWorkspace),
+	"agent/playground/index": withSuspense(AgentPlayground),
+	"agent/traces/index": withSuspense(AgentTraces),
+	"agent/evals/index": withSuspense(AgentEvals),
 };
 
 /**

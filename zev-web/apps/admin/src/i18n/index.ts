@@ -8,8 +8,8 @@ export type TranslationMessages = Omit<typeof zhCN, "routes">;
 type DotPaths<T> = {
 	[K in keyof T & string]: T[K] extends string
 		? K
-		: T[K] extends Record<string, string>
-			? `${K}.${keyof T[K] & string}`
+		: T[K] extends Record<string, unknown>
+			? `${K}.${DotPaths<T[K]>}`
 			: never;
 }[keyof T & string];
 
@@ -26,7 +26,18 @@ const dictionaries = {
 	"en-US": enUS,
 } as const;
 
-type NestedDictionary = Record<string, Record<string, string>>;
+type NestedDictionary = { [key: string]: string | NestedDictionary };
+
+function lookupMessage(dict: NestedDictionary, segments: string[]): string | undefined {
+	let current: string | NestedDictionary | undefined = dict;
+	for (const seg of segments) {
+		if (!current || typeof current === "string") {
+			return undefined;
+		}
+		current = current[seg];
+	}
+	return typeof current === "string" ? current : undefined;
+}
 
 function formatMessage(template: string, params?: TranslationParams): string {
 	if (!params) return template;
@@ -39,10 +50,10 @@ function formatMessage(template: string, params?: TranslationParams): string {
  * 按点号路径读取指定语言的翻译文案；缺失时回退到简体中文
  */
 export function translate(locale: Locale, key: TranslationKey, params?: TranslationParams): string {
-	const [namespace, field] = key.split(".") as [string, string];
-	const activeDict = dictionaries[locale] as NestedDictionary;
-	const fallbackDict = dictionaries["zh-CN"] as NestedDictionary;
-	const template = activeDict[namespace]?.[field] ?? fallbackDict[namespace]?.[field] ?? key;
+	const segments = key.split(".");
+	const activeDict = dictionaries[locale] as unknown as NestedDictionary;
+	const fallbackDict = dictionaries["zh-CN"] as unknown as NestedDictionary;
+	const template = lookupMessage(activeDict, segments) ?? lookupMessage(fallbackDict, segments) ?? key;
 	return formatMessage(template, params);
 }
 

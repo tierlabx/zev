@@ -23,6 +23,7 @@ type SystemModule struct{}
 
 func init() {
 	modules.Register(&SystemModule{})
+	modules.RegisterSeed("system", "modules/system/seed/seed.json")
 }
 
 func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
@@ -35,8 +36,8 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 		os.Exit(1)
 	}
 
-	// 2. 使用 seed.json 初始化基础数据与幂等升级回填
-	seed.Run(db, "modules/system/seed/seed.json")
+	// 2. 按已注册模块依次导入 seed.json 并执行幂等升级回填
+	seed.Run(db)
 
 	// 3. 初始化 Service 层
 	deptService := service.NewDeptService(db)

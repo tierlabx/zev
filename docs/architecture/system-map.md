@@ -21,7 +21,7 @@ flowchart LR
         PAGES --> UI["@zev/ui (packages/ui)\nshadcn/ui + animate-ui + Recharts v3"]
     end
 
-    SEED["modules/system/seed/seed.json\n菜单与 component 映射"] -.->|"X-ROUTE-COMPONENT-SYNC"| ROUTER
+    SEED["modules/*/seed/seed.json\n按模块注册菜单与 component 映射"] -.->|"X-ROUTE-COMPONENT-SYNC"| ROUTER
     CTRL <-->|"REST / SSE JSON"| PAGES
 ```
 
@@ -67,7 +67,7 @@ Harness 仅保留“**编译器与 Biome 抓不到、零误报、踩中必出架
 | `FE-ANIMATE-UI-REGISTRY` | [frontend.mjs](../../scripts/harness/checks/frontend.mjs) | `animate-ui/` 下 `cn` 必须导入自 `@zev/ui/lib/utils` 且无未使用 `import * as React` |
 | `FE-NO-UNSAFE-BROWSER-API` | [frontend.mjs](../../scripts/harness/checks/frontend.mjs) | 禁止 `window.alert/confirm/prompt` 与非白名单 `window.location` 硬跳转 |
 | `FE-STACK-GUARD` | [frontend.mjs](../../scripts/harness/checks/frontend.mjs) | 禁止 `tailwind.config.*` 与 `vaul`，校验 `components.json` 及 `recharts >= 3` |
-| `X-ROUTE-COMPONENT-SYNC` | [contract.mjs](../../scripts/harness/checks/contract.mjs) | 校验 `seed.json` 页面菜单 `component` 在前端 `componentMap` 100% 注册 |
+| `X-ROUTE-COMPONENT-SYNC` | [contract.mjs](../../scripts/harness/checks/contract.mjs) | 校验各模块 `modules/*/seed/seed.json` 页面菜单 `component` 在前端 `componentMap` 100% 注册 |
 
 ### 行级豁免语法
 
