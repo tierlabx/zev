@@ -8,6 +8,42 @@ export function normalizePath(path: string): string {
 	return path.startsWith("/") ? path : `/${path}`;
 }
 
+export interface FrontendRouteOption {
+	name: string;
+	path: string;
+	icon: string;
+}
+
+const STATIC_FRONTEND_ROUTES: FrontendRouteOption[] = [
+	{ name: "个人中心", path: "/profile", icon: "user" },
+	{ name: "消息中心", path: "/messages", icon: "bell" },
+];
+
+/**
+ * 汇总当前用户可见的前端页面路由（动态 C 类型菜单 + 静态业务路由），按路径规范化并去重
+ */
+export function getFrontendRouteOptions(menus: MenuItem[]): FrontendRouteOption[] {
+	const seen = new Set<string>();
+	const options: FrontendRouteOption[] = [];
+
+	const appendOption = (item: FrontendRouteOption) => {
+		const normalized = normalizePath(item.path);
+		const cleanPath = normalized.length > 1 ? normalized.replace(/\/+$/, "") : normalized;
+		if (seen.has(cleanPath)) return;
+		seen.add(cleanPath);
+		options.push({ ...item, path: cleanPath });
+	};
+
+	for (const menu of flattenMenus(menus)) {
+		appendOption(menu);
+	}
+	for (const staticRoute of STATIC_FRONTEND_ROUTES) {
+		appendOption(staticRoute);
+	}
+
+	return options;
+}
+
 /**
  * 拼接父子路径
  */

@@ -6,10 +6,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@zev/ui/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zev/ui/components/select";
 import { Switch } from "@zev/ui/components/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@zev/ui/components/tabs";
+import { Tabs, TabsContent, TabsContents, TabsList, TabsTrigger } from "@zev/ui/components/tabs";
 import { Textarea } from "@zev/ui/components/textarea";
-import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { type FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { type AgentDefinition, createAgent, getAgentToolCatalog, getProviderOptions, updateAgent } from "@/api/agent";
 import { useI18n } from "@/i18n";
@@ -24,8 +24,12 @@ interface AgentFormDialogProps {
 	onSuccess: () => void;
 }
 
+type AgentFormTab = "basic" | "budget" | "tools" | "guardrail";
+
 export function AgentFormDialog({ open, onOpenChange, editing, onSuccess }: AgentFormDialogProps) {
 	const { t } = useI18n();
+	const [activeTab, setActiveTab] = useState<AgentFormTab>("basic");
+	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	const [selectedTools, setSelectedTools] = useState<string[]>([]);
 	const [approvalTools, setApprovalTools] = useState<string[]>([]);
 	const [mcpServers, setMcpServers] = useState<EditableMcpServer[]>([]);
@@ -67,6 +71,10 @@ export function AgentFormDialog({ open, onOpenChange, editing, onSuccess }: Agen
 
 	useEffect(() => {
 		if (!open) return;
+		setActiveTab("basic");
+		if (scrollContainerRef.current) {
+			scrollContainerRef.current.scrollTop = 0;
+		}
 		if (editing) {
 			form.reset({
 				name: editing.name,
@@ -166,17 +174,41 @@ export function AgentFormDialog({ open, onOpenChange, editing, onSuccess }: Agen
 
 	const tools = toolCatalog?.tools ?? [];
 
+	// 切换 Tab 时重置内容区滚动条至顶部，避免长面板切走后新面板视觉错位
+	const handleTabChange = (nextTab: string) => {
+		setActiveTab(nextTab as AgentFormTab);
+		if (scrollContainerRef.current) {
+			scrollContainerRef.current.scrollTop = 0;
+		}
+	};
+
+	// 提交校验失败时自动定位到首个报错字段所属 Tab，防止用户看不到隐藏面板内的错误提示
+	const handleInvalidSubmit = (errors: FieldErrors<AgentFormValues>) => {
+		const firstKey = Object.keys(errors)[0] as keyof AgentFormValues | undefined;
+		if (!firstKey) return;
+		if (["name", "code", "description", "system_prompt", "status"].includes(firstKey)) {
+			handleTabChange("basic");
+		} else if (["provider_id", "model", "temperature", "max_steps", "max_tokens"].includes(firstKey)) {
+			handleTabChange("budget");
+		} else {
+			handleTabChange("guardrail");
+		}
+	};
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-2xl max-h-[88vh] flex flex-col">
+			<DialogContent className="sm:max-w-2xl max-h-[88vh] flex flex-col overflow-hidden">
 				<DialogHeader>
 					<DialogTitle>{editing ? t("agent.workspace.editTitle") : t("agent.workspace.addTitle")}</DialogTitle>
 					<DialogDescription>{t("agent.workspace.formDesc")}</DialogDescription>
 				</DialogHeader>
 
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="flex-1 flex flex-col min-h-0 gap-4">
-						<Tabs defaultValue="basic" className="flex-1 flex flex-col min-h-0">
+					<form
+						onSubmit={form.handleSubmit((v) => mutation.mutate(v), handleInvalidSubmit)}
+						className="flex-1 flex flex-col min-h-0 gap-4"
+					>
+						<Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col min-h-0">
 							<TabsList className="grid w-full grid-cols-4">
 								<TabsTrigger value="basic">{t("agent.workspace.tabBasic")}</TabsTrigger>
 								<TabsTrigger value="budget">{t("agent.workspace.tabModel")}</TabsTrigger>
@@ -184,109 +216,47 @@ export function AgentFormDialog({ open, onOpenChange, editing, onSuccess }: Agen
 								<TabsTrigger value="guardrail">{t("agent.workspace.tabGuardrail")}</TabsTrigger>
 							</TabsList>
 
-							<div className="flex-1 overflow-y-auto pt-3 pr-1 space-y-4">
-								<TabsContent value="basic" className="mt-0 space-y-3">
-									<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-										<FormField
-											control={form.control}
-											name="name"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>{t("agent.workspace.name")}</FormLabel>
-													<FormControl>
-														<Input placeholder="运维巡检助手" {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="code"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>{t("agent.workspace.code")}</FormLabel>
-													<FormControl>
-														<Input placeholder="ops-assistant" {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</div>
-
-									<FormField
-										control={form.control}
-										name="description"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>{t("common.description")}</FormLabel>
-												<FormControl>
-													<Input placeholder={t("agent.workspace.descPlaceholder")} {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-
-									<FormField
-										control={form.control}
-										name="system_prompt"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>{t("agent.workspace.systemPrompt")}</FormLabel>
-												<FormControl>
-													<Textarea rows={6} className="font-mono text-xs" {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-
-									<FormField
-										control={form.control}
-										name="status"
-										render={({ field }) => (
-											<FormItem className="flex items-center justify-between rounded-md border px-3 py-2">
-												<FormLabel className="mb-0">{t("common.status")}</FormLabel>
-												<Switch checked={field.value === 0} onCheckedChange={(c) => field.onChange(c ? 0 : 1)} />
-											</FormItem>
-										)}
-									/>
-								</TabsContent>
-
-								<TabsContent value="budget" className="mt-0 space-y-3">
-									<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-										<FormField
-											control={form.control}
-											name="provider_id"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>{t("agent.workspace.provider")}</FormLabel>
-													<Select
-														value={field.value ? String(field.value) : ""}
-														onValueChange={(val) => {
-															const id = Number(val);
-															field.onChange(id);
-															const found = providers.find((p) => p.id === id);
-															if (found && !form.getValues("model")) {
-																form.setValue("model", found.default_model);
-															}
-														}}
-													>
+							<div ref={scrollContainerRef} className="flex-1 overflow-y-auto pt-3 pr-1">
+								<TabsContents className="px-0.5 pb-1">
+									<TabsContent value="basic" className="mt-0 space-y-3">
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+											<FormField
+												control={form.control}
+												name="name"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>{t("agent.workspace.name")}</FormLabel>
 														<FormControl>
-															<SelectTrigger>
-																<SelectValue placeholder={t("agent.workspace.selectProvider")} />
-															</SelectTrigger>
+															<Input placeholder="运维巡检助手" {...field} />
 														</FormControl>
-														<SelectContent>
-															{providers.map((p) => (
-																<SelectItem key={p.id} value={String(p.id)}>
-																	{p.name} ({p.provider_type})
-																</SelectItem>
-															))}
-														</SelectContent>
-													</Select>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+											<FormField
+												control={form.control}
+												name="code"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>{t("agent.workspace.code")}</FormLabel>
+														<FormControl>
+															<Input placeholder="ops-assistant" {...field} />
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										</div>
+
+										<FormField
+											control={form.control}
+											name="description"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>{t("common.description")}</FormLabel>
+													<FormControl>
+														<Input placeholder={t("agent.workspace.descPlaceholder")} {...field} />
+													</FormControl>
 													<FormMessage />
 												</FormItem>
 											)}
@@ -294,99 +264,163 @@ export function AgentFormDialog({ open, onOpenChange, editing, onSuccess }: Agen
 
 										<FormField
 											control={form.control}
-											name="model"
+											name="system_prompt"
 											render={({ field }) => (
 												<FormItem>
-													<FormLabel>{t("agent.workspace.model")}</FormLabel>
+													<FormLabel>{t("agent.workspace.systemPrompt")}</FormLabel>
 													<FormControl>
-														<Input placeholder="留空则使用供应商默认模型" {...field} />
+														<Textarea rows={6} className="font-mono text-xs" {...field} />
 													</FormControl>
 													<FormMessage />
 												</FormItem>
 											)}
 										/>
-									</div>
 
-									<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 										<FormField
 											control={form.control}
-											name="temperature"
+											name="status"
 											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Temperature (0-2)</FormLabel>
-													<FormControl>
-														<Input
-															type="number"
-															step={0.1}
-															min={0}
-															max={2}
-															value={field.value}
-															onChange={(e) => field.onChange(Number(e.target.value))}
-														/>
-													</FormControl>
-													<FormMessage />
+												<FormItem className="flex items-center justify-between rounded-md border px-3 py-2">
+													<FormLabel className="mb-0">{t("common.status")}</FormLabel>
+													<Switch checked={field.value === 0} onCheckedChange={(c) => field.onChange(c ? 0 : 1)} />
 												</FormItem>
 											)}
 										/>
-										<FormField
-											control={form.control}
-											name="max_steps"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>{t("agent.workspace.maxSteps")}</FormLabel>
-													<FormControl>
-														<Input
-															type="number"
-															min={1}
-															max={24}
-															value={field.value}
-															onChange={(e) => field.onChange(Number(e.target.value) || 8)}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="max_tokens"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>{t("agent.workspace.maxTokens")}</FormLabel>
-													<FormControl>
-														<Input
-															type="number"
-															min={512}
-															max={200000}
-															value={field.value}
-															onChange={(e) => field.onChange(Number(e.target.value) || 16384)}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</div>
-								</TabsContent>
+									</TabsContent>
 
-								<TabsContent value="tools" className="mt-0">
-									<AgentToolsTab
-										tools={tools}
-										selectedTools={selectedTools}
-										onToggleTool={toggleTool}
-										mcpServers={mcpServers}
-										setMcpServers={setMcpServers}
-									/>
-								</TabsContent>
+									<TabsContent value="budget" className="mt-0 space-y-3">
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+											<FormField
+												control={form.control}
+												name="provider_id"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>{t("agent.workspace.provider")}</FormLabel>
+														<Select
+															value={field.value ? String(field.value) : ""}
+															onValueChange={(val) => {
+																const id = Number(val);
+																field.onChange(id);
+																const found = providers.find((p) => p.id === id);
+																if (found && !form.getValues("model")) {
+																	form.setValue("model", found.default_model);
+																}
+															}}
+														>
+															<FormControl>
+																<SelectTrigger>
+																	<SelectValue placeholder={t("agent.workspace.selectProvider")} />
+																</SelectTrigger>
+															</FormControl>
+															<SelectContent>
+																{providers.map((p) => (
+																	<SelectItem key={p.id} value={String(p.id)}>
+																		{p.name} ({p.provider_type})
+																	</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
 
-								<TabsContent value="guardrail" className="mt-0">
-									<AgentGuardrailTab
-										control={form.control}
-										tools={tools}
-										approvalTools={approvalTools}
-										onToggleApprovalTool={toggleApprovalTool}
-									/>
-								</TabsContent>
+											<FormField
+												control={form.control}
+												name="model"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>{t("agent.workspace.model")}</FormLabel>
+														<FormControl>
+															<Input placeholder="留空则使用供应商默认模型" {...field} />
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										</div>
+
+										<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+											<FormField
+												control={form.control}
+												name="temperature"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>Temperature (0-2)</FormLabel>
+														<FormControl>
+															<Input
+																type="number"
+																step={0.1}
+																min={0}
+																max={2}
+																value={field.value}
+																onChange={(e) => field.onChange(Number(e.target.value))}
+															/>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+											<FormField
+												control={form.control}
+												name="max_steps"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>{t("agent.workspace.maxSteps")}</FormLabel>
+														<FormControl>
+															<Input
+																type="number"
+																min={1}
+																max={24}
+																value={field.value}
+																onChange={(e) => field.onChange(Number(e.target.value) || 8)}
+															/>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+											<FormField
+												control={form.control}
+												name="max_tokens"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>{t("agent.workspace.maxTokens")}</FormLabel>
+														<FormControl>
+															<Input
+																type="number"
+																min={512}
+																max={200000}
+																value={field.value}
+																onChange={(e) => field.onChange(Number(e.target.value) || 16384)}
+															/>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										</div>
+									</TabsContent>
+
+									<TabsContent value="tools" className="mt-0">
+										<AgentToolsTab
+											tools={tools}
+											selectedTools={selectedTools}
+											onToggleTool={toggleTool}
+											mcpServers={mcpServers}
+											setMcpServers={setMcpServers}
+										/>
+									</TabsContent>
+
+									<TabsContent value="guardrail" className="mt-0">
+										<AgentGuardrailTab
+											control={form.control}
+											tools={tools}
+											approvalTools={approvalTools}
+											onToggleApprovalTool={toggleApprovalTool}
+										/>
+									</TabsContent>
+								</TabsContents>
 							</div>
 						</Tabs>
 

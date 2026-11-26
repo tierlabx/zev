@@ -22,6 +22,7 @@ import * as z from "zod";
 import { type DeptTreeNode, getDeptTree } from "@/api/system/dept";
 import { createNotice, getReceiverOptions, type ManageNoticeItem, updateNotice } from "@/api/system/notice";
 import { getRoleList } from "@/api/system/role";
+import { RouteSelect } from "@/components/route-select";
 import { Checkbox } from "@/components/zev-table/checkbox";
 import { usePermission } from "@/hooks/use-permission";
 import { useI18n } from "@/i18n";
@@ -423,9 +424,7 @@ export function NoticeFormDialog({ open, onOpenChange, editingNotice, onSuccess 
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>{t("notice.linkOptional")}</FormLabel>
-									<FormControl>
-										<Input placeholder={t("notice.linkPlaceholder")} className="font-mono text-xs" {...field} />
-									</FormControl>
+									<RouteSelect value={field.value} onChange={field.onChange} />
 									<FormMessage />
 								</FormItem>
 							)}

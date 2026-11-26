@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 import * as z from "zod";
 import { getReceiverOptions, sendDirectMessage } from "@/api/system/notice";
+import { RouteSelect } from "@/components/route-select";
 import { Checkbox } from "@/components/zev-table/checkbox";
 import { useI18n } from "@/i18n";
 
@@ -238,9 +239,7 @@ export function ComposeDirectMessageDialog({ open, onOpenChange, onSuccess }: Co
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>{t("notice.linkOptional")}</FormLabel>
-									<FormControl>
-										<Input placeholder={t("notice.linkPlaceholder")} className="font-mono text-xs" {...field} />
-									</FormControl>
+									<RouteSelect value={field.value} onChange={field.onChange} />
 									<FormMessage />
 								</FormItem>
 							)}
