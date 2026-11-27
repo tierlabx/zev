@@ -1,3 +1,4 @@
+import { Highlight } from "@animate-ui/react/primitives/effects/highlight";
 import { useLocation } from "@tanstack/react-router";
 import { Sheet, SheetContent, SheetTrigger } from "@zev/ui/components/sheet";
 import logoUrl from "@/assets/logo-animated.svg";
@@ -24,15 +25,17 @@ export function MobileSidebar({ children }: { children: React.ReactNode }) {
 						<span className="text-base font-semibold truncate whitespace-nowrap text-foreground">Zev Admin</span>
 					</div>
 					<nav className="relative z-10 flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden mb-12">
-						{navItems.map((item) => (
-							<NavItem
-								key={item.path}
-								item={item}
-								activePath={location.pathname}
-								sidebarCollapsed={false}
-								toggleSidebar={toggleSidebar}
-							/>
-						))}
+						<Highlight hover controlledItems exitDelay={100} className="inset-0 rounded-md bg-muted">
+							{navItems.map((item) => (
+								<NavItem
+									key={item.path}
+									item={item}
+									activePath={location.pathname}
+									sidebarCollapsed={false}
+									toggleSidebar={toggleSidebar}
+								/>
+							))}
+						</Highlight>
 					</nav>
 				</div>
 			</SheetContent>

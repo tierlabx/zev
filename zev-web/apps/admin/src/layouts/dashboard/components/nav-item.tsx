@@ -1,4 +1,5 @@
 import { AnimateIcon } from "@animate-ui/react/icons";
+import { HighlightItem } from "@animate-ui/react/primitives/effects/highlight";
 import {
 	transition as motionTransition,
 	spring,
@@ -77,53 +78,55 @@ export function NavItem({
 	if (hasChildren) {
 		return (
 			<div className="space-y-1">
-				{/* 整行悬停即播放图标动画，而非只有图标本身响应 */}
-				<AnimateIcon animateOnHover asChild>
-					<button
-						type="button"
-						onClick={() => {
-							if (sidebarCollapsed) {
-								toggleSidebar();
-								setExpanded(true);
-							} else {
-								setExpanded(!expanded);
-							}
-						}}
-						title={sidebarCollapsed ? displayName : undefined}
-						className={cn(
-							"w-full flex items-center justify-between px-3 py-2.5 rounded-md cursor-pointer transition-colors font-medium relative group",
-							sidebarCollapsed ? "justify-center" : "",
-							isChildActive ? "text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
-						)}
-					>
-						<div className={cn("flex items-center", sidebarCollapsed ? "justify-center" : "space-x-3")}>
-							<item.icon
-								className={cn(
-									"h-[18px] w-[18px] shrink-0",
-									isChildActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
-								)}
-							/>
-							{!sidebarCollapsed && <span className="text-sm truncate relative z-10">{displayName}</span>}
-						</div>
-						{!sidebarCollapsed && (
-							<ChevronDown
-								className={cn(
-									"h-4 w-4 transition-transform relative z-10",
-									isChildActive ? "text-primary" : "text-muted-foreground",
-									expanded ? "rotate-180" : "",
-								)}
-							/>
-						)}
-					</button>
-				</AnimateIcon>
+				{/* 整行悬停即播放图标动画，并由 HighlightItem 驱动侧栏共享 hover 滑块 */}
+				<HighlightItem value={item.path}>
+					<AnimateIcon animateOnHover asChild>
+						<button
+							type="button"
+							onClick={() => {
+								if (sidebarCollapsed) {
+									toggleSidebar();
+									setExpanded(true);
+								} else {
+									setExpanded(!expanded);
+								}
+							}}
+							title={sidebarCollapsed ? displayName : undefined}
+							className={cn(
+								"w-full flex items-center justify-between px-3 py-2.5 rounded-md cursor-pointer transition-colors font-medium relative z-[1] group",
+								sidebarCollapsed ? "justify-center" : "",
+								isChildActive ? "text-primary" : "text-muted-foreground hover:text-foreground",
+							)}
+						>
+							<div className={cn("flex items-center", sidebarCollapsed ? "justify-center" : "space-x-3")}>
+								<item.icon
+									className={cn(
+										"h-[18px] w-[18px] shrink-0",
+										isChildActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
+									)}
+								/>
+								{!sidebarCollapsed && <span className="text-sm truncate relative z-10">{displayName}</span>}
+							</div>
+							{!sidebarCollapsed && (
+								<ChevronDown
+									className={cn(
+										"h-4 w-4 transition-transform relative z-10",
+										isChildActive ? "text-primary" : "text-muted-foreground",
+										expanded ? "rotate-180" : "",
+									)}
+								/>
+							)}
+						</button>
+					</AnimateIcon>
+				</HighlightItem>
 				<AnimatePresence initial={false}>
 					{expanded && !sidebarCollapsed && (
 						<motion.div
-							initial={{ height: 0, opacity: 0 }}
-							animate={{ height: "auto", opacity: 1 }}
-							exit={{ height: 0, opacity: 0 }}
+							initial={{ height: 0, opacity: 0, overflow: "hidden" }}
+							animate={{ height: "auto", opacity: 1, transitionEnd: { overflow: "visible" } }}
+							exit={{ height: 0, opacity: 0, overflow: "hidden" }}
 							transition={disclosureTransition}
-							className="pl-6 space-y-1 mt-1 overflow-hidden"
+							className="pl-6 space-y-1 mt-1"
 						>
 							{item.children?.map((child) => (
 								<NavItem
@@ -143,31 +146,33 @@ export function NavItem({
 
 	const active = activePath === item.path;
 	return (
-		<AnimateIcon animateOnHover asChild>
-			<Link
-				to={item.path as never}
-				title={sidebarCollapsed ? displayName : undefined}
-				className={cn(
-					"flex items-center px-3 py-2.5 rounded-md cursor-pointer transition-colors font-medium relative group",
-					sidebarCollapsed ? "justify-center" : "space-x-3",
-					active ? "text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
-				)}
-			>
-				{active && (
-					<motion.div
-						layoutId="sidebar-active"
-						className="absolute inset-0 bg-[var(--color-primary-light)] rounded-md"
-						transition={selectionTransition}
-					/>
-				)}
-				<item.icon
+		<HighlightItem value={item.path}>
+			<AnimateIcon animateOnHover asChild>
+				<Link
+					to={item.path as never}
+					title={sidebarCollapsed ? displayName : undefined}
 					className={cn(
-						"h-[18px] w-[18px] shrink-0 relative z-10",
-						active ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
+						"flex items-center px-3 py-2.5 rounded-md cursor-pointer transition-colors font-medium relative z-[1] group",
+						sidebarCollapsed ? "justify-center" : "space-x-3",
+						active ? "text-primary" : "text-muted-foreground hover:text-foreground",
 					)}
-				/>
-				{!sidebarCollapsed && <span className="text-sm truncate relative z-10">{displayName}</span>}
-			</Link>
-		</AnimateIcon>
+				>
+					{active && (
+						<motion.div
+							layoutId="sidebar-active"
+							className="absolute inset-0 bg-[var(--color-primary-light)] rounded-md"
+							transition={selectionTransition}
+						/>
+					)}
+					<item.icon
+						className={cn(
+							"h-[18px] w-[18px] shrink-0 relative z-10",
+							active ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
+						)}
+					/>
+					{!sidebarCollapsed && <span className="text-sm truncate relative z-10">{displayName}</span>}
+				</Link>
+			</AnimateIcon>
+		</HighlightItem>
 	);
 }

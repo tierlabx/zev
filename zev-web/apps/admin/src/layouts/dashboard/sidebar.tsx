@@ -1,3 +1,4 @@
+import { Highlight } from "@animate-ui/react/primitives/effects/highlight";
 import {
 	transition as motionTransition,
 	useShouldReduceMotion,
@@ -50,15 +51,17 @@ export function Sidebar() {
 				</AnimatePresence>
 			</div>
 			<nav className="relative z-10 flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden mb-12">
-				{navItems.map((item) => (
-					<NavItem
-						key={item.path}
-						item={item}
-						activePath={location.pathname}
-						sidebarCollapsed={sidebarCollapsed}
-						toggleSidebar={toggleSidebar}
-					/>
-				))}
+				<Highlight hover controlledItems exitDelay={100} className="inset-0 rounded-md bg-muted">
+					{navItems.map((item) => (
+						<NavItem
+							key={item.path}
+							item={item}
+							activePath={location.pathname}
+							sidebarCollapsed={sidebarCollapsed}
+							toggleSidebar={toggleSidebar}
+						/>
+					))}
+				</Highlight>
 			</nav>
 			<button
 				type="button"
