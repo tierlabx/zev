@@ -8,7 +8,7 @@
       "path": "/agent",
       "component": "Layout",
       "icon": "bot",
-      "sort": 2,
+      "sort": 3,
       "type": "M",
       "perms": ""
     },
@@ -176,6 +176,17 @@
       "sort": 2,
       "type": "F",
       "perms": "agent:playground:run"
+    },
+    {
+      "id": 53,
+      "parent_id": 0,
+      "name": "AI 对话",
+      "path": "/ai-chat",
+      "component": "ai-chat/index",
+      "icon": "sparkles",
+      "sort": 1,
+      "type": "C",
+      "perms": "agent:chat:use"
     }
   ]
 }

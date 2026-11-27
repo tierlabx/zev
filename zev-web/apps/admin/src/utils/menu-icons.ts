@@ -10,7 +10,7 @@ import { MessageSquare } from "@zev/ui/components/animate-ui/icons/message-squar
 import { Settings } from "@zev/ui/components/animate-ui/icons/settings";
 import { ShieldCheck } from "@zev/ui/components/animate-ui/icons/shield-check";
 import { Users } from "@zev/ui/components/animate-ui/icons/users";
-import { Bot, Building2, Cpu, Database, FlaskConical, Terminal } from "lucide-react";
+import { Bot, Building2, Cpu, Database, FlaskConical, Sparkles, Terminal } from "lucide-react";
 import type { ComponentType } from "react";
 
 /**
@@ -51,6 +51,7 @@ const iconMap: Record<string, MenuIcon> = {
 	terminal: Terminal,
 	activity: Activity,
 	flask: FlaskConical,
+	sparkles: Sparkles,
 };
 
 /**

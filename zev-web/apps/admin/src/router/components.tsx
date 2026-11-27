@@ -16,6 +16,7 @@ const AgentWorkspace = lazyRouteComponent(() => import("@/pages/agent/workspace"
 const AgentPlayground = lazyRouteComponent(() => import("@/pages/agent/playground"));
 const AgentTraces = lazyRouteComponent(() => import("@/pages/agent/traces"));
 const AgentEvals = lazyRouteComponent(() => import("@/pages/agent/evals"));
+const AiChat = lazyRouteComponent(() => import("@/pages/ai-chat"));
 const Forbidden = lazyRouteComponent(() => import("@/pages/Forbidden"));
 const NotFound = lazyRouteComponent(() => import("@/pages/NotFound"));
 
@@ -41,6 +42,7 @@ export const componentMap: Record<string, RouteComponent> = {
 	"agent/playground/index": AgentPlayground,
 	"agent/traces/index": AgentTraces,
 	"agent/evals/index": AgentEvals,
+	"ai-chat/index": AiChat,
 };
 
 /**

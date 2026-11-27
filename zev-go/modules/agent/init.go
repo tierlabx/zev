@@ -74,7 +74,7 @@ func (m *AgentModule) Init(r *gin.Engine, db *gorm.DB) {
 		defGroup := protected.Group("/definition")
 		{
 			defGroup.GET("/list", middleware.RequirePermission(db, "agent:workspace:list"), agentCtrl.List)
-			defGroup.GET("/options", middleware.RequireAnyPermission(db, "agent:workspace:list", "agent:playground:run", "agent:traces:list", "agent:evals:list"), agentCtrl.Options)
+			defGroup.GET("/options", middleware.RequireAnyPermission(db, "agent:workspace:list", "agent:playground:run", "agent:chat:use", "agent:traces:list", "agent:evals:list"), agentCtrl.Options)
 			defGroup.GET("/get/:id", middleware.RequirePermission(db, "agent:workspace:list"), agentCtrl.Get)
 			defGroup.POST("/create", middleware.RequirePermission(db, "agent:workspace:create"), agentCtrl.Create)
 			defGroup.PUT("/update", middleware.RequirePermission(db, "agent:workspace:update"), agentCtrl.Update)
@@ -84,16 +84,16 @@ func (m *AgentModule) Init(r *gin.Engine, db *gorm.DB) {
 
 		runGroup := protected.Group("/run")
 		{
-			runGroup.POST("/stream", middleware.RequirePermission(db, "agent:playground:run"), runCtrl.Stream)
-			runGroup.POST("/cancel/:id", middleware.RequirePermission(db, "agent:playground:run"), runCtrl.Cancel)
-			runGroup.GET("/list", middleware.RequireAnyPermission(db, "agent:traces:list", "agent:playground:run"), runCtrl.List)
-			runGroup.GET("/detail/:id", middleware.RequireAnyPermission(db, "agent:traces:list", "agent:playground:run", "agent:evals:list"), runCtrl.Detail)
+			runGroup.POST("/stream", middleware.RequireAnyPermission(db, "agent:playground:run", "agent:chat:use"), runCtrl.Stream)
+			runGroup.POST("/cancel/:id", middleware.RequireAnyPermission(db, "agent:playground:run", "agent:chat:use"), runCtrl.Cancel)
+			runGroup.GET("/list", middleware.RequireAnyPermission(db, "agent:traces:list", "agent:playground:run", "agent:chat:use"), runCtrl.List)
+			runGroup.GET("/detail/:id", middleware.RequireAnyPermission(db, "agent:traces:list", "agent:playground:run", "agent:chat:use", "agent:evals:list"), runCtrl.Detail)
 			runGroup.GET("/heartbeats", middleware.RequireAnyPermission(db, "agent:traces:list", "agent:playground:run"), runCtrl.Heartbeats)
 		}
 
 		approvalGroup := protected.Group("/approval")
 		{
-			approvalGroup.GET("/list", middleware.RequireAnyPermission(db, "agent:playground:run", "agent:approval:decide", "agent:traces:list"), approvalCtrl.List)
+			approvalGroup.GET("/list", middleware.RequireAnyPermission(db, "agent:playground:run", "agent:chat:use", "agent:approval:decide", "agent:traces:list"), approvalCtrl.List)
 			approvalGroup.GET("/pending-count", middleware.RequireAnyPermission(db, "agent:playground:run", "agent:approval:decide"), approvalCtrl.PendingCount)
 			approvalGroup.POST("/decide/:id", middleware.RequirePermission(db, "agent:approval:decide"), approvalCtrl.Decide)
 		}

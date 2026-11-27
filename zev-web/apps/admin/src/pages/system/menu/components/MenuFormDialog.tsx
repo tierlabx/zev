@@ -40,7 +40,7 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 			z
 				.object({
 					parent_id: z.number(),
-					type: z.string(),
+					type: z.enum(["M", "C", "F"]),
 					name: z.string().min(1, t("menuPage.nameRequired")),
 					path: z.string().optional(),
 					component: z.string().optional(),
@@ -101,7 +101,7 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 					component: editingMenu.component || "",
 					icon: editingMenu.icon || "",
 					sort: editingMenu.sort,
-					type: editingMenu.type,
+					type: editingMenu.type || "C",
 					perms: editingMenu.perms || "",
 				});
 			} else {
@@ -171,7 +171,13 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, onSu
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>{t("menuPage.type")}</FormLabel>
-								<Select onValueChange={field.onChange} value={field.value}>
+								<Select
+									key={editingMenu?.ID ?? "new"}
+									onValueChange={(value) => {
+										if (value) field.onChange(value);
+									}}
+									value={field.value}
+								>
 									<FormControl>
 										<SelectTrigger>
 											<SelectValue placeholder={t("menuPage.selectType")} />

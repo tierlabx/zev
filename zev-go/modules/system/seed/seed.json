@@ -154,7 +154,7 @@
       "path": "/system",
       "component": "Layout",
       "icon": "setting",
-      "sort": 1,
+      "sort": 2,
       "type": "M",
       "perms": ""
     },
