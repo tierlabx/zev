@@ -55,6 +55,36 @@ const iconMap: Record<string, MenuIcon> = {
 };
 
 /**
+ * 可选菜单图标选项清单（供菜单配置图标选择器可视化展示）
+ */
+export interface MenuIconOption {
+	name: string;
+	icon: MenuIcon;
+}
+
+export const MENU_ICON_OPTIONS: readonly MenuIconOption[] = [
+	{ name: "dashboard", icon: LayoutDashboard },
+	{ name: "sparkles", icon: Sparkles },
+	{ name: "bot", icon: Bot },
+	{ name: "cpu", icon: Cpu },
+	{ name: "layers", icon: Layers },
+	{ name: "terminal", icon: Terminal },
+	{ name: "activity", icon: Activity },
+	{ name: "flask", icon: FlaskConical },
+	{ name: "setting", icon: Settings },
+	{ name: "user", icon: Users },
+	{ name: "shield", icon: ShieldCheck },
+	{ name: "building", icon: Building2 },
+	{ name: "dict", icon: BookOpen },
+	{ name: "bell", icon: Bell },
+	{ name: "mail", icon: Mail },
+	{ name: "message-square", icon: MessageSquare },
+	{ name: "scroll-text", icon: FileText },
+	{ name: "log-in", icon: LogIn },
+	{ name: "database", icon: Database },
+];
+
+/**
  * 根据后端菜单 icon 字段名获取对应的图标组件
  * 如果找不到映射，返回 Settings 作为默认图标
  */

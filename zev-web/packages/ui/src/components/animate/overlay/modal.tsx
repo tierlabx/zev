@@ -12,6 +12,8 @@ import {
 import { cn } from "@zev/ui/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
 import type React from "react";
+import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 interface ModalProps {
 	isOpen: boolean;
@@ -30,6 +32,18 @@ function ModalContent({ onClose, children, modalSize = "lg", className }: Omit<M
 	const dialogSpring = useTempoTransition(spring.dialog);
 	const fadeTransition = useTempoTransition(motionTransition.dialogFade);
 	const exitTransition = useTempoTransition(motionTransition.dismiss);
+	const onCloseRef = useRef(onClose);
+	onCloseRef.current = onClose;
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape" && !event.defaultPrevented) {
+				onCloseRef.current();
+			}
+		};
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, []);
 
 	const hidden = {
 		opacity: 0,
@@ -48,8 +62,12 @@ function ModalContent({ onClose, children, modalSize = "lg", className }: Omit<M
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1, transition: overlayTransition }}
 			exit={{ opacity: 0, transition: overlayTransition }}
-			onClick={onClose}
-			className="fixed inset-0 z-50 flex cursor-pointer items-center justify-center overflow-y-auto bg-black/45 dark:bg-black/65 p-8 backdrop-blur-sm"
+			onClick={(e) => {
+				if (e.target === e.currentTarget) {
+					onClose();
+				}
+			}}
+			className="fixed inset-0 z-50 flex cursor-pointer items-start justify-center overflow-y-auto bg-black/45 dark:bg-black/65 p-4 sm:p-6 backdrop-blur-sm"
 		>
 			<motion.div
 				initial={hidden}
@@ -57,7 +75,7 @@ function ModalContent({ onClose, children, modalSize = "lg", className }: Omit<M
 				exit={{ ...hidden, transition: exitTransition }}
 				onClick={(e) => e.stopPropagation()}
 				className={cn(
-					"relative w-full cursor-default overflow-hidden rounded-xl border border-border bg-card p-6 text-card-foreground shadow-2xl",
+					"relative my-auto w-full cursor-default rounded-xl border border-border bg-card p-6 text-card-foreground shadow-2xl",
 					{
 						"max-w-sm": modalSize === "sm",
 						"max-w-lg": modalSize === "lg",
@@ -73,7 +91,10 @@ function ModalContent({ onClose, children, modalSize = "lg", className }: Omit<M
 }
 
 export default function Modal({ isOpen, onClose, children, modalSize = "lg", className }: ModalProps) {
-	return (
+	if (typeof document === "undefined") return null;
+
+	// 通过 Portal 挂载到 document.body，避免被带 transform/overflow-hidden 的布局容器裁切遮挡
+	return createPortal(
 		<AnimatePresence>
 			{isOpen && (
 				<ReducedMotionConfig>
@@ -82,6 +103,7 @@ export default function Modal({ isOpen, onClose, children, modalSize = "lg", cla
 					</ModalContent>
 				</ReducedMotionConfig>
 			)}
-		</AnimatePresence>
+		</AnimatePresence>,
+		document.body,
 	);
 }

@@ -4,11 +4,15 @@ import { Button } from "@zev/ui/components/button";
 import { ChevronDown, ChevronRight, Edit, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { getUserInfoApi } from "@/api/system/auth";
 import { deleteMenu, getMenuTree, type Menu } from "@/api/system/menu";
 import { ZevTable } from "@/components/zev-table";
 import { useConfirm } from "@/hooks/use-confirm";
 import { usePermission } from "@/hooks/use-permission";
 import { useI18n } from "@/i18n";
+import { syncRouterRoutes } from "@/router/session";
+import { useUserStore } from "@/store";
+import { getMenuIcon } from "@/utils/menu-icons";
 import { MenuFormDialog } from "./components/MenuFormDialog";
 
 interface FlattenedMenu extends Menu {
@@ -66,11 +70,22 @@ export default function MenuManagement() {
 		});
 	}, []);
 
+	const syncMenuChanges = useCallback(async () => {
+		await queryClient.invalidateQueries({ queryKey: ["menus"] });
+		try {
+			const info = await getUserInfoApi();
+			useUserStore.getState().setUserInfo(info);
+			syncRouterRoutes(info.menus ?? []);
+		} catch {
+			// 菜单同步失败不影响当前配置页的主流程提示
+		}
+	}, [queryClient]);
+
 	const deleteMutation = useMutation({
 		mutationFn: deleteMenu,
 		onSuccess: () => {
 			toast.success(t("menuPage.deleteSuccess"));
-			queryClient.invalidateQueries({ queryKey: ["menus"] });
+			void syncMenuChanges();
 		},
 		onError: (error: Error) => {
 			toast.error(error.message || t("menuPage.deleteFailed"));
@@ -131,7 +146,23 @@ export default function MenuManagement() {
 					);
 				},
 			},
-			{ accessorKey: "icon", header: t("menuPage.icon") },
+			{
+				accessorKey: "icon",
+				header: t("menuPage.icon"),
+				cell: ({ row }) => {
+					const iconName = row.original.icon;
+					if (!iconName) {
+						return <span className="text-muted-foreground">-</span>;
+					}
+					const IconComp = getMenuIcon(iconName);
+					return (
+						<div className="flex items-center gap-2">
+							<IconComp className="h-4 w-4 shrink-0 text-muted-foreground" />
+							<span className="font-mono text-xs text-muted-foreground">{iconName}</span>
+						</div>
+					);
+				},
+			},
 			{ accessorKey: "path", header: t("menuPage.path") },
 			{ accessorKey: "component", header: t("menuPage.component") },
 			{ accessorKey: "perms", header: t("menuPage.perms") },
@@ -203,7 +234,8 @@ export default function MenuManagement() {
 				onOpenChange={setIsDialogOpen}
 				editingMenu={editingMenu}
 				parentId={currentParentId}
-				onSuccess={() => queryClient.invalidateQueries({ queryKey: ["menus"] })}
+				menus={menuTree ?? []}
+				onSuccess={() => void syncMenuChanges()}
 			/>
 			<ConfirmDialog />
 		</div>

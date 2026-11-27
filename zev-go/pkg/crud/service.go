@@ -19,9 +19,9 @@ func (s *BaseService[T]) Create(entity *T) error {
 	return s.DB.Create(entity).Error
 }
 
-// Update 用于更新已有的实体记录，使用 GORM 的 Save 执行全量保存。
+// Update 用于更新已有的实体记录，使用 GORM 的 Save 执行全量保存并保留原 created_at。
 func (s *BaseService[T]) Update(entity *T) error {
-	return s.DB.Save(entity).Error
+	return s.DB.Omit("created_at").Save(entity).Error
 }
 
 // Delete 根据主键 ID 删除对应的记录。

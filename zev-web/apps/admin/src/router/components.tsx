@@ -46,6 +46,11 @@ export const componentMap: Record<string, RouteComponent> = {
 };
 
 /**
+ * 已注册的前端页面组件路径清单（供菜单组件选择器点选）
+ */
+export const REGISTERED_COMPONENT_PATHS: readonly string[] = Object.keys(componentMap);
+
+/**
  * 403 无权限兜底组件（独立导出，不进入 componentMap 以保持 seed.json 映射纯粹）
  */
 export const ForbiddenComponent: RouteComponent = Forbidden;
