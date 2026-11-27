@@ -58,7 +58,7 @@ export default function LogManagement() {
 				</Card>
 			</div>
 
-			<Card className="flex-1 flex flex-col rounded-md shadow-sm border p-4 min-h-[420px] min-w-0 overflow-hidden gap-3">
+			<div className="flex-1 flex flex-col min-h-[420px] min-w-0 gap-3">
 				<div className="flex items-center justify-between shrink-0">
 					<Tabs value={effectiveTab} onValueChange={(v) => setActiveTab(v as LogTab)} className="w-fit">
 						<TabsList>
@@ -76,7 +76,7 @@ export default function LogManagement() {
 						<LoginLogPanel canClearAll={canClearAll} />
 					)}
 				</div>
-			</Card>
+			</div>
 		</div>
 	);
 }

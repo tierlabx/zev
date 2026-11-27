@@ -356,27 +356,7 @@ export default function UserManagement() {
 			</Card>
 
 			{/* 右侧：用户列表 */}
-			<Card className="flex-1 flex flex-col rounded-md shadow-sm border p-4 min-h-0 min-w-0">
-				<div className="flex items-center justify-between mb-4 shrink-0 gap-2">
-					<Input
-						placeholder={t("user.searchPlaceholder")}
-						className="w-[280px]"
-						value={search}
-						onChange={(e) => {
-							setSearch(e.target.value);
-							setPage(1);
-						}}
-					/>
-					<Auth permission="system:user:create">
-						<AnimateIcon animateOnHover asChild>
-							<Button onClick={handleAdd}>
-								<Plus className="mr-2 h-4 w-4" />
-								{t("user.addUser")}
-							</Button>
-						</AnimateIcon>
-					</Auth>
-				</div>
-
+			<div className="flex-1 flex flex-col min-h-0 min-w-0">
 				<ZevTable
 					columns={columns}
 					data={users}
@@ -389,8 +369,29 @@ export default function UserManagement() {
 					onPageChange={setPage}
 					onPageSizeChange={setPageSize}
 					enableRowSelection={true}
+					toolbarLeft={
+						<Input
+							placeholder={t("user.searchPlaceholder")}
+							className="h-8 w-[260px]"
+							value={search}
+							onChange={(e) => {
+								setSearch(e.target.value);
+								setPage(1);
+							}}
+						/>
+					}
+					toolbarRight={
+						<Auth permission="system:user:create">
+							<AnimateIcon animateOnHover asChild>
+								<Button size="sm" className="h-8" onClick={handleAdd}>
+									<Plus className="mr-1.5 h-3.5 w-3.5" />
+									{t("user.addUser")}
+								</Button>
+							</AnimateIcon>
+						</Auth>
+					}
 				/>
-			</Card>
+			</div>
 
 			<UserFormDialog
 				open={isDialogOpen}

@@ -3,7 +3,6 @@ import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@zev/ui/components/badge";
 import { Button } from "@zev/ui/components/button";
-import { Card } from "@zev/ui/components/card";
 import { Input } from "@zev/ui/components/input";
 import { Edit, Play, Plus, ShieldCheck, Trash2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -185,43 +184,44 @@ export default function AgentWorkspacePage() {
 
 	return (
 		<div className="flex-1 flex flex-col space-y-4 min-h-0">
-			<div className="flex flex-wrap items-center justify-between gap-2">
-				<Input
-					value={keyword}
-					onChange={(e) => {
-						setKeyword(e.target.value);
-						setPage(1);
-					}}
-					placeholder={t("agent.workspace.searchPlaceholder")}
-					className="w-64"
-				/>
-				<Auth permission="agent:workspace:create">
-					<Button
-						onClick={() => {
-							setEditing(null);
-							setDialogOpen(true);
+			<ZevTable
+				className="flex-1 min-h-0"
+				columns={columns}
+				data={data?.list || []}
+				isLoading={isLoading}
+				pagination={true}
+				page={page}
+				pageSize={pageSize}
+				total={data?.total || 0}
+				onPageChange={setPage}
+				onPageSizeChange={setPageSize}
+				toolbarLeft={
+					<Input
+						value={keyword}
+						onChange={(e) => {
+							setKeyword(e.target.value);
+							setPage(1);
 						}}
-					>
-						<Plus className="mr-1.5 h-4 w-4" />
-						{t("agent.workspace.addTitle")}
-					</Button>
-				</Auth>
-			</div>
-
-			<Card className="flex-1 flex flex-col p-4 min-h-0">
-				<ZevTable
-					className="flex-1 min-h-0"
-					columns={columns}
-					data={data?.list || []}
-					isLoading={isLoading}
-					pagination={true}
-					page={page}
-					pageSize={pageSize}
-					total={data?.total || 0}
-					onPageChange={setPage}
-					onPageSizeChange={setPageSize}
-				/>
-			</Card>
+						placeholder={t("agent.workspace.searchPlaceholder")}
+						className="h-8 w-64"
+					/>
+				}
+				toolbarRight={
+					<Auth permission="agent:workspace:create">
+						<Button
+							size="sm"
+							className="h-8"
+							onClick={() => {
+								setEditing(null);
+								setDialogOpen(true);
+							}}
+						>
+							<Plus className="mr-1.5 h-3.5 w-3.5" />
+							{t("agent.workspace.addTitle")}
+						</Button>
+					</Auth>
+				}
+			/>
 
 			<AgentFormDialog
 				open={dialogOpen}

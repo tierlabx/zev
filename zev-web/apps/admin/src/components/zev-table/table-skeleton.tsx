@@ -15,10 +15,10 @@ export function ZevTableSkeleton<TData, TValue>({ table, columns, pageSize = 10 
 			style={{ tableLayout: "fixed", width: table.getTotalSize() || "100%" }}
 		>
 			<TableHeader className="sticky top-0 z-20">
-				<TableRow className="bg-muted border-b border-border">
+				<TableRow className="bg-card border-b border-border hover:bg-card">
 					{columns.map((_, idx) => (
 						// biome-ignore lint/suspicious/noArrayIndexKey: Static array for skeleton loading
-						<TableHead key={idx} className="font-medium text-muted-foreground">
+						<TableHead key={idx} className="h-10 px-3 font-medium text-muted-foreground">
 							<Skeleton className="h-4 w-20" />
 						</TableHead>
 					))}
@@ -30,7 +30,7 @@ export function ZevTableSkeleton<TData, TValue>({ table, columns, pageSize = 10 
 					<TableRow key={idx} className="border-border">
 						{columns.map((_, colIdx) => (
 							// biome-ignore lint/suspicious/noArrayIndexKey: Static array for skeleton loading
-							<TableCell key={colIdx} className="py-4">
+							<TableCell key={colIdx} className="px-3 py-2.5">
 								<Skeleton className="h-4 w-full max-w-[120px]" />
 							</TableCell>
 						))}

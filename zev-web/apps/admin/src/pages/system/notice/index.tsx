@@ -2,10 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@zev/ui/components/badge";
 import { Button } from "@zev/ui/components/button";
-import { Card } from "@zev/ui/components/card";
 import { Input } from "@zev/ui/components/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zev/ui/components/select";
-import { Edit, Plus, RotateCcw, Send, Trash2, Undo2 } from "lucide-react";
+import { Edit, Plus, Send, Trash2, Undo2, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
@@ -17,7 +15,7 @@ import {
 	revokeNotice,
 } from "@/api/system/notice";
 import { Auth } from "@/components/auth";
-import { ZevTable } from "@/components/zev-table";
+import { TableFacetedFilter, ZevTable } from "@/components/zev-table";
 import { Checkbox } from "@/components/zev-table/checkbox";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useI18n } from "@/i18n";
@@ -375,11 +373,25 @@ export default function NoticeManagement() {
 		],
 	);
 
+	const hasFilters = Boolean(keyword) || typeFilter !== "all" || statusFilter !== "all";
+
 	return (
 		<div className="flex-1 flex flex-col gap-4 min-h-0 min-w-0">
-			<Card className="flex-1 flex flex-col rounded-md shadow-sm border p-4 min-h-0 min-w-0 overflow-hidden">
-				<div className="flex flex-wrap items-center justify-between gap-2 mb-4 shrink-0">
-					<div className="flex flex-wrap items-center gap-2">
+			<ZevTable
+				className="flex-1 min-h-0"
+				columns={columns}
+				data={rows}
+				isLoading={isLoading}
+				page={page}
+				pageSize={pageSize}
+				total={total}
+				onPageChange={setPage}
+				onPageSizeChange={(newSize) => {
+					setPageSize(newSize);
+					setPage(1);
+				}}
+				toolbarLeft={
+					<>
 						<Input
 							placeholder={t("notice.searchPlaceholder")}
 							value={keyword}
@@ -387,59 +399,54 @@ export default function NoticeManagement() {
 								setPage(1);
 								setKeyword(e.target.value);
 							}}
-							className="w-56 h-9"
+							className="w-56 h-8"
 						/>
-						<Select
+						<TableFacetedFilter
+							title={t("notice.type")}
 							value={typeFilter}
-							onValueChange={(value) => {
+							onChange={(value) => {
 								setPage(1);
 								setTypeFilter(value);
 							}}
-						>
-							<SelectTrigger className="w-32 h-9">
-								<SelectValue placeholder={t("notice.type")} />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">{t("notice.allTypes")}</SelectItem>
-								<SelectItem value="1">{t("notice.typeSystem")}</SelectItem>
-								<SelectItem value="2">{t("notice.typeReminder")}</SelectItem>
-								<SelectItem value="3">{t("notice.typePrivate")}</SelectItem>
-							</SelectContent>
-						</Select>
-						<Select
+							options={[
+								{ label: t("notice.typeSystem"), value: "1" },
+								{ label: t("notice.typeReminder"), value: "2" },
+								{ label: t("notice.typePrivate"), value: "3" },
+							]}
+						/>
+						<TableFacetedFilter
+							title={t("common.status")}
 							value={statusFilter}
-							onValueChange={(value) => {
+							onChange={(value) => {
 								setPage(1);
 								setStatusFilter(value);
 							}}
-						>
-							<SelectTrigger className="w-28 h-9">
-								<SelectValue placeholder={t("common.status")} />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">{t("notice.allStatus")}</SelectItem>
-								<SelectItem value="0">{t("notice.statusDraft")}</SelectItem>
-								<SelectItem value="1">{t("notice.statusPublished")}</SelectItem>
-								<SelectItem value="2">{t("notice.statusRevoked")}</SelectItem>
-							</SelectContent>
-						</Select>
-						<Button type="button" variant="ghost" size="sm" className="h-9" onClick={handleResetFilters}>
-							<RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-							{t("notice.reset")}
-						</Button>
-					</div>
-
-					<div className="flex flex-wrap items-center gap-2">
+							options={[
+								{ label: t("notice.statusDraft"), value: "0" },
+								{ label: t("notice.statusPublished"), value: "1" },
+								{ label: t("notice.statusRevoked"), value: "2" },
+							]}
+						/>
+						{hasFilters ? (
+							<Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={handleResetFilters}>
+								{t("table.resetFilters")}
+								<X className="ml-1.5 h-3.5 w-3.5" />
+							</Button>
+						) : null}
+					</>
+				}
+				toolbarRight={
+					<>
 						<Auth permission="system:notice:delete">
 							<Button
 								type="button"
 								variant="outline"
 								size="sm"
-								className="h-9"
+								className="h-8"
 								disabled={validSelectedIds.length === 0 || deleteMutation.isPending}
 								onClick={handleBatchDelete}
 							>
-								<Trash2 className="mr-1.5 h-4 w-4" />
+								<Trash2 className="mr-1.5 h-3.5 w-3.5" />
 								{t("notice.batchDelete")}
 								{validSelectedIds.length > 0 ? ` (${validSelectedIds.length})` : ""}
 							</Button>
@@ -448,36 +455,19 @@ export default function NoticeManagement() {
 							<Button
 								type="button"
 								size="sm"
-								className="h-9"
+								className="h-8"
 								onClick={() => {
 									setEditingNotice(null);
 									setDialogOpen(true);
 								}}
 							>
-								<Plus className="mr-1.5 h-4 w-4" />
+								<Plus className="mr-1.5 h-3.5 w-3.5" />
 								{t("notice.createAction")}
 							</Button>
 						</Auth>
-					</div>
-				</div>
-
-				<div className="flex-1 min-h-0 min-w-0 flex flex-col">
-					<ZevTable
-						className="flex-1 min-h-0"
-						columns={columns}
-						data={rows}
-						isLoading={isLoading}
-						page={page}
-						pageSize={pageSize}
-						total={total}
-						onPageChange={setPage}
-						onPageSizeChange={(newSize) => {
-							setPageSize(newSize);
-							setPage(1);
-						}}
-					/>
-				</div>
-			</Card>
+					</>
+				}
+			/>
 
 			<NoticeFormDialog
 				open={dialogOpen}

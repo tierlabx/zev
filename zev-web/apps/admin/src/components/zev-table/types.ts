@@ -1,4 +1,5 @@
 import type { ColumnDef, RowData } from "@tanstack/react-table";
+import type { ReactNode } from "react";
 
 declare module "@tanstack/react-table" {
 	interface ColumnMeta<TData extends RowData, TValue> {
@@ -22,6 +23,10 @@ export interface ZevTableProps<TData, TValue> {
 	// 行选择相关
 	enableRowSelection?: boolean;
 	onSelectionChange?: (selectedRows: TData[]) => void;
+
+	// 工具栏插槽（与内置视图列显隐按钮合并为同一行）
+	toolbarLeft?: ReactNode;
+	toolbarRight?: ReactNode;
 
 	// 样式与配置
 	className?: string;

@@ -3,14 +3,13 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@zev/ui/components/badge";
 import { Button } from "@zev/ui/components/button";
 import { Input } from "@zev/ui/components/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zev/ui/components/select";
-import { Download, Eye, RotateCcw, Trash2 } from "lucide-react";
+import { Download, Eye, Trash2, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 import { clearOperLogs, deleteOperLogs, exportOperLogs, getOperLogList, type SysOperLog } from "@/api/system/log";
 import { Auth } from "@/components/auth";
-import { ZevTable } from "@/components/zev-table";
+import { TableFacetedFilter, ZevTable } from "@/components/zev-table";
 import { Checkbox } from "@/components/zev-table/checkbox";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useI18n } from "@/i18n";
@@ -371,149 +370,14 @@ export function OperLogPanel({ canClearAll }: OperLogPanelProps) {
 		[allSelected, someSelected, validSelectedIds, handleToggleAll, handleToggleRow, handleDeleteSingle, locale, t],
 	);
 
+	const hasFilters =
+		Boolean(operatorInput || requestIdInput || startTime || endTime) ||
+		moduleFilter !== "all" ||
+		methodFilter !== "all" ||
+		statusFilter !== "all";
+
 	return (
 		<div className="flex-1 flex flex-col min-h-0 min-w-0">
-			<div className="flex flex-wrap items-center justify-between gap-2 mb-4 shrink-0">
-				<div className="flex flex-wrap items-center gap-2">
-					<Input
-						placeholder={t("log.operatorPlaceholder")}
-						value={operatorInput}
-						onChange={(e) => {
-							setPage(1);
-							setOperatorInput(e.target.value);
-						}}
-						className="w-36 h-9"
-					/>
-					<Select
-						value={moduleFilter}
-						onValueChange={(value) => {
-							setPage(1);
-							setModuleFilter(value);
-						}}
-					>
-						<SelectTrigger className="w-32 h-9">
-							<SelectValue placeholder={t("log.module")} />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">{t("log.allModules")}</SelectItem>
-							{MODULE_OPTIONS.map((mod) => (
-								<SelectItem key={mod} value={mod}>
-									{mod}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-					<Select
-						value={methodFilter}
-						onValueChange={(value) => {
-							setPage(1);
-							setMethodFilter(value);
-						}}
-					>
-						<SelectTrigger className="w-28 h-9">
-							<SelectValue placeholder={t("log.method")} />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">{t("log.allMethods")}</SelectItem>
-							<SelectItem value="POST">POST</SelectItem>
-							<SelectItem value="PUT">PUT</SelectItem>
-							<SelectItem value="DELETE">DELETE</SelectItem>
-						</SelectContent>
-					</Select>
-					<Select
-						value={statusFilter}
-						onValueChange={(value) => {
-							setPage(1);
-							setStatusFilter(value);
-						}}
-					>
-						<SelectTrigger className="w-28 h-9">
-							<SelectValue placeholder={t("common.status")} />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">{t("log.allStatus")}</SelectItem>
-							<SelectItem value="1">{t("log.success")}</SelectItem>
-							<SelectItem value="0">{t("log.failed")}</SelectItem>
-						</SelectContent>
-					</Select>
-					<Input
-						placeholder={t("log.requestIdPlaceholder")}
-						value={requestIdInput}
-						onChange={(e) => {
-							setPage(1);
-							setRequestIdInput(e.target.value);
-						}}
-						className="w-40 h-9 font-mono text-xs"
-					/>
-					<Input
-						type="date"
-						value={startTime}
-						onChange={(e) => {
-							setPage(1);
-							setStartTime(e.target.value);
-						}}
-						className="w-36 h-9 text-xs"
-						aria-label={t("log.startTime")}
-					/>
-					<Input
-						type="date"
-						value={endTime}
-						onChange={(e) => {
-							setPage(1);
-							setEndTime(e.target.value);
-						}}
-						className="w-36 h-9 text-xs"
-						aria-label={t("log.endTime")}
-					/>
-					<Button type="button" variant="ghost" size="sm" className="h-9" onClick={handleResetFilters}>
-						<RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-						{t("log.reset")}
-					</Button>
-				</div>
-
-				<div className="flex flex-wrap items-center gap-2">
-					<Auth permission="system:operlog:export">
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							className="h-9"
-							disabled={isExporting}
-							onClick={handleExport}
-						>
-							<Download className="mr-1.5 h-4 w-4" />
-							{t("log.exportCsv")}
-						</Button>
-					</Auth>
-					<Auth permission="system:operlog:delete">
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							className="h-9"
-							disabled={validSelectedIds.length === 0 || deleteMutation.isPending}
-							onClick={handleBatchDelete}
-						>
-							<Trash2 className="mr-1.5 h-4 w-4" />
-							{t("log.batchDelete")}
-							{validSelectedIds.length > 0 ? ` (${validSelectedIds.length})` : ""}
-						</Button>
-						{canClearAll ? (
-							<Button
-								type="button"
-								variant="destructive"
-								size="sm"
-								className="h-9"
-								disabled={clearMutation.isPending}
-								onClick={handleClearAll}
-							>
-								{t("log.clearLogs")}
-							</Button>
-						) : null}
-					</Auth>
-				</div>
-			</div>
-
 			<ZevTable
 				className="flex-1 min-h-0"
 				columns={columns}
@@ -527,6 +391,131 @@ export function OperLogPanel({ canClearAll }: OperLogPanelProps) {
 					setPageSize(newSize);
 					setPage(1);
 				}}
+				toolbarLeft={
+					<>
+						<Input
+							placeholder={t("log.operatorPlaceholder")}
+							value={operatorInput}
+							onChange={(e) => {
+								setPage(1);
+								setOperatorInput(e.target.value);
+							}}
+							className="w-36 h-8"
+						/>
+						<TableFacetedFilter
+							title={t("log.module")}
+							value={moduleFilter}
+							onChange={(value) => {
+								setPage(1);
+								setModuleFilter(value);
+							}}
+							options={MODULE_OPTIONS.map((mod) => ({ label: mod, value: mod }))}
+						/>
+						<TableFacetedFilter
+							title={t("log.method")}
+							value={methodFilter}
+							onChange={(value) => {
+								setPage(1);
+								setMethodFilter(value);
+							}}
+							options={[
+								{ label: "POST", value: "POST" },
+								{ label: "PUT", value: "PUT" },
+								{ label: "DELETE", value: "DELETE" },
+							]}
+						/>
+						<TableFacetedFilter
+							title={t("common.status")}
+							value={statusFilter}
+							onChange={(value) => {
+								setPage(1);
+								setStatusFilter(value);
+							}}
+							options={[
+								{ label: t("log.success"), value: "1" },
+								{ label: t("log.failed"), value: "0" },
+							]}
+						/>
+						<Input
+							placeholder={t("log.requestIdPlaceholder")}
+							value={requestIdInput}
+							onChange={(e) => {
+								setPage(1);
+								setRequestIdInput(e.target.value);
+							}}
+							className="w-40 h-8 font-mono text-xs"
+						/>
+						<Input
+							type="date"
+							value={startTime}
+							onChange={(e) => {
+								setPage(1);
+								setStartTime(e.target.value);
+							}}
+							className="w-36 h-8 text-xs"
+							aria-label={t("log.startTime")}
+						/>
+						<Input
+							type="date"
+							value={endTime}
+							onChange={(e) => {
+								setPage(1);
+								setEndTime(e.target.value);
+							}}
+							className="w-36 h-8 text-xs"
+							aria-label={t("log.endTime")}
+						/>
+						{hasFilters ? (
+							<Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={handleResetFilters}>
+								{t("table.resetFilters")}
+								<X className="ml-1.5 h-3.5 w-3.5" />
+							</Button>
+						) : null}
+					</>
+				}
+				toolbarRight={
+					<>
+						<Auth permission="system:operlog:export">
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								className="h-8"
+								disabled={isExporting}
+								onClick={handleExport}
+							>
+								<Download className="mr-1.5 h-3.5 w-3.5" />
+								{t("log.exportCsv")}
+							</Button>
+						</Auth>
+						<Auth permission="system:operlog:delete">
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								className="h-8"
+								disabled={validSelectedIds.length === 0 || deleteMutation.isPending}
+								onClick={handleBatchDelete}
+							>
+								<Trash2 className="mr-1.5 h-3.5 w-3.5" />
+								{t("log.batchDelete")}
+								{validSelectedIds.length > 0 ? ` (${validSelectedIds.length})` : ""}
+							</Button>
+							{canClearAll ? (
+								<Button
+									type="button"
+									variant="destructive"
+									size="sm"
+									className="h-8"
+									disabled={clearMutation.isPending}
+									onClick={handleClearAll}
+								>
+									{t("log.clearLogs")}
+								</Button>
+							) : null}
+						</Auth>
+					</>
+				}
 			/>
 
 			<OperLogDetailSheet

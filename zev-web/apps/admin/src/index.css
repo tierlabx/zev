@@ -6,7 +6,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-	--color-bg-page: #f8fafc;
+	--color-bg-page: #ffffff;
 	--color-bg-surface: #ffffff;
 	--color-bg-subtle: #f1f5f9;
 	--color-border-hover: #cbd5e1;
@@ -98,7 +98,8 @@
 .dark {
 	color-scheme: dark;
 	--color-bg-page: #0f172a;
-	--color-bg-surface: #1e293b;
+	--color-bg-surface: #0f172a;
+	--color-popover: #1e293b;
 	--color-bg-subtle: #334155;
 	--color-border: #334155;
 	--color-border-hover: #475569;

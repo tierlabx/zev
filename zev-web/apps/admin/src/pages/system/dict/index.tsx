@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@zev/ui/components/button";
-import { Card } from "@zev/ui/components/card";
 import { Input } from "@zev/ui/components/input";
 import { Edit, Plus, Trash2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -237,47 +236,47 @@ export default function DictManagement() {
 		<div className="flex flex-col h-full space-y-4">
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
 				{/* Left Panel: Dict Types */}
-				<Card className="col-span-1 rounded-md shadow-sm border p-4 flex flex-col">
-					<div className="flex items-center justify-between mb-4">
-						<h2 className="text-lg font-semibold">{t("dict.typeTitle")}</h2>
+				<div className="col-span-1 flex flex-col gap-3 min-h-0">
+					<div className="flex items-center justify-between shrink-0">
+						<h2 className="text-base font-semibold">{t("dict.typeTitle")}</h2>
 						{hasPermission("system:dict:create") && (
-							<Button onClick={handleAddType} size="sm">
-								<Plus className="mr-2 h-4 w-4" />
+							<Button onClick={handleAddType} size="sm" className="h-8">
+								<Plus className="mr-1.5 h-3.5 w-3.5" />
 								{t("dict.addType")}
 							</Button>
 						)}
-					</div>
-					<div className="mb-4">
-						<Input
-							placeholder={t("dict.searchTypePlaceholder")}
-							value={searchKeyword}
-							onChange={(e) => setSearchKeyword(e.target.value)}
-						/>
 					</div>
 					<div className="flex-1 min-h-0">
 						<ZevTable
 							columns={typeColumns}
 							data={dictTypes}
 							isLoading={isTypeLoading}
-							containerHeight="calc(100vh - 330px)"
+							containerHeight="calc(100vh - 260px)"
 							onRowClick={(row) => setSelectedDictType(row)}
-							className="border-border"
 							pagination={false}
 							showToolbar={false}
+							toolbarLeft={
+								<Input
+									placeholder={t("dict.searchTypePlaceholder")}
+									className="h-8 w-full"
+									value={searchKeyword}
+									onChange={(e) => setSearchKeyword(e.target.value)}
+								/>
+							}
 						/>
 					</div>
-				</Card>
+				</div>
 
 				{/* Right Panel: Dict Data */}
-				<Card className="col-span-1 md:col-span-2 rounded-md shadow-sm border p-4 flex flex-col">
-					<div className="flex items-center justify-between mb-4">
-						<h2 className="text-lg font-semibold">
+				<div className="col-span-1 md:col-span-2 flex flex-col gap-3 min-h-0">
+					<div className="flex items-center justify-between shrink-0">
+						<h2 className="text-base font-semibold">
 							{t("dict.dataTitle")}{" "}
 							{selectedDictType && <span className="text-primary text-sm ml-2">({selectedDictType.name})</span>}
 						</h2>
 						{hasPermission("system:dict:create") && (
-							<Button onClick={handleAddData} size="sm" disabled={!selectedDictType}>
-								<Plus className="mr-2 h-4 w-4" />
+							<Button onClick={handleAddData} size="sm" className="h-8" disabled={!selectedDictType}>
+								<Plus className="mr-1.5 h-3.5 w-3.5" />
 								{t("dict.addData")}
 							</Button>
 						)}
@@ -288,18 +287,17 @@ export default function DictManagement() {
 								columns={dataColumns}
 								data={dictDataList}
 								isLoading={isDataLoading}
-								containerHeight="calc(100vh - 280px)"
-								className="border-border"
+								containerHeight="calc(100vh - 260px)"
 								pagination={false}
 								showToolbar={false}
 							/>
 						) : (
-							<div className="h-[calc(100vh-280px)] flex items-center justify-center border border-dashed border-border rounded-md text-muted-foreground">
+							<div className="h-[calc(100vh-260px)] flex items-center justify-center rounded-md border border-dashed border-border bg-card/50 text-muted-foreground">
 								{t("dict.selectTypePrompt")}
 							</div>
 						)}
 					</div>
-				</Card>
+				</div>
 			</div>
 
 			<DictTypeFormDialog

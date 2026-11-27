@@ -88,7 +88,7 @@ export function TagsView() {
 	};
 
 	return (
-		<div className="flex items-center h-[34px] bg-card border-b border-border px-2 shadow-sm text-sm relative z-10">
+		<div className="flex items-center h-[34px] bg-background border-b border-border px-2 text-sm relative z-10">
 			<button
 				type="button"
 				onClick={() => scroll("left")}

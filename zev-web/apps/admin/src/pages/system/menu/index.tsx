@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@zev/ui/components/button";
-import { Card } from "@zev/ui/components/card";
 import { ChevronDown, ChevronRight, Edit, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -183,24 +182,21 @@ export default function MenuManagement() {
 
 	return (
 		<div className="flex-1 flex flex-col space-y-4 min-h-0">
-			<Card className="flex-1 flex flex-col rounded-md shadow-sm border p-4 min-h-0">
-				<div className="flex items-center justify-between mb-4 shrink-0">
-					<div />
-					{hasPermission("system:menu:create") && (
-						<Button onClick={() => handleAdd(0)}>
-							<Plus className="mr-2 h-4 w-4" />
+			<ZevTable
+				columns={columns}
+				data={flattenedMenus}
+				isLoading={isLoading}
+				className="flex-1 min-h-0"
+				pagination={false}
+				toolbarRight={
+					hasPermission("system:menu:create") ? (
+						<Button size="sm" className="h-8" onClick={() => handleAdd(0)}>
+							<Plus className="mr-1.5 h-3.5 w-3.5" />
 							{t("menuPage.addMenu")}
 						</Button>
-					)}
-				</div>
-				<ZevTable
-					columns={columns}
-					data={flattenedMenus}
-					isLoading={isLoading}
-					className="flex-1 min-h-0"
-					pagination={false}
-				/>
-			</Card>
+					) : null
+				}
+			/>
 
 			<MenuFormDialog
 				open={isDialogOpen}

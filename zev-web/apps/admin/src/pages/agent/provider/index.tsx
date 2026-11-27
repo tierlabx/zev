@@ -2,16 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@zev/ui/components/badge";
 import { Button } from "@zev/ui/components/button";
-import { Card } from "@zev/ui/components/card";
 import { Input } from "@zev/ui/components/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zev/ui/components/select";
-import { Activity, Edit, Plus, Trash2 } from "lucide-react";
+import { Activity, Edit, Plus, Trash2, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 import { type AgentProvider, deleteProvider, getProviderList, pingProvider } from "@/api/agent";
 import { Auth } from "@/components/auth";
-import { ZevTable } from "@/components/zev-table";
+import { TableFacetedFilter, ZevTable } from "@/components/zev-table";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useI18n } from "@/i18n";
 import { ProviderFormDialog } from "./components/ProviderFormDialog";
@@ -200,64 +198,76 @@ export default function AgentProviderPage() {
 
 	return (
 		<div className="flex-1 flex flex-col space-y-4 min-h-0">
-			<div className="flex flex-wrap items-center justify-between gap-2">
-				<div className="flex flex-wrap items-center gap-2">
-					<Input
-						value={keyword}
-						onChange={(e) => {
-							setKeyword(e.target.value);
-							setPage(1);
-						}}
-						placeholder={t("agent.provider.searchPlaceholder")}
-						className="w-60"
-					/>
-					<Select
-						value={providerType}
-						onValueChange={(val) => {
-							setProviderType(val);
-							setPage(1);
-						}}
-					>
-						<SelectTrigger className="w-40">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">{t("agent.provider.allTypes")}</SelectItem>
-							<SelectItem value="openai">OpenAI</SelectItem>
-							<SelectItem value="anthropic">Anthropic</SelectItem>
-							<SelectItem value="gemini">Gemini</SelectItem>
-							<SelectItem value="ollama">Ollama</SelectItem>
-						</SelectContent>
-					</Select>
-				</div>
-
-				<Auth permission="agent:provider:create">
-					<Button
-						onClick={() => {
-							setEditing(null);
-							setDialogOpen(true);
-						}}
-					>
-						<Plus className="mr-1.5 h-4 w-4" />
-						{t("agent.provider.addTitle")}
-					</Button>
-				</Auth>
-			</div>
-
-			<Card className="flex-1 flex flex-col p-4 min-h-0">
-				<ZevTable
-					className="flex-1 min-h-0"
-					columns={columns}
-					data={data?.list || []}
-					isLoading={isLoading}
-					pagination={true}
-					page={page}
-					pageSize={pageSize}
-					total={data?.total || 0}
-					onPageChange={setPage}
-					onPageSizeChange={setPageSize}
-				/>
-			</Card>
+			<ZevTable
+				className="flex-1 min-h-0"
+				columns={columns}
+				data={data?.list || []}
+				isLoading={isLoading}
+				pagination={true}
+				page={page}
+				pageSize={pageSize}
+				total={data?.total || 0}
+				onPageChange={setPage}
+				onPageSizeChange={setPageSize}
+				toolbarLeft={
+					<>
+						<Input
+							value={keyword}
+							onChange={(e) => {
+								setKeyword(e.target.value);
+								setPage(1);
+							}}
+							placeholder={t("agent.provider.searchPlaceholder")}
+							className="h-8 w-60"
+						/>
+						<TableFacetedFilter
+							title={t("agent.provider.allTypes")}
+							value={providerType}
+							onChange={(val) => {
+								setProviderType(val);
+								setPage(1);
+							}}
+							options={[
+								{ label: "OpenAI", value: "openai" },
+								{ label: "Anthropic", value: "anthropic" },
+								{ label: "Gemini", value: "gemini" },
+								{ label: "Ollama", value: "ollama" },
+							]}
+						/>
+						{keyword || providerType !== "all" ? (
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="h-8 px-2 text-xs"
+								onClick={() => {
+									setKeyword("");
+									setProviderType("all");
+									setPage(1);
+								}}
+							>
+								{t("table.resetFilters")}
+								<X className="ml-1.5 h-3.5 w-3.5" />
+							</Button>
+						) : null}
+					</>
+				}
+				toolbarRight={
+					<Auth permission="agent:provider:create">
+						<Button
+							size="sm"
+							className="h-8"
+							onClick={() => {
+								setEditing(null);
+								setDialogOpen(true);
+							}}
+						>
+							<Plus className="mr-1.5 h-3.5 w-3.5" />
+							{t("agent.provider.addTitle")}
+						</Button>
+					</Auth>
+				}
+			/>
 
 			<ProviderFormDialog
 				open={dialogOpen}

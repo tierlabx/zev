@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@zev/ui/components/badge";
 import { Button } from "@zev/ui/components/button";
-import { Card } from "@zev/ui/components/card";
 import { Input } from "@zev/ui/components/input";
 import { Database, Edit, MenuIcon, Plus, Trash2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -208,39 +207,38 @@ export default function RoleManagement() {
 
 	return (
 		<div className="flex-1 flex flex-col space-y-4 min-h-0">
-			<Card className="flex-1 flex flex-col rounded-md shadow-sm border p-4 min-h-0">
-				<div className="flex items-center justify-between mb-4 shrink-0">
+			<ZevTable
+				columns={columns}
+				data={roles}
+				isLoading={isLoading}
+				className="flex-1 min-h-0"
+				pagination={true}
+				page={page}
+				pageSize={pageSize}
+				total={total}
+				onPageChange={setPage}
+				onPageSizeChange={setPageSize}
+				enableRowSelection={true}
+				toolbarLeft={
 					<Input
 						placeholder={t("role.searchPlaceholder")}
-						className="w-[300px]"
+						className="h-8 w-[260px]"
 						value={searchKeyword}
 						onChange={(e) => {
 							setSearchKeyword(e.target.value);
 							setPage(1);
 						}}
 					/>
+				}
+				toolbarRight={
 					<Auth permission="system:role:create">
-						<Button onClick={handleAdd}>
-							<Plus className="mr-2 h-4 w-4" />
+						<Button size="sm" className="h-8" onClick={handleAdd}>
+							<Plus className="mr-1.5 h-3.5 w-3.5" />
 							{t("role.addRole")}
 						</Button>
 					</Auth>
-				</div>
-
-				<ZevTable
-					columns={columns}
-					data={roles}
-					isLoading={isLoading}
-					className="flex-1 min-h-0"
-					pagination={true}
-					page={page}
-					pageSize={pageSize}
-					total={total}
-					onPageChange={setPage}
-					onPageSizeChange={setPageSize}
-					enableRowSelection={true}
-				/>
-			</Card>
+				}
+			/>
 
 			<RoleFormDialog
 				open={isRoleDialogOpen}

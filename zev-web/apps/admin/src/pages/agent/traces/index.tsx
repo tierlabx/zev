@@ -4,13 +4,12 @@ import { Badge } from "@zev/ui/components/badge";
 import { Button } from "@zev/ui/components/button";
 import { Card } from "@zev/ui/components/card";
 import { Input } from "@zev/ui/components/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@zev/ui/components/select";
 import { Tracker, type TrackerItem, type TrackerStatus } from "@zev/ui/components/tracker";
-import { Eye } from "lucide-react";
+import { Eye, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { type AgentRun, getAgentOptions, getRunHeartbeats, getRunList } from "@/api/agent";
-import { ZevTable } from "@/components/zev-table";
+import { TableFacetedFilter, ZevTable } from "@/components/zev-table";
 import { useI18n } from "@/i18n";
 import { TraceWaterfallSheet } from "./components/TraceWaterfallSheet";
 
@@ -181,69 +180,71 @@ export default function AgentTracesPage() {
 				)}
 			</Card>
 
-			<div className="flex flex-wrap items-center gap-2">
-				<Input
-					value={keyword}
-					onChange={(e) => {
-						setKeyword(e.target.value);
-						setPage(1);
-					}}
-					placeholder={t("agent.traces.searchPlaceholder")}
-					className="w-60"
-				/>
-				<Select
-					value={agentId}
-					onValueChange={(val) => {
-						setAgentId(val);
-						setPage(1);
-					}}
-				>
-					<SelectTrigger className="w-44">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">{t("agent.traces.allAgents")}</SelectItem>
-						{agents.map((a) => (
-							<SelectItem key={a.id} value={String(a.id)}>
-								{a.name}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-				<Select
-					value={status}
-					onValueChange={(val) => {
-						setStatus(val);
-						setPage(1);
-					}}
-				>
-					<SelectTrigger className="w-40">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">{t("agent.traces.allStatus")}</SelectItem>
-						<SelectItem value="completed">completed</SelectItem>
-						<SelectItem value="failed">failed</SelectItem>
-						<SelectItem value="waiting_approval">waiting_approval</SelectItem>
-						<SelectItem value="cancelled">cancelled</SelectItem>
-					</SelectContent>
-				</Select>
-			</div>
-
-			<Card className="flex-1 flex flex-col p-4 min-h-0">
-				<ZevTable
-					className="flex-1 min-h-0"
-					columns={columns}
-					data={data?.list || []}
-					isLoading={isLoading}
-					pagination={true}
-					page={page}
-					pageSize={pageSize}
-					total={data?.total || 0}
-					onPageChange={setPage}
-					onPageSizeChange={setPageSize}
-				/>
-			</Card>
+			<ZevTable
+				className="flex-1 min-h-0"
+				columns={columns}
+				data={data?.list || []}
+				isLoading={isLoading}
+				pagination={true}
+				page={page}
+				pageSize={pageSize}
+				total={data?.total || 0}
+				onPageChange={setPage}
+				onPageSizeChange={setPageSize}
+				toolbarLeft={
+					<>
+						<Input
+							value={keyword}
+							onChange={(e) => {
+								setKeyword(e.target.value);
+								setPage(1);
+							}}
+							placeholder={t("agent.traces.searchPlaceholder")}
+							className="h-8 w-60"
+						/>
+						<TableFacetedFilter
+							title={t("agent.traces.allAgents")}
+							value={agentId}
+							onChange={(val) => {
+								setAgentId(val);
+								setPage(1);
+							}}
+							options={agents.map((a) => ({ label: a.name, value: String(a.id) }))}
+						/>
+						<TableFacetedFilter
+							title={t("agent.traces.allStatus")}
+							value={status}
+							onChange={(val) => {
+								setStatus(val);
+								setPage(1);
+							}}
+							options={[
+								{ label: "completed", value: "completed" },
+								{ label: "failed", value: "failed" },
+								{ label: "waiting_approval", value: "waiting_approval" },
+								{ label: "cancelled", value: "cancelled" },
+							]}
+						/>
+						{keyword || agentId !== "all" || status !== "all" ? (
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="h-8 px-2 text-xs"
+								onClick={() => {
+									setKeyword("");
+									setAgentId("all");
+									setStatus("all");
+									setPage(1);
+								}}
+							>
+								{t("table.resetFilters")}
+								<X className="ml-1.5 h-3.5 w-3.5" />
+							</Button>
+						) : null}
+					</>
+				}
+			/>
 
 			<TraceWaterfallSheet open={sheetOpen} onOpenChange={setSheetOpen} runId={detailRunId} />
 		</div>

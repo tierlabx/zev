@@ -15,10 +15,10 @@ export function MobileSidebar({ children }: { children: React.ReactNode }) {
 	return (
 		<Sheet>
 			<SheetTrigger asChild>{children}</SheetTrigger>
-			<SheetContent side="left" className="w-[240px] p-0 bg-card border-r-border">
+			<SheetContent side="left" className="w-[240px] p-0 bg-sidebar border-r-border">
 				<div className="relative flex flex-col h-full overflow-hidden">
 					<SidebarFireworksBackground />
-					<div className="h-16 px-4 flex items-center justify-center space-x-3 border-b border-border overflow-hidden shrink-0 relative z-10 bg-card/70 backdrop-blur-[1px]">
+					<div className="h-16 px-4 flex items-center justify-center space-x-3 border-b border-border overflow-hidden shrink-0 relative z-10 bg-sidebar/70 backdrop-blur-[1px]">
 						<div className="flex aspect-square size-8 items-center justify-center shrink-0">
 							<img src={logoUrl} alt="Logo" className="size-8" />
 						</div>

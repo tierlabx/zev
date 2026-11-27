@@ -2,9 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@zev/ui/components/badge";
 import { Button } from "@zev/ui/components/button";
-import { Card } from "@zev/ui/components/card";
-import { Edit, Trash2 } from "lucide-react";
-import { ZevTable } from "./index";
+import { Input } from "@zev/ui/components/input";
+import { Edit, Plus, Shield, Trash2, UserCheck, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { TableFacetedFilter, ZevTable } from "./index";
 
 interface SampleUser {
 	id: number;
@@ -125,9 +126,9 @@ const meta: Meta<typeof ZevTable<SampleUser, unknown>> = {
 	component: ZevTable,
 	decorators: [
 		(Story) => (
-			<Card className="h-[460px] flex flex-col p-4">
+			<div className="h-[480px] flex flex-col p-4 bg-background">
 				<Story />
-			</Card>
+			</div>
 		),
 	],
 };
@@ -136,15 +137,106 @@ export default meta;
 type Story = StoryObj<typeof ZevTable<SampleUser, unknown>>;
 
 export const Default: Story = {
-	args: {
-		columns,
-		data: sampleUsers,
-		isLoading: false,
-		pagination: true,
-		page: 1,
-		pageSize: 10,
-		total: 4,
-		className: "flex-1 min-h-0",
+	render: () => {
+		const [page, setPage] = useState(1);
+		const [pageSize, setPageSize] = useState(10);
+		const [keyword, setKeyword] = useState("");
+		const [statusFilter, setStatusFilter] = useState<string[]>([]);
+		const [roleFilter, setRoleFilter] = useState<string[]>([]);
+
+		const filteredUsers = useMemo(
+			() =>
+				sampleUsers.filter((user) => {
+					const matchKeyword = !keyword || user.username.includes(keyword) || user.nickname.includes(keyword);
+					const matchStatus = statusFilter.length === 0 || statusFilter.includes(String(user.status));
+					const matchRole = roleFilter.length === 0 || roleFilter.includes(user.role);
+					return matchKeyword && matchStatus && matchRole;
+				}),
+			[keyword, statusFilter, roleFilter],
+		);
+		const hasFilters = Boolean(keyword) || statusFilter.length > 0 || roleFilter.length > 0;
+
+		return (
+			<ZevTable
+				columns={columns}
+				data={filteredUsers}
+				isLoading={false}
+				pagination={true}
+				page={page}
+				pageSize={pageSize}
+				total={hasFilters ? filteredUsers.length : 120}
+				onPageChange={setPage}
+				onPageSizeChange={(next) => {
+					setPageSize(next);
+					setPage(1);
+				}}
+				toolbarLeft={
+					<>
+						<Input
+							value={keyword}
+							onChange={(e) => {
+								setKeyword(e.target.value);
+								setPage(1);
+							}}
+							placeholder="搜索用户名或昵称..."
+							className="h-8 w-56"
+						/>
+						<TableFacetedFilter
+							title="状态"
+							multiple
+							values={statusFilter}
+							onValuesChange={(vals) => {
+								setStatusFilter(vals);
+								setPage(1);
+							}}
+							options={[
+								{ label: "正常", value: "0", icon: UserCheck, count: 3 },
+								{ label: "禁用", value: "1", icon: Shield, count: 1 },
+							]}
+						/>
+						<TableFacetedFilter
+							title="角色"
+							multiple
+							values={roleFilter}
+							onValuesChange={(vals) => {
+								setRoleFilter(vals);
+								setPage(1);
+							}}
+							options={[
+								{ label: "超级管理员", value: "超级管理员", count: 1 },
+								{ label: "运维审计", value: "运维审计", count: 1 },
+								{ label: "普通用户", value: "普通用户", count: 1 },
+								{ label: "测试人员", value: "测试人员", count: 1 },
+							]}
+						/>
+						{hasFilters ? (
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="h-8 px-2 text-xs"
+								onClick={() => {
+									setKeyword("");
+									setStatusFilter([]);
+									setRoleFilter([]);
+									setPage(1);
+								}}
+							>
+								重置
+								<X className="ml-1.5 h-3.5 w-3.5" />
+							</Button>
+						) : null}
+					</>
+				}
+				toolbarRight={
+					<Button size="sm" className="h-8">
+						<Plus className="mr-1.5 h-3.5 w-3.5" />
+						添加用户
+					</Button>
+				}
+				className="flex-1 min-h-0"
+			/>
+		);
 	},
 };
 

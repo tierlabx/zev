@@ -29,10 +29,10 @@ export function Sidebar() {
 			initial={false}
 			animate={{ width: sidebarCollapsed ? 64 : 240 }}
 			transition={collapseTransition}
-			className="bg-card border-r border-border flex flex-col z-20 shadow-sm relative overflow-hidden hidden md:flex"
+			className="bg-sidebar border-r border-border flex flex-col z-20 shadow-sm relative overflow-hidden hidden md:flex"
 		>
 			<SidebarFireworksBackground collapsed={sidebarCollapsed} />
-			<div className="h-16 px-4 flex items-center justify-center space-x-3 border-b border-border overflow-hidden shrink-0 relative z-10 bg-card/70 backdrop-blur-[1px]">
+			<div className="h-16 px-4 flex items-center justify-center space-x-3 border-b border-border overflow-hidden shrink-0 relative z-10 bg-sidebar/70 backdrop-blur-[1px]">
 				<div className="flex aspect-square size-8 items-center justify-center shrink-0">
 					<img src={logoUrl} alt="Logo" className="size-8" />
 				</div>
@@ -65,7 +65,7 @@ export function Sidebar() {
 			</nav>
 			<button
 				type="button"
-				className="absolute bottom-0 left-0 right-0 h-12 border-t border-border flex items-center justify-center cursor-pointer hover:bg-muted/80 text-muted-foreground transition-colors bg-card/80 backdrop-blur-xs z-20 w-full"
+				className="absolute bottom-0 left-0 right-0 h-12 border-t border-border flex items-center justify-center cursor-pointer hover:bg-muted/80 text-muted-foreground transition-colors bg-sidebar/80 backdrop-blur-xs z-20 w-full"
 				onClick={toggleSidebar}
 			>
 				{sidebarCollapsed ? <ChevronsRight className="h-5 w-5" /> : <ChevronsLeft className="h-5 w-5" />}
