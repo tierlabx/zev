@@ -50,7 +50,11 @@ export function Breadcrumb() {
 								{isLast ? (
 									<BreadcrumbPage>{label}</BreadcrumbPage>
 								) : (
-									<Link to={crumb.path} className="transition-colors hover:text-foreground">
+									<Link
+										to={crumb.path}
+										viewTransition={{ types: ["nav-back"] }}
+										className="transition-colors hover:text-foreground"
+									>
 										{label}
 									</Link>
 								)}

@@ -28,7 +28,6 @@ export const enUS: LocaleSchema<typeof zhCN> = {
 	},
 	common: {
 		loading: "Loading...",
-		pageLoading: "Loading page...",
 		save: "Save",
 		saving: "Saving...",
 		submitting: "Submitting...",

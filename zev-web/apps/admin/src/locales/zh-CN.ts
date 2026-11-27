@@ -22,7 +22,6 @@ export const zhCN = {
 	},
 	common: {
 		loading: "加载中...",
-		pageLoading: "页面加载中...",
 		save: "保存",
 		saving: "保存中...",
 		submitting: "提交中...",

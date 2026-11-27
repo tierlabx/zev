@@ -1,54 +1,23 @@
-import { type ComponentType, lazy, Suspense } from "react";
-import { useI18n } from "@/i18n";
+import { lazyRouteComponent, type RouteComponent } from "@tanstack/react-router";
 
-/**
- * 页面加载占位组件
- */
-function PageLoading() {
-	const { t } = useI18n();
-
-	return (
-		<div className="flex h-full min-h-[400px] items-center justify-center">
-			<div className="flex flex-col items-center gap-3">
-				<div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-				<span className="text-sm text-muted-foreground">{t("common.pageLoading")}</span>
-			</div>
-		</div>
-	);
-}
-
-/**
- * 用 Suspense 包裹 lazy 组件，提供统一的加载占位
- */
-function withSuspense(Component: ComponentType): ComponentType {
-	function Wrapped(props: Record<string, unknown>) {
-		return (
-			<Suspense fallback={<PageLoading />}>
-				<Component {...props} />
-			</Suspense>
-		);
-	}
-	return Wrapped;
-}
-
-// --- Lazy 加载所有页面组件 ---
-const Dashboard = lazy(() => import("@/pages/Dashboard"));
-const UserManagement = lazy(() => import("@/pages/system/user"));
-const RoleManagement = lazy(() => import("@/pages/system/role"));
-const MenuManagement = lazy(() => import("@/pages/system/menu"));
-const DeptManagement = lazy(() => import("@/pages/system/dept"));
-const DictManagement = lazy(() => import("@/pages/system/dict"));
-const NoticeManagement = lazy(() => import("@/pages/system/notice"));
-const LogManagement = lazy(() => import("@/pages/system/log"));
-const MessagesCenter = lazy(() => import("@/pages/messages"));
-const Profile = lazy(() => import("@/pages/profile"));
-const AgentProvider = lazy(() => import("@/pages/agent/provider"));
-const AgentWorkspace = lazy(() => import("@/pages/agent/workspace"));
-const AgentPlayground = lazy(() => import("@/pages/agent/playground"));
-const AgentTraces = lazy(() => import("@/pages/agent/traces"));
-const AgentEvals = lazy(() => import("@/pages/agent/evals"));
-const Forbidden = lazy(() => import("@/pages/Forbidden"));
-const NotFound = lazy(() => import("@/pages/NotFound"));
+// --- 使用 TanStack Router 原生 lazyRouteComponent，支持 .preload() 并在分包加载完成前不挂载空白占位 ---
+const Dashboard = lazyRouteComponent(() => import("@/pages/Dashboard"));
+const UserManagement = lazyRouteComponent(() => import("@/pages/system/user"));
+const RoleManagement = lazyRouteComponent(() => import("@/pages/system/role"));
+const MenuManagement = lazyRouteComponent(() => import("@/pages/system/menu"));
+const DeptManagement = lazyRouteComponent(() => import("@/pages/system/dept"));
+const DictManagement = lazyRouteComponent(() => import("@/pages/system/dict"));
+const NoticeManagement = lazyRouteComponent(() => import("@/pages/system/notice"));
+const LogManagement = lazyRouteComponent(() => import("@/pages/system/log"));
+const MessagesCenter = lazyRouteComponent(() => import("@/pages/messages"));
+const Profile = lazyRouteComponent(() => import("@/pages/profile"));
+const AgentProvider = lazyRouteComponent(() => import("@/pages/agent/provider"));
+const AgentWorkspace = lazyRouteComponent(() => import("@/pages/agent/workspace"));
+const AgentPlayground = lazyRouteComponent(() => import("@/pages/agent/playground"));
+const AgentTraces = lazyRouteComponent(() => import("@/pages/agent/traces"));
+const AgentEvals = lazyRouteComponent(() => import("@/pages/agent/evals"));
+const Forbidden = lazyRouteComponent(() => import("@/pages/Forbidden"));
+const NotFound = lazyRouteComponent(() => import("@/pages/NotFound"));
 
 /**
  * 后端菜单 component 字段 → 前端 React 组件的映射表
@@ -56,30 +25,30 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
  * 后端 seed.json 中的 component 值需要在此注册才能正确渲染。
  * 新增页面时只需在此处添加映射，无需修改路由代码。
  */
-export const componentMap: Record<string, ComponentType> = {
-	"dashboard/index": withSuspense(Dashboard),
-	"system/user/index": withSuspense(UserManagement),
-	"system/role/index": withSuspense(RoleManagement),
-	"system/menu/index": withSuspense(MenuManagement),
-	"system/dept/index": withSuspense(DeptManagement),
-	"system/dict/index": withSuspense(DictManagement),
-	"system/notice/index": withSuspense(NoticeManagement),
-	"system/log/index": withSuspense(LogManagement),
-	"messages/index": withSuspense(MessagesCenter),
-	"profile/index": withSuspense(Profile),
-	"agent/provider/index": withSuspense(AgentProvider),
-	"agent/workspace/index": withSuspense(AgentWorkspace),
-	"agent/playground/index": withSuspense(AgentPlayground),
-	"agent/traces/index": withSuspense(AgentTraces),
-	"agent/evals/index": withSuspense(AgentEvals),
+export const componentMap: Record<string, RouteComponent> = {
+	"dashboard/index": Dashboard,
+	"system/user/index": UserManagement,
+	"system/role/index": RoleManagement,
+	"system/menu/index": MenuManagement,
+	"system/dept/index": DeptManagement,
+	"system/dict/index": DictManagement,
+	"system/notice/index": NoticeManagement,
+	"system/log/index": LogManagement,
+	"messages/index": MessagesCenter,
+	"profile/index": Profile,
+	"agent/provider/index": AgentProvider,
+	"agent/workspace/index": AgentWorkspace,
+	"agent/playground/index": AgentPlayground,
+	"agent/traces/index": AgentTraces,
+	"agent/evals/index": AgentEvals,
 };
 
 /**
  * 403 无权限兜底组件（独立导出，不进入 componentMap 以保持 seed.json 映射纯粹）
  */
-export const ForbiddenComponent = withSuspense(Forbidden);
+export const ForbiddenComponent: RouteComponent = Forbidden;
 
 /**
  * 404 兜底组件
  */
-export const NotFoundComponent = withSuspense(NotFound);
+export const NotFoundComponent: RouteComponent = NotFound;

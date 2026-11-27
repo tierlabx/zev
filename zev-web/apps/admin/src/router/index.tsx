@@ -17,6 +17,8 @@ const routeTree = buildRouteTree(menus);
 export const router = createRouter({
 	routeTree,
 	defaultViewTransition: true,
+	// 鼠标悬停导航链接时预加载目标路由分包，保证点击时直接播放 iris 页面过渡
+	defaultPreload: "intent",
 });
 
 registerRouterBridge({
