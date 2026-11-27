@@ -2891,6 +2891,31 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/menu/perms": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "返回合并路由注册权限与存量菜单权限的多级树形结构",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理-菜单"
+                ],
+                "summary": "获取权限标识级联树",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/menu/tree": {
             "get": {
                 "security": [

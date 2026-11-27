@@ -11,6 +11,7 @@ import (
 	"zev-go/modules/system/service"
 	"zev-go/pkg/captcha"
 	"zev-go/pkg/middleware"
+	"zev-go/pkg/perm"
 	"zev-go/pkg/swagger"
 
 	"github.com/gin-gonic/gin"
@@ -134,6 +135,9 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 				roleGroup.PUT("/datascope/:id", middleware.RequirePermission(db, "system:role:datascope"), roleController.AssignDataScope)
 			}
 
+			// 注册无独立后端路由的页面级权限标识
+			perm.Register("dashboard:view")
+
 			// 菜单路由
 			menuGroup := protected.Group("/menu")
 			{
@@ -143,6 +147,7 @@ func (m *SystemModule) Init(r *gin.Engine, db *gorm.DB) {
 				menuGroup.DELETE("/delete/:id", middleware.RequirePermission(db, "system:menu:delete"), menuController.Delete)
 				menuGroup.GET("/get/:id", middleware.RequirePermission(db, "system:menu:list"), menuController.Get)
 				menuGroup.GET("/tree", middleware.RequireAnyPermission(db, "system:menu:list", "system:role:assign"), menuController.Tree)
+				menuGroup.GET("/perms", middleware.RequireAnyPermission(db, "system:menu:list", "system:menu:create", "system:menu:update"), menuController.PermOptions)
 			}
 
 			// 字典类型路由

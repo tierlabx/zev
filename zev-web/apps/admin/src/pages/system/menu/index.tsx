@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@zev/ui/components/badge";
 import { Button } from "@zev/ui/components/button";
 import { ChevronDown, ChevronRight, Edit, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -14,6 +15,7 @@ import { syncRouterRoutes } from "@/router/session";
 import { useUserStore } from "@/store";
 import { getMenuIcon } from "@/utils/menu-icons";
 import { MenuFormDialog } from "./components/MenuFormDialog";
+import { splitPermKeys } from "./components/MenuPermCascader";
 
 interface FlattenedMenu extends Menu {
 	level: number;
@@ -71,7 +73,10 @@ export default function MenuManagement() {
 	}, []);
 
 	const syncMenuChanges = useCallback(async () => {
-		await queryClient.invalidateQueries({ queryKey: ["menus"] });
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: ["menus"] }),
+			queryClient.invalidateQueries({ queryKey: ["menuPermOptions"] }),
+		]);
 		try {
 			const info = await getUserInfoApi();
 			useUserStore.getState().setUserInfo(info);
@@ -165,7 +170,25 @@ export default function MenuManagement() {
 			},
 			{ accessorKey: "path", header: t("menuPage.path") },
 			{ accessorKey: "component", header: t("menuPage.component") },
-			{ accessorKey: "perms", header: t("menuPage.perms") },
+			{
+				accessorKey: "perms",
+				header: t("menuPage.perms"),
+				cell: ({ row }) => {
+					const perms = splitPermKeys(row.original.perms);
+					if (perms.length === 0) {
+						return <span className="text-muted-foreground">-</span>;
+					}
+					return (
+						<div className="flex flex-wrap gap-1">
+							{perms.map((permKey) => (
+								<Badge key={permKey} variant="secondary" className="px-1.5 py-0 font-mono text-[11px] font-normal">
+									{permKey}
+								</Badge>
+							))}
+						</div>
+					);
+				},
+			},
 			{ accessorKey: "sort", header: t("common.sort") },
 			{
 				id: "actions",

@@ -12,6 +12,7 @@ import (
 	"zev-go/pkg/crud"
 	"zev-go/pkg/datascope"
 	"zev-go/pkg/noticehub"
+	"zev-go/pkg/perm"
 
 	"gorm.io/gorm"
 )
@@ -208,15 +209,36 @@ func (s *ApprovalService) expireStaleApprovals() {
 
 // findApproverUserIDs 查找所有超级管理员及拥有 agent:approval:decide 权限的启用用户
 func (s *ApprovalService) findApproverUserIDs() []uint {
-	var ids []uint
+	type approverRow struct {
+		UserID   uint   `gorm:"column:user_id"`
+		RoleID   uint   `gorm:"column:role_id"`
+		RoleCode string `gorm:"column:role_code"`
+		Perms    string `gorm:"column:perms"`
+	}
+	var rows []approverRow
 	_ = s.DB.Table("users").
-		Distinct("users.id").
+		Select("users.id AS user_id, roles.id AS role_id, roles.code AS role_code, COALESCE(menus.perms, '') AS perms").
 		Joins("LEFT JOIN sys_user_roles ON sys_user_roles.user_id = users.id").
 		Joins("LEFT JOIN roles ON (roles.id = sys_user_roles.role_id OR roles.id = users.role_id) AND roles.deleted_at IS NULL AND roles.status = 0").
 		Joins("LEFT JOIN sys_role_menus ON sys_role_menus.role_id = roles.id").
 		Joins("LEFT JOIN menus ON menus.id = sys_role_menus.menu_id AND menus.deleted_at IS NULL").
-		Where("users.deleted_at IS NULL AND users.status = 0 AND (roles.id = 1 OR roles.code = 'admin' OR menus.perms = ?)", "agent:approval:decide").
-		Pluck("users.id", &ids).Error
+		Where("users.deleted_at IS NULL AND users.status = 0").
+		Scan(&rows).Error
+
+	seen := make(map[uint]struct{}, len(rows))
+	ids := make([]uint, 0, len(rows))
+	for _, row := range rows {
+		if row.UserID == 0 {
+			continue
+		}
+		if _, exists := seen[row.UserID]; exists {
+			continue
+		}
+		if datascope.IsSuperAdminRole(row.RoleID, row.RoleCode) || perm.HasAny([]string{row.Perms}, []string{"agent:approval:decide"}) {
+			seen[row.UserID] = struct{}{}
+			ids = append(ids, row.UserID)
+		}
+	}
 	return ids
 }
 

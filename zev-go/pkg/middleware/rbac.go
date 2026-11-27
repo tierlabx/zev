@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"zev-go/pkg/datascope"
+	"zev-go/pkg/perm"
 	"zev-go/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,8 @@ func RequirePermission(db *gorm.DB, perm string) gin.HandlerFunc {
 
 // RequireAnyPermission 校验当前用户任一启用角色是否具备候选权限标识中的至少一个
 func RequireAnyPermission(db *gorm.DB, perms ...string) gin.HandlerFunc {
+	// 路由装配时自动采集受保护接口所需的权限标识，作为级联权限树的基础源
+	perm.Register(perms...)
 	return func(c *gin.Context) {
 		userIDAny, exists := c.Get("userID")
 		if !exists {
@@ -54,12 +57,12 @@ func RequireAnyPermission(db *gorm.DB, perms ...string) gin.HandlerFunc {
 			roleIDs = append(roleIDs, r.ID)
 		}
 
-		var count int64
+		var rawPerms []string
 		err = db.Table("sys_role_menus").
 			Joins("JOIN menus ON menus.id = sys_role_menus.menu_id AND menus.deleted_at IS NULL").
-			Where("sys_role_menus.role_id IN ? AND menus.perms IN ?", roleIDs, perms).
-			Count(&count).Error
-		if err != nil || count == 0 {
+			Where("sys_role_menus.role_id IN ? AND menus.perms <> ''", roleIDs).
+			Pluck("menus.perms", &rawPerms).Error
+		if err != nil || !perm.HasAny(rawPerms, perms) {
 			response.FailMessage("权限不足，拒绝访问", c)
 			c.Abort()
 			return

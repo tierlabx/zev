@@ -1,7 +1,7 @@
-import type { Menu } from "../interface/system/menu";
+import type { Menu, PermTreeNode } from "../interface/system/menu";
 import request from "../request";
 
-export type { Menu };
+export type { Menu, PermTreeNode };
 
 export interface MenuListParams {
 	page: number;
@@ -19,6 +19,10 @@ export const getMenuList = (params: MenuListParams) => {
 
 export const getMenuTree = () => {
 	return request.get<Menu[]>("/system/menu/tree");
+};
+
+export const getMenuPermOptions = () => {
+	return request.get<PermTreeNode[]>("/system/menu/perms");
 };
 
 export const createMenu = (data: Partial<Menu>) => {

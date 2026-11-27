@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import Modal from "@zev/ui/components/animate/overlay/modal";
 import { Button } from "@zev/ui/components/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@zev/ui/components/form";
@@ -9,13 +9,14 @@ import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
-import { createMenu, type Menu, updateMenu } from "@/api/system/menu";
+import { createMenu, getMenuPermOptions, type Menu, updateMenu } from "@/api/system/menu";
 import { useShake } from "@/hooks/use-shake";
 import { useI18n } from "@/i18n";
 import { collectDescendantIds } from "@/utils/tree";
 import { MenuComponentSelect } from "./MenuComponentSelect";
 import { MenuIconPicker } from "./MenuIconPicker";
 import { MenuParentSelect } from "./MenuParentSelect";
+import { MenuPermCascader, PERM_FORMAT_REGEX, splitPermKeys } from "./MenuPermCascader";
 
 type MenuType = "M" | "C" | "F";
 
@@ -38,6 +39,13 @@ function normalizeMenuType(type?: string): MenuType {
 export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, menus, onSuccess }: MenuFormDialogProps) {
 	const { t } = useI18n();
 	const { scope: formRef, shake } = useShake();
+
+	const { data: permOptions = [], isLoading: isPermsLoading } = useQuery({
+		queryKey: ["menuPermOptions"],
+		queryFn: getMenuPermOptions,
+		enabled: open,
+		staleTime: 5 * 60 * 1000,
+	});
 
 	const menuSchema = useMemo(
 		() =>
@@ -67,10 +75,18 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, menu
 							code: z.ZodIssueCode.custom,
 						});
 					}
-					if (data.type === "F" && (!data.perms || data.perms.trim() === "")) {
+					const permItems = splitPermKeys(data.perms);
+					if (data.type === "F" && permItems.length === 0) {
 						ctx.addIssue({
 							path: ["perms"],
 							message: t("menuPage.permsRequired"),
+							code: z.ZodIssueCode.custom,
+						});
+					}
+					if (data.type !== "M" && permItems.some((item) => !PERM_FORMAT_REGEX.test(item))) {
+						ctx.addIssue({
+							path: ["perms"],
+							message: t("menuPage.permsInvalid"),
 							code: z.ZodIssueCode.custom,
 						});
 					}
@@ -160,7 +176,7 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, menu
 			path: values.type === "F" ? "" : (values.path ?? "").trim(),
 			component: values.type === "C" ? (values.component ?? "").trim() : "",
 			icon: values.type === "F" ? "" : (values.icon ?? "").trim(),
-			perms: values.type === "M" ? "" : (values.perms ?? "").trim(),
+			perms: values.type === "M" ? "" : splitPermKeys(values.perms).join(","),
 		};
 
 		if (editingMenu) {
@@ -340,10 +356,15 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, menu
 								control={form.control}
 								name="perms"
 								render={({ field }) => (
-									<FormItem>
+									<FormItem className="sm:col-span-2">
 										<FormLabel>{t("menuPage.perms")}</FormLabel>
 										<FormControl>
-											<Input placeholder={t("menuPage.permsPlaceholder")} {...field} />
+											<MenuPermCascader
+												value={field.value}
+												onChange={field.onChange}
+												options={permOptions}
+												loading={isPermsLoading}
+											/>
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -388,10 +409,15 @@ export function MenuFormDialog({ open, onOpenChange, editingMenu, parentId, menu
 								control={form.control}
 								name="perms"
 								render={({ field }) => (
-									<FormItem>
+									<FormItem className="sm:col-span-2">
 										<FormLabel>{t("menuPage.perms")}</FormLabel>
 										<FormControl>
-											<Input placeholder={t("menuPage.permsPlaceholder")} {...field} />
+											<MenuPermCascader
+												value={field.value}
+												onChange={field.onChange}
+												options={permOptions}
+												loading={isPermsLoading}
+											/>
 										</FormControl>
 										<FormMessage />
 									</FormItem>

@@ -12,3 +12,9 @@ export interface Menu {
 	perms: string;
 	children?: Menu[];
 }
+
+export interface PermTreeNode {
+	value: string;
+	key?: string;
+	children?: PermTreeNode[];
+}

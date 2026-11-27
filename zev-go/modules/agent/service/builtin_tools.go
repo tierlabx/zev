@@ -10,6 +10,7 @@ import (
 	"zev-go/modules/agent/engine/guardrail"
 	"zev-go/modules/agent/engine/tool"
 	"zev-go/pkg/datascope"
+	"zev-go/pkg/perm"
 
 	"gorm.io/gorm"
 )
@@ -281,8 +282,10 @@ func loadUserPermSet(db *gorm.DB, scope *datascope.Scope) map[string]struct{} {
 		Joins("JOIN menus ON menus.id = sys_role_menus.menu_id AND menus.deleted_at IS NULL").
 		Where("sys_role_menus.role_id IN ? AND menus.perms <> ''", roleIDs).
 		Pluck("menus.perms", &perms).Error
-	for _, p := range perms {
-		res[p] = struct{}{}
+	for _, raw := range perms {
+		for _, p := range perm.Split(raw) {
+			res[p] = struct{}{}
+		}
 	}
 	return res
 }

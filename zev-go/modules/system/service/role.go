@@ -9,6 +9,7 @@ import (
 	"zev-go/modules/system/entity"
 	"zev-go/pkg/crud"
 	"zev-go/pkg/datascope"
+	"zev-go/pkg/perm"
 
 	"gorm.io/gorm"
 )
@@ -302,8 +303,8 @@ func (s *RoleService) GetMultiRolePerms(roleIDs []uint) ([]string, error) {
 	permsSet := make(map[string]struct{})
 	for _, r := range roles {
 		for _, m := range r.Menus {
-			if m.Perms != "" {
-				permsSet[m.Perms] = struct{}{}
+			for _, p := range perm.Split(m.Perms) {
+				permsSet[p] = struct{}{}
 			}
 		}
 	}
